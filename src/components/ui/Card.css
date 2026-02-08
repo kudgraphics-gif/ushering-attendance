@@ -1,0 +1,68 @@
+.card {
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+}
+
+.card--hover {
+  cursor: pointer;
+}
+
+.card--hover:hover {
+  transform: translateY(-4px);
+}
+
+.card--clickable {
+  cursor: pointer;
+}
+
+/* Padding variants */
+.card--padding-none {
+  padding: 0;
+}
+
+.card--padding-sm {
+  padding: var(--space-md);
+}
+
+.card--padding-md {
+  padding: var(--space-lg);
+}
+
+.card--padding-lg {
+  padding: var(--space-xl);
+}
+
+/* Glass variant gets extra blur */
+.card.glass-md {
+  box-shadow: var(--shadow-md);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .card--padding-md {
+    padding: var(--space-md);
+  }
+  
+  .card--padding-lg {
+    padding: var(--space-lg);
+  }
+}

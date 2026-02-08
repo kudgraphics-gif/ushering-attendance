@@ -1,0 +1,353 @@
+.payments-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+    padding: var(--space-xl);
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.payments-page__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-lg);
+}
+
+.payments-page__title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.payments-page__subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin: 0.5rem 0 0 0;
+}
+
+/* Warning Section */
+.payments-page__warning {
+    display: flex;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    background: linear-gradient(
+        135deg,
+        rgba(255, 107, 107, 0.15),
+        rgba(255, 193, 7, 0.15)
+    );
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(20px);
+}
+
+.payments-page__warning-icon {
+    flex-shrink: 0;
+    color: #ff6b6b;
+    margin-top: 2px;
+}
+
+.payments-page__warning-content h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+.payments-page__warning-content p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* Payment Cards Grid */
+.payments-page__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: var(--space-lg);
+}
+
+/* Payment Card */
+.payment-card {
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.payment-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0, 217, 255, 0.3);
+}
+
+.payment-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-md);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.payment-card__title {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.payment-card__purpose {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.payment-card__actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.payment-card__btn {
+    padding: 0.5rem;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.payment-card__btn:hover {
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.payment-card__btn--edit:hover {
+    background: rgba(0, 217, 255, 0.1);
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.payment-card__btn--delete:hover {
+    background: rgba(255, 107, 107, 0.1);
+    color: #ff6b6b;
+    border-color: #ff6b6b;
+}
+
+.payment-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+/* Payment Details */
+.payment-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.payment-detail__label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.payment-detail__value {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--text-primary);
+    word-break: break-word;
+}
+
+.payment-detail--highlight {
+    padding: var(--space-md);
+    background: rgba(0, 217, 255, 0.05);
+    border-left: 3px solid var(--color-primary);
+    border-radius: var(--radius-sm);
+}
+
+.payment-detail--highlight .payment-detail__value {
+    font-weight: 500;
+    color: var(--color-primary);
+}
+
+/* Account Numbers */
+.payment-accounts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.payment-account {
+    display: flex;
+    gap: var(--space-md);
+    align-items: center;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.payment-account__currency {
+    display: inline-block;
+    min-width: 50px;
+    padding: 0.25rem 0.5rem;
+    background: rgba(0, 217, 255, 0.1);
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    text-align: center;
+}
+
+.payment-account__number {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: 0.5px;
+    flex: 1;
+}
+
+/* Payment Form */
+.payment-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.payment-form__label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.payment-form__accounts {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.payment-form__account {
+    display: flex;
+    gap: var(--space-sm);
+    align-items: flex-end;
+}
+
+.payment-form__account input {
+    flex: 1;
+}
+
+.payment-form__remove-account {
+    padding: 0.5rem;
+    background: transparent;
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    border-radius: var(--radius-md);
+    color: #ff6b6b;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.payment-form__remove-account:hover {
+    background: rgba(255, 107, 107, 0.1);
+    border-color: #ff6b6b;
+}
+
+.payment-form__actions {
+    display: flex;
+    gap: var(--space-md);
+    margin-top: var(--space-md);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .payments-page {
+        padding: var(--space-lg);
+    }
+
+    .payments-page__header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .payments-page__title {
+        font-size: 2rem;
+    }
+
+    .payments-page__warning {
+        gap: var(--space-md);
+        padding: var(--space-md);
+    }
+
+    .payments-page__warning-content h3 {
+        font-size: 1rem;
+    }
+
+    .payments-page__warning-content p {
+        font-size: 0.9rem;
+    }
+
+    .payments-page__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .payment-card {
+        padding: var(--space-md);
+    }
+
+    .payment-account {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .payment-account__currency {
+        width: 100%;
+    }
+
+    .payment-account__number {
+        width: 100%;
+    }
+
+    .payment-form__account {
+        flex-direction: column;
+    }
+
+    .payment-form__actions {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .payments-page {
+        padding: var(--space-md);
+    }
+
+    .payments-page__title {
+        font-size: 1.75rem;
+    }
+
+    .payment-card__header {
+        flex-direction: column;
+    }
+
+    .payment-card__actions {
+        align-self: flex-start;
+    }
+}

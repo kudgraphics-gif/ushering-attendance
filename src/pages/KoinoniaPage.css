@@ -1,0 +1,293 @@
+.koinonia-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+    padding: var(--space-xl);
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.koinonia-page__header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--space-xl);
+    background: linear-gradient(
+        135deg,
+        rgba(0, 217, 255, 0.1),
+        rgba(139, 92, 246, 0.1)
+    );
+    border: 1px solid rgba(0, 217, 255, 0.2);
+    border-radius: var(--radius-xl);
+    backdrop-filter: blur(20px);
+}
+
+.koinonia-page__header-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-lg);
+}
+
+.koinonia-page__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    border-radius: var(--radius-full);
+    color: white;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.koinonia-page__title {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.koinonia-page__subtitle {
+    margin: 0.5rem 0 0 0;
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    max-width: 500px;
+}
+
+/* Sermon Links Grid */
+.koinonia-page__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-lg);
+}
+
+/* Sermon Card Link */
+.sermon-link {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sermon-link:hover {
+    transform: translateY(-8px);
+}
+
+/* Sermon Card */
+.sermon-card {
+    height: 100%;
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sermon-card:hover {
+    border-color: rgba(0, 217, 255, 0.4) !important;
+    box-shadow: 0 10px 40px rgba(0, 217, 255, 0.15);
+}
+
+.sermon-card__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    height: 100%;
+}
+
+.sermon-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-md);
+}
+
+.sermon-card__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, rgba(0, 217, 255, 0.2), rgba(139, 92, 246, 0.2));
+    border-radius: var(--radius-lg);
+    color: var(--color-primary);
+    flex-shrink: 0;
+}
+
+.sermon-card__year {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px;
+    padding: 0.5rem;
+    background: rgba(0, 217, 255, 0.1);
+    border-radius: var(--radius-md);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.sermon-card__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sermon-card__title {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.sermon-card__description {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.sermon-card__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: var(--space-md);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--color-primary);
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.sermon-link:hover .sermon-card__footer {
+    gap: var(--space-sm);
+}
+
+.sermon-card__link-text {
+    font-size: 0.95rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .koinonia-page {
+        padding: var(--space-lg);
+        gap: var(--space-lg);
+    }
+
+    .koinonia-page__header {
+        padding: var(--space-lg);
+    }
+
+    .koinonia-page__header-content {
+        gap: var(--space-md);
+    }
+
+    .koinonia-page__icon {
+        width: 60px;
+        height: 60px;
+    }
+
+    .koinonia-page__icon svg {
+        width: 30px;
+        height: 30px;
+    }
+
+    .koinonia-page__title {
+        font-size: 2rem;
+    }
+
+    .koinonia-page__subtitle {
+        font-size: 1rem;
+    }
+
+    .koinonia-page__grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: var(--space-md);
+    }
+
+    .sermon-card {
+        padding: var(--space-md);
+    }
+
+    .sermon-card__icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .sermon-card__year {
+        min-width: 50px;
+        font-size: 1rem;
+    }
+
+    .sermon-card__title {
+        font-size: 1.1rem;
+    }
+
+    .sermon-card__description {
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .koinonia-page {
+        padding: var(--space-md);
+    }
+
+    .koinonia-page__header {
+        padding: var(--space-md);
+    }
+
+    .koinonia-page__title {
+        font-size: 1.75rem;
+    }
+
+    .koinonia-page__subtitle {
+        font-size: 0.95rem;
+    }
+
+    .koinonia-page__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .sermon-card {
+        padding: var(--space-md);
+    }
+
+    .sermon-card__header {
+        gap: var(--space-sm);
+    }
+
+    .sermon-card__icon {
+        width: 45px;
+        height: 45px;
+    }
+
+    .sermon-card__year {
+        min-width: 55px;
+        font-size: 1.1rem;
+    }
+
+    .sermon-card__title {
+        font-size: 1rem;
+    }
+
+    .sermon-card__footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+}

@@ -1,0 +1,92 @@
+.input-wrapper {
+  width: 100%;
+}
+
+.input-container {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-input);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 0 var(--space-md);
+}
+
+.input-container--focused {
+  border-color: var(--color-accent-blue);
+  background: rgba(10, 132, 255, 0.05);
+  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.1);
+}
+
+.input-container--error {
+  border-color: var(--color-accent-red);
+  background: rgba(255, 69, 58, 0.05);
+}
+
+.input-field {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  padding: var(--space-lg) 0;
+  min-height: 56px;
+}
+
+.input-field::placeholder {
+  color: transparent;
+}
+
+.input-icon {
+  display: flex;
+  align-items: center;
+  color: var(--color-text-secondary);
+}
+
+.input-label {
+  position: absolute;
+  left: calc(var(--space-md) + 24px + var(--space-sm)); /* Account for icon width */
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-secondary);
+  font-size: var(--text-base);
+  pointer-events: none;
+  transition: all var(--transition-base);
+  background: transparent;
+  padding: 0 var(--space-xs);
+}
+
+
+.input-label--float {
+  top: 8px;
+  transform: translateY(0);
+  font-size: var(--text-xs);
+  color: var(--color-accent-blue);
+  font-weight: var(--font-weight-medium);
+}
+
+.input-container--error .input-label--float {
+  color: var(--color-accent-red);
+}
+
+.input-error {
+  display: block;
+  color: var(--color-accent-red);
+  font-size: var(--text-sm);
+  margin-top: var(--space-xs);
+  margin-left: var(--space-md);
+}
+
+/* Autofill styles */
+.input-field:-webkit-autofill,
+.input-field:-webkit-autofill:hover,
+.input-field:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-text-primary);
+  -webkit-box-shadow: 0 0 0 30px var(--color-bg-input) inset;
+  transition: background-color 5000s ease-in-out 0s;
+}

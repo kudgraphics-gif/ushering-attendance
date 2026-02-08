@@ -1,0 +1,134 @@
+:root {
+  /* DARK MODE (DEFAULT) */
+  
+  /* Colors - Koinonia Brand (Dark) */
+  --color-bg-primary: #000000;
+  --color-bg-secondary: #0F0F0F;
+  --color-bg-tertiary: #1A1A1A;
+  --color-bg-elevated: #262626;
+  --color-bg-input: rgba(212, 175, 55, 0.05);
+  
+  /* Text colors - Dark Mode */
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: rgba(255, 255, 255, 0.7);
+  --color-text-tertiary: rgba(255, 255, 255, 0.4);
+  
+  /* Glass effect backgrounds */
+  --color-glass-light: rgba(255, 255, 255, 0.05);
+  --color-glass-medium: rgba(20, 20, 20, 0.6);
+  --color-glass-strong: rgba(10, 10, 10, 0.8);
+
+  /* Brand Accents */
+  --color-brand-gold: #D4AF37;
+  --color-brand-gold-light: #F4C430;
+  --color-brand-gold-dark: #AA8C2C;
+  
+  /* Accent colors - Professional Palette */
+  --color-accent-blue: #D4AF37; /* Mapping primary action to Gold */
+  --color-accent-green: #2E8B57;
+  --color-accent-red: #B22222;
+  --color-accent-orange: #DAA520;
+  --color-accent-purple: #D4AF37; /* Fallback to Gold */
+  
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #D4AF37 0%, #AA8C2C 100%);
+  --gradient-success: linear-gradient(135deg, #2E8B57 0%, #3CB371 100%);
+  --gradient-warm: linear-gradient(135deg, #FFD700 0%, #DAA520 100%);
+  --gradient-gold: linear-gradient(135deg, #D4AF37 0%, #F4C430 50%, #D4AF37 100%);
+  
+  /* Shadows - Dark Mode */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.5);
+  
+  /* Glow effects */
+  --glow-blue: 0 0 20px rgba(212, 175, 55, 0.3);
+  --glow-gold: 0 0 25px rgba(212, 175, 55, 0.4);
+  --glow-green: 0 0 20px rgba(46, 139, 87, 0.3);
+  --glow-purple: 0 0 20px rgba(170, 140, 44, 0.3);
+  
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* Font sizes */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 30px;
+  --text-4xl: 36px;
+  --text-5xl: 48px;
+  
+  /* Spacing scale */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+  
+  /* Border radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+  
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  
+  /* Z-index scale */
+  --z-base: 1;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-modal-backdrop: 400;
+  --z-modal: 500;
+  --z-popover: 600;
+  --z-tooltip: 700;
+  
+  /* Breakpoints (for reference in JS) */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}
+
+/* Light Mode Overrides */
+html.light {
+  /* Colors - Light Mode */
+  --color-bg-primary: #FFFFFF;
+  --color-bg-secondary: #F5F5F7;
+  --color-bg-tertiary: #E5E5EA;
+  --color-bg-elevated: #FFFFFF;
+  --color-bg-input: rgba(118, 118, 128, 0.12);
+
+  /* Text colors - Light Mode */
+  --color-text-primary: #000000;
+  --color-text-secondary: rgba(60, 60, 67, 0.6);
+  --color-text-tertiary: rgba(60, 60, 67, 0.3);
+
+  /* Glass effect backgrounds - Light Mode */
+  --color-glass-light: rgba(255, 255, 255, 0.5);
+  --color-glass-medium: rgba(255, 255, 255, 0.7);
+  --color-glass-strong: rgba(255, 255, 255, 0.9);
+
+  /* Shadows - Light Mode (slightly stronger) */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.12);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.16);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.25);
+}

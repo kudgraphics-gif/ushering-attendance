@@ -1,0 +1,60 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.badge--sm {
+  padding: 4px 10px;
+  font-size: var(--text-xs);
+}
+
+.badge--md {
+  padding: 6px 14px;
+  font-size: var(--text-sm);
+}
+
+/* Variants */
+.badge--primary {
+  background: var(--color-accent-blue);
+  color: white;
+}
+
+.badge--success {
+  background: var(--color-accent-green);
+  color: white;
+}
+
+.badge--danger {
+  background: var(--color-accent-red);
+  color: white;
+}
+
+.badge--warning {
+  background: var(--color-accent-orange);
+  color: white;
+}
+
+.badge--info {
+  background: var(--color-accent-teal);
+  color: white;
+}
+
+/* Role-specific badges */
+.badge--admin {
+  background: linear-gradient(135deg, #ff375f 0%, #bf5af2 100%);
+  color: white;
+}
+
+.badge--user {
+  background: var(--color-accent-blue);
+  color: white;
+}
+
+.badge--technical {
+  background: var(--color-accent-teal);
+  color: white;
+}

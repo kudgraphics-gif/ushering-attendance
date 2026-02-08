@@ -1,0 +1,222 @@
+.attendance-modal {
+    width: 100%;
+}
+
+.attendance-modal__loading,
+.attendance-modal__error {
+    padding: 2rem;
+    text-align: center;
+    color: var(--color-text-secondary);
+}
+
+.attendance-modal__error {
+    color: var(--color-danger);
+}
+
+.attendance-modal__content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Summary Cards */
+.attendance-modal__summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.attendance-modal__summary-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.attendance-modal__summary-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.attendance-modal__summary-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, rgba(10, 132, 255, 0.2), rgba(34, 197, 94, 0.2));
+    border-radius: 12px;
+    color: #0a84ff;
+    flex-shrink: 0;
+}
+
+.attendance-modal__summary-content {
+    flex: 1;
+}
+
+.attendance-modal__summary-label {
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.attendance-modal__summary-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0;
+}
+
+/* History */
+.attendance-modal__history {
+    margin-top: 1rem;
+}
+
+.attendance-modal__history-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.attendance-modal__history-empty {
+    padding: 2rem;
+    text-align: center;
+    color: var(--color-text-secondary);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.attendance-modal__records {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.attendance-modal__records::-webkit-scrollbar {
+    width: 6px;
+}
+
+.attendance-modal__records::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+}
+
+.attendance-modal__records::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.attendance-modal__records::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.attendance-modal__record {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+.attendance-modal__record:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.attendance-modal__record-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 80px;
+    padding: 0.75rem;
+    background: rgba(10, 132, 255, 0.1);
+    border-radius: 8px;
+    border-left: 3px solid #0a84ff;
+}
+
+.attendance-modal__record-day {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0;
+}
+
+.attendance-modal__record-dayname {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.attendance-modal__record-times {
+    flex: 1;
+    display: flex;
+    gap: 1rem;
+}
+
+.attendance-modal__record-time {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.attendance-modal__time-label {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.attendance-modal__time-value {
+    font-size: 0.95rem;
+    color: var(--color-text-primary);
+    font-weight: 500;
+}
+
+.attendance-modal__time-value--pending {
+    color: var(--color-warning);
+}
+
+.attendance-modal__attendance-type {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: rgba(10, 132, 255, 0.15);
+    border: 1px solid rgba(10, 132, 255, 0.3);
+    border-radius: 6px;
+    font-size: 0.75rem;
+    color: #0a84ff;
+    font-weight: 600;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .attendance-modal__summary {
+        grid-template-columns: 1fr;
+    }
+
+    .attendance-modal__record {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .attendance-modal__record-times {
+        width: 100%;
+        flex-direction: column;
+    }
+}
