@@ -8,7 +8,7 @@ import { Badge } from '../components/ui/Badge';
 import { Avatar } from '../components/ui/Avatar';
 import { UserFormModal } from '../components/ui/UserFormModal';
 import { AttendanceModal } from '../components/ui/AttendanceModal';
-import { usersAPI, attendanceAPI, analyticsAPI, usersExportAPI } from '../services/api';
+import { usersAPI, attendanceAPI, usersExportAPI } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import type { UserDto } from '../types';
 import './UsersPage.css';

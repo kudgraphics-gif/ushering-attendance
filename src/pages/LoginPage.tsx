@@ -37,17 +37,17 @@ export function LoginPage() {
 
             // --- STRICT CHECK ---
             // If device is used by someone else AND current user is NOT Admin
-            // if (deviceSession && deviceSession.userId !== currentEmail && !isAdmin) {
+            if (deviceSession && deviceSession.userId !== currentEmail && !isAdmin) {
                 
-            //     // Security: Log them out immediately
-            //     logout();
+                // Security: Log them out immediately
+                logout();
                 
-            //     // Alert the user simply
-            //     toast.error(`Access Denied: This device is linked to ${deviceSession.userId}`);
+                // Alert the user simply
+                toast.error(`Access Denied: This device is linked to ${deviceSession.userId}`);
                 
-            //     console.warn(`Login blocked. Device locked to ${deviceSession.userId}`);
-            //     return; // STOP. Do not navigate.
-            // }
+                console.warn(`Login blocked. Device locked to ${deviceSession.userId}`);
+                return; // STOP. Do not navigate.
+            }
 
             // 3. If allowed, update session and proceed
             setDeviceSession(currentEmail, `token_${Math.random()}`);
