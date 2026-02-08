@@ -7,7 +7,8 @@ import {
     CheckCircle,
     ArrowUp,
     ArrowDown,
-    Cake
+    Cake,
+    UserX
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { analyticsAPI, eventsAPI } from '../services/api';
@@ -62,12 +63,13 @@ export function DashboardPage() {
     const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
     const [allUsers, setAllUsers] = useState<UserDto[]>([]);
     const [upcomingBirthdays, setUpcomingBirthdays] = useState<UserDto[]>([]);
+    const [attendanceRates, setAttendanceRates] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const { token } = useAuthStore();
+    const { token, user } = useAuthStore();
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [token]);
 
     const fetchData = async () => {
         if (!token) {
@@ -103,6 +105,16 @@ export function DashboardPage() {
                 console.error('Failed to fetch birthdays:', error);
                 setUpcomingBirthdays([]);
             }
+
+            // Fetch attendance rates (admin only)
+            if (user?.role === 'Admin') {
+                try {
+                    const ratesData = await analyticsAPI.getAttendanceRates(token);
+                    setAttendanceRates(ratesData.data);
+                } catch (error) {
+                    console.error('Failed to fetch attendance rates:', error);
+                }
+            }
         } finally {
             setLoading(false);
         }
@@ -119,9 +131,9 @@ export function DashboardPage() {
     const stats = {
         totalEvents: upcomingEvents.length,
         totalUsers: allUsers.length,
-        attendanceRate: mockDashboardStats.attendanceRate,
+        attendanceRate: user?.role === 'Admin' && attendanceRates ? (attendanceRates.user_rate).toFixed(2) : mockDashboardStats.attendanceRate,
         activeUsers: allUsers.filter(u => u.is_active).length,
-        thisWeekAttendance: mockDashboardStats.thisWeekAttendance,
+        inactiveUsers: allUsers.filter(u => !u.is_active).length,
     };
 
     return (
@@ -162,10 +174,10 @@ export function DashboardPage() {
                     color="purple"
                 />
                 <StatCard
-                    title="This Week"
-                    value={stats.thisWeekAttendance}
-                    trend={8}
-                    icon={CheckCircle}
+                    title="Inactive Users"
+                    value={stats.inactiveUsers}
+                    trend={-2}
+                    icon={UserX}
                     color="pink"
                 />
             </div>

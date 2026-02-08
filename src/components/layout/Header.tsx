@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Search, Bell, Menu } from 'lucide-react';
+import { Search, Bell, Menu, RotateCcw } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { Avatar } from '../ui/Avatar';
 import { ThemeToggle } from '../ui/ThemeToggle';
+import toast from 'react-hot-toast';
 import './Header.css';
 
 interface HeaderProps {
@@ -11,7 +12,21 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
     const user = useAuthStore((state) => state.user);
+    const refresh = useAuthStore((state) => state.refresh);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isRefreshing, setIsRefreshing] = useState(false);
+
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        try {
+            await refresh();
+            toast.success('Session refreshed');
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Refresh failed');
+        } finally {
+            setIsRefreshing(false);
+        }
+    };
 
     return (
         <header className="header glass-md">
@@ -32,6 +47,14 @@ export function Header({ onMenuClick }: HeaderProps) {
 
             <div className="header__actions">
                 <ThemeToggle />
+                <button 
+                    className="header__notification-btn"
+                    onClick={handleRefresh}
+                    disabled={isRefreshing}
+                    title="Refresh session"
+                >
+                    <RotateCcw size={20} className={isRefreshing ? 'header__refresh-spinning' : ''} />
+                </button>
                 <button className="header__notification-btn">
                     <Bell size={20} />
                     <span className="header__notification-badge">3</span>

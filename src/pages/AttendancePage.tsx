@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ClipboardCheck, MapPin, Download, AlertCircle, Users, TrendingUp } from 'lucide-react';
+import { ClipboardCheck, MapPin, Download, AlertCircle, Users, TrendingUp, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -14,9 +14,11 @@ import './AttendancePage.css';
 export function AttendancePage() {
     const [checkInLoading, setCheckInLoading] = useState(false);
     const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+    const [presentees, setPresentees] = useState<any[]>([]);
     const [absentees, setAbsentees] = useState<any[]>([]);
     const [attendanceRates, setAttendanceRates] = useState<any>(null);
     const [loadingData, setLoadingData] = useState(false);
+    const [activeTab, setActiveTab] = useState<'presentees' | 'absentees'>('presentees');
     const { token, user } = useAuthStore();
 
     // Fetch attendance data for selected date and rates
@@ -33,13 +35,16 @@ export function AttendancePage() {
         setLoadingData(true);
         try {
             const response = await analyticsAPI.getUsersOnDay(selectedDate, token);
-            if (response.data?.absentees) {
-                setAbsentees(response.data.absentees);
+            if (response.data) {
+                setPresentees(response.data.presentees || []);
+                setAbsentees(response.data.absentees || []);
             } else {
+                setPresentees([]);
                 setAbsentees([]);
             }
         } catch (error) {
             console.error('Failed to fetch attendance data:', error);
+            setPresentees([]);
             setAbsentees([]);
         } finally {
             setLoadingData(false);
@@ -269,7 +274,25 @@ export function AttendancePage() {
                     {/* Check Attendance by Date */}
                     <Card glass className="attendance-by-date-card">
                         <div className="attendance-by-date-card__header">
-                            <h2 className="attendance-by-date-card__title">Check Attendance by Date</h2>
+                            <div>
+                                <h2 className="attendance-by-date-card__title">Check Attendance by Date</h2>
+                                <div className="attendance-tabs">
+                                    <button 
+                                        className={`attendance-tab ${activeTab === 'presentees' ? 'attendance-tab--active' : ''}`}
+                                        onClick={() => setActiveTab('presentees')}
+                                    >
+                                        <CheckCircle2 size={18} />
+                                        <span>Presentees ({presentees.length})</span>
+                                    </button>
+                                    <button 
+                                        className={`attendance-tab ${activeTab === 'absentees' ? 'attendance-tab--active' : ''}`}
+                                        onClick={() => setActiveTab('absentees')}
+                                    >
+                                        <AlertCircle size={18} />
+                                        <span>Absentees ({absentees.length})</span>
+                                    </button>
+                                </div>
+                            </div>
                             <input
                                 type="date"
                                 value={selectedDate}
@@ -282,9 +305,37 @@ export function AttendancePage() {
                             <div className="attendance-page__loading">
                                 <p>Loading attendance data for {selectedDate}...</p>
                             </div>
+                        ) : activeTab === 'presentees' ? (
+                            presentees.length === 0 ? (
+                                <div className="attendance-page__empty">
+                                    <AlertCircle size={48} />
+                                    <p>No presentees found for {selectedDate}</p>
+                                </div>
+                            ) : (
+                                <div className="presentees-list">
+                                    <p className="presentees-count">{presentees.length} presentee(s) on {format(new Date(selectedDate), 'MMMM dd, yyyy')}</p>
+                                    <div className="presentees-grid">
+                                        {presentees.map((presentee) => (
+                                            <div key={presentee.id} className="presentee-card">
+                                                <div className="presentee-card__header">
+                                                    <h4 className="presentee-card__name">
+                                                        {presentee.first_name} {presentee.last_name}
+                                                    </h4>
+                                                    <span className="presentee-card__reg-no">{presentee.reg_no}</span>
+                                                </div>
+                                                <div className="presentee-card__details">
+                                                    <p><strong>Email:</strong> {presentee.email}</p>
+                                                    <p><strong>Phone:</strong> {presentee.phone || 'N/A'}</p>
+                                                    <p><strong>Year Joined:</strong> {presentee.year_joined}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )
                         ) : absentees.length === 0 ? (
                             <div className="attendance-page__empty">
-                                <AlertCircle size={48} />
+                                <CheckCircle2 size={48} />
                                 <p>No absentees found for {selectedDate} - All users attended!</p>
                             </div>
                         ) : (

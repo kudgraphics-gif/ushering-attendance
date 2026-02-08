@@ -245,6 +245,7 @@ export const analyticsAPI = {
         message: string;
         status_code: number;
         data?: {
+            presentees: UserDto[];
             absentees: UserDto[];
         };
     }> => {
