@@ -1,9 +1,13 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Bell, Lock, Palette } from 'lucide-react';
-import { Card } from '../components/ui/Card';
+import { User, Lock } from 'lucide-react';
 import './SettingsPage.css';
+import { UpdateProfileForm } from '../components/ui/UpdateProfileForm';
+import { PasswordChangeForm } from '../components/ui/PasswordChangeForm';
 
 export function SettingsPage() {
+    const [activeTab, setActiveTab] = useState<'profile' | 'security'>('profile');
+
     return (
         <motion.div
             className="settings-page"
@@ -13,49 +17,46 @@ export function SettingsPage() {
         >
             <div className="settings-page__header">
                 <h1 className="settings-page__title">Settings</h1>
-                <p className="settings-page__subtitle">Manage your preferences and account</p>
+                <p className="settings-page__subtitle">Manage your account and preferences</p>
             </div>
 
-            <div className="settings-page__grid">
-                <Card glass hover className="settings-card">
-                    <div className="settings-card__icon settings-card__icon--blue">
-                        <User size={24} />
-                    </div>
-                    <h3 className="settings-card__title">Profile Settings</h3>
-                    <p className="settings-card__description">
-                        Update your personal information and profile picture
-                    </p>
-                </Card>
+            <div className="settings-page__tabs">
+                <button 
+                    className={`settings-page__tab ${activeTab === 'profile' ? 'settings-page__tab--active' : ''}`}
+                    onClick={() => setActiveTab('profile')}
+                >
+                    <User size={20} />
+                    <span>Profile</span>
+                </button>
+                <button 
+                    className={`settings-page__tab ${activeTab === 'security' ? 'settings-page__tab--active' : ''}`}
+                    onClick={() => setActiveTab('security')}
+                >
+                    <Lock size={20} />
+                    <span>Security</span>
+                </button>
+            </div>
 
-                <Card glass hover className="settings-card">
-                    <div className="settings-card__icon settings-card__icon--purple">
-                        <Bell size={24} />
-                    </div>
-                    <h3 className="settings-card__title">Notifications</h3>
-                    <p className="settings-card__description">
-                        Configure how you receive notifications
-                    </p>
-                </Card>
+            <div className="settings-page__content">
+                {activeTab === 'profile' && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <UpdateProfileForm />
+                    </motion.div>
+                )}
 
-                <Card glass hover className="settings-card">
-                    <div className="settings-card__icon settings-card__icon--green">
-                        <Lock size={24} />
-                    </div>
-                    <h3 className="settings-card__title">Security</h3>
-                    <p className="settings-card__description">
-                        Manage password and security preferences
-                    </p>
-                </Card>
-
-                <Card glass hover className="settings-card">
-                    <div className="settings-card__icon settings-card__icon--pink">
-                        <Palette size={24} />
-                    </div>
-                    <h3 className="settings-card__title">Appearance</h3>
-                    <p className="settings-card__description">
-                        Customize theme and display settings
-                    </p>
-                </Card>
+                {activeTab === 'security' && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <PasswordChangeForm />
+                    </motion.div>
+                )}
             </div>
         </motion.div>
     );

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
+import { ProfileCompletionPopup } from '../ui/ProfileCompletionPopup';
 import './MainLayout.css';
 
 export function MainLayout() {
@@ -13,6 +14,7 @@ export function MainLayout() {
 
     return (
         <div className="main-layout">
+            <ProfileCompletionPopup />
             <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
             <div className="main-layout__content">
                 <Header onMenuClick={toggleSidebar} />

@@ -28,6 +28,7 @@ const userNavItems = [
     { icon: Calendar, label: 'Events', path: '/events' },
     { icon: DollarSign, label: 'Payments', path: '/payments' },
     { icon: Music, label: 'Koinonia', path: '/koinonia' },
+    { icon: Settings, label: 'Settings', path: '/settings' },
 ];
 
 interface SidebarProps {
@@ -40,7 +41,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     const logout = useAuthStore((state) => state.logout);
     const user = useAuthStore((state) => state.user);
 
-    // Select nav items based on user role
     const navItems = user?.role === 'Admin' ? adminNavItems : userNavItems;
 
     const handleLogout = () => {
@@ -49,40 +49,45 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     };
 
     return (
-        <aside className={clsx('sidebar glass', isOpen && 'sidebar--open')}>
+        <>
+            {/* Overlay: Sits BEHIND the sidebar but ABOVE the page content */}
+            {/* It is now a sibling, not a child, of the aside */}
             {isOpen && (
-                <div className="sidebar__close-overlay" onClick={onClose} />
+                <div className="sidebar-overlay" onClick={onClose} />
             )}
 
-            <div className="sidebar__logo">
-                <div className="sidebar__logo-icon">
-                    <ClipboardCheck size={28} />
+            <aside className={clsx('sidebar glass', isOpen && 'sidebar--open')}>
+                <div className="sidebar__logo">
+                    <div className="sidebar__logo-icon">
+                        <ClipboardCheck size={28} />
+                    </div>
+                    <div className="sidebar__logo-wrapper">
+                        <h1 className="sidebar__logo-text">Koinonia</h1>
+                        <span className="sidebar__logo-subtext">Ushering Abuja</span>
+                    </div>
                 </div>
-                <div className="sidebar__logo-wrapper">
-                    <h1 className="sidebar__logo-text">Koinonia</h1>
-                    <span className="sidebar__logo-subtext">Ushering Abuja</span>
-                </div>
-            </div>
 
-            <nav className="sidebar__nav">
-                {navItems.map((item) => (
-                    <NavLink
-                        key={item.path}
-                        to={item.path}
-                        className={({ isActive }) =>
-                            isActive ? 'sidebar__link sidebar__link--active' : 'sidebar__link'
-                        }
-                    >
-                        <item.icon size={20} />
-                        <span>{item.label}</span>
-                    </NavLink>
-                ))}
-            </nav>
+                <nav className="sidebar__nav">
+                    {navItems.map((item) => (
+                        <NavLink
+                            key={item.path}
+                            to={item.path}
+                            className={({ isActive }) =>
+                                isActive ? 'sidebar__link sidebar__link--active' : 'sidebar__link'
+                            }
+                            onClick={onClose} // Optional: Close sidebar when a link is clicked on mobile
+                        >
+                            <item.icon size={20} />
+                            <span>{item.label}</span>
+                        </NavLink>
+                    ))}
+                </nav>
 
-            <button className="sidebar__logout" onClick={handleLogout}>
-                <LogOut size={20} />
-                <span>Logout</span>
-            </button>
-        </aside>
+                <button className="sidebar__logout" onClick={handleLogout}>
+                    <LogOut size={20} />
+                    <span>Logout</span>
+                </button>
+            </aside>
+        </>
     );
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Bell, Menu, RotateCcw } from 'lucide-react';
+import { Search, Menu, RotateCcw } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { Avatar } from '../ui/Avatar';
 import { ThemeToggle } from '../ui/ThemeToggle';
@@ -54,10 +54,6 @@ export function Header({ onMenuClick }: HeaderProps) {
                     title="Refresh session"
                 >
                     <RotateCcw size={20} className={isRefreshing ? 'header__refresh-spinning' : ''} />
-                </button>
-                <button className="header__notification-btn">
-                    <Bell size={20} />
-                    <span className="header__notification-badge">3</span>
                 </button>
 
                 {user && (

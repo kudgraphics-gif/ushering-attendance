@@ -18,6 +18,7 @@ export const mockCurrentUser: UserDto = {
     city: 'San Francisco',
     state: 'CA',
     country: 'USA',
+    dob: '1990-04-22',
     is_active: true,
 };
 
@@ -134,6 +135,7 @@ export const mockUsers: UserDto[] = [
         role: 'User',
         gender: 'Male',
         phone: '+1 (555) 234-5678',
+        dob: '1995-02-10',
         is_active: true,
     },
     {
@@ -150,6 +152,7 @@ export const mockUsers: UserDto[] = [
         role: 'Technical',
         gender: 'Female',
         phone: '+1 (555) 345-6789',
+        dob: '1992-03-15',
         is_active: true,
     },
     {
@@ -166,6 +169,7 @@ export const mockUsers: UserDto[] = [
         role: 'User',
         gender: 'Male',
         phone: '+1 (555) 456-7890',
+        dob: '1998-02-08',
         is_active: true,
     },
 ];
@@ -211,10 +215,10 @@ export const mockAttendanceTrends: AttendanceTrend[] = [
 
 // Dashboard stats
 export const mockDashboardStats = {
-    totalEvents: 45,
-    attendanceRate: 94.2,
-    activeUsers: 230,
-    upcomingEvents: 12,
-    thisWeekAttendance: 1350,
-    thisMonthAttendance: 4280,
+    totalEvents: 0,
+    attendanceRate: 0.0,
+    activeUsers: 0,
+    upcomingEvents: 0,
+    thisWeekAttendance: 0,
+    thisMonthAttendance: 0,
 };

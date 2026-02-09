@@ -235,6 +235,19 @@
   transform: translateX(4px);
 }
 
+.dashboard__birthday--today {
+  background: linear-gradient(135deg, rgba(255, 45, 85, 0.15), rgba(255, 109, 80, 0.1));
+  border-left-color: #ff2d55;
+  border: 1px solid rgba(255, 45, 85, 0.3);
+  box-shadow: 0 0 20px rgba(255, 45, 85, 0.2);
+}
+
+.dashboard__birthday--today:hover {
+  background: linear-gradient(135deg, rgba(255, 45, 85, 0.2), rgba(255, 109, 80, 0.15));
+  border-left-color: #ff2d55;
+  box-shadow: 0 0 30px rgba(255, 45, 85, 0.3);
+}
+
 .dashboard__birthday-icon {
   width: 40px;
   height: 40px;

@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Download, Upload, AlertCircle, LogIn, Trash2, Edit, Eye } from 'lucide-react';
+import { Plus, Search, Download, Upload, AlertCircle, Grid3x3, List, LogIn, Eye, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Badge } from '../components/ui/Badge';
 import { Avatar } from '../components/ui/Avatar';
+import { Badge } from '../components/ui/Badge';
+import { UsersTable } from '../components/ui/DataTable';
 import { UserFormModal } from '../components/ui/UserFormModal';
 import { AttendanceModal } from '../components/ui/AttendanceModal';
 import { usersAPI, attendanceAPI, usersExportAPI } from '../services/api';
@@ -25,6 +26,7 @@ export function UsersPage() {
     const [selectedUserForAttendance, setSelectedUserForAttendance] = useState<UserDto | null>(null);
     const [exporting, setExporting] = useState(false);
     const [importing, setImporting] = useState(false);
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const { token, user: currentUser } = useAuthStore();
 
     useEffect(() => {
@@ -130,11 +132,6 @@ export function UsersPage() {
         setIsModalOpen(true);
     };
 
-    const handleEditUser = (user: UserDto) => {
-        setSelectedUser(user);
-        setIsModalOpen(true);
-    };
-
     const handleViewAttendance = (user: UserDto) => {
         setSelectedUserForAttendance(user);
         setAttendanceModalOpen(true);
@@ -203,6 +200,22 @@ export function UsersPage() {
                     <p className="users-page__subtitle">Manage system users</p>
                 </div>
                 <div className="users-page__actions">
+                    <div className="users-page__view-toggle">
+                        <button
+                            className={`users-page__view-btn ${viewMode === 'grid' ? 'users-page__view-btn--active' : ''}`}
+                            onClick={() => setViewMode('grid')}
+                            title="Grid view"
+                        >
+                            <Grid3x3 size={20} />
+                        </button>
+                        <button
+                            className={`users-page__view-btn ${viewMode === 'list' ? 'users-page__view-btn--active' : ''}`}
+                            onClick={() => setViewMode('list')}
+                            title="List view"
+                        >
+                            <List size={20} />
+                        </button>
+                    </div>
                     <div className="file-input-wrapper">
                         <input
                             type="file"
@@ -261,14 +274,13 @@ export function UsersPage() {
                     <AlertCircle size={48} />
                     <p>No users found</p>
                 </div>
-            ) : (
+            ) : viewMode === 'grid' ? (
                 <div className="users-page__grid">
                     {filteredUsers.map((user, index) => (
                         <UserCard
                             key={user.id}
                             user={user}
                             index={index}
-                            onEdit={handleEditUser}
                             onCheckIn={handleCheckInUser}
                             onViewAttendance={handleViewAttendance}
                             onDelete={handleDeleteUser}
@@ -277,6 +289,17 @@ export function UsersPage() {
                         />
                     ))}
                 </div>
+            ) : (
+                <Card glass className="users-page__table-card">
+                    <UsersTable
+                        users={filteredUsers}
+                        onCheckIn={handleCheckInUser}
+                        onViewAttendance={handleViewAttendance}
+                        onDelete={handleDeleteUser}
+                        isAdmin={currentUser?.role === 'Admin'}
+                        isCheckingIn={checkingInUser}
+                    />
+                </Card>
             )}
 
             <UserFormModal
@@ -304,7 +327,6 @@ export function UsersPage() {
 function UserCard({
     user,
     index,
-    onEdit,
     onCheckIn,
     onViewAttendance,
     onDelete,
@@ -313,7 +335,6 @@ function UserCard({
 }: {
     user: UserDto;
     index: number;
-    onEdit: (user: UserDto) => void;
     onCheckIn: (userId: string, userName: string) => Promise<void>;
     onViewAttendance: (user: UserDto) => void;
     onDelete: (userId: string, userName: string) => Promise<void>;
@@ -370,13 +391,6 @@ function UserCard({
                             <LogIn size={20} />
                         </button>
                     )}
-                    <button
-                        className="user-card__action-btn"
-                        title="Edit User"
-                        onClick={() => onEdit(user)}
-                    >
-                        <Edit size={20} />
-                    </button>
                     {isAdmin && (
                         <button
                             className="user-card__action-btn"

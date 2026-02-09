@@ -4,7 +4,6 @@ import {
     TrendingUp,
     Users,
     Calendar,
-    CheckCircle,
     ArrowUp,
     ArrowDown,
     Cake,
@@ -24,7 +23,7 @@ import {
     Tooltip,
     ResponsiveContainer
 } from 'recharts';
-import { format } from 'date-fns';
+import { format, getMonth, getDate } from 'date-fns';
 import './DashboardPage.css';
 
 interface StatCardProps {
@@ -99,12 +98,16 @@ export function DashboardPage() {
 
             // Fetch upcoming birthdays
             try {
-                const birthdaysData = await analyticsAPI.getUpcomingBirthdays(token);
-                setUpcomingBirthdays(birthdaysData.data.slice(0, 5));
-            } catch (error) {
-                console.error('Failed to fetch birthdays:', error);
-                setUpcomingBirthdays([]);
-            }
+    const birthdaysData = await analyticsAPI.getUpcomingBirthdays(token);
+    
+    // CHANGE THIS: Remove .slice(0, 5)
+    // Pass the full list so the filter logic below can find the right people
+    setUpcomingBirthdays(birthdaysData.data); 
+    
+} catch (error) {
+    console.error('Failed to fetch birthdays:', error);
+    setUpcomingBirthdays([]);
+}
 
             // Fetch attendance rates (admin only)
             if (user?.role === 'Admin') {
@@ -121,6 +124,40 @@ export function DashboardPage() {
     };
 
     const recentUsers = allUsers.slice(0, 4);
+
+    // Filter birthdays to only show from today onwards (comparing month and day only)
+    const today = new Date();
+    const todayMonth = getMonth(today);
+    const todayDate = getDate(today);
+    
+    const filteredBirthdays = upcomingBirthdays.filter(user => {
+        if (!user.dob) return false;
+        const birthDob = new Date(user.dob);
+        const birthMonth = getMonth(birthDob);
+        const birthDate = getDate(birthDob);
+        
+        // Compare month and day only (not the year)
+        if (birthMonth > todayMonth) return true;
+        if (birthMonth === todayMonth && birthDate >= todayDate) return true;
+        return false;
+    }).sort((a, b) => {
+        const dobA = new Date(a.dob!);
+        const dobB = new Date(b.dob!);
+        const monthA = getMonth(dobA);
+        const dateA = getDate(dobA);
+        const monthB = getMonth(dobB);
+        const dateB = getDate(dobB);
+        
+        if (monthA !== monthB) return monthA - monthB;
+        return dateA - dateB;
+    }).slice(0, 5);
+
+    // Check if a user's birthday is today (comparing month and day only)
+    const isBirthdayToday = (dob: string | null) => {
+        if (!dob) return false;
+        const birthDob = new Date(dob);
+        return getMonth(birthDob) === todayMonth && getDate(birthDob) === todayDate;
+    };
 
     const chartData = mockAttendanceTrends.map(trend => ({
         date: trend.date ? format(new Date(trend.date), 'MMM dd') : 'N/A',
@@ -181,7 +218,7 @@ export function DashboardPage() {
                     color="pink"
                 />
             </div>
-
+ 
             {/* Main Grid */}
             <div className="dashboard__grid">
                 {/* Attendance Chart */}
@@ -297,16 +334,19 @@ export function DashboardPage() {
                 <Card glass className="dashboard__birthdays-card">
                     <div className="dashboard__card-header">
                         <h2 className="dashboard__card-title">Upcoming Birthdays</h2>
-                        <p className="dashboard__card-subtitle">{upcomingBirthdays.length} celebrations</p>
+                        <p className="dashboard__card-subtitle">{filteredBirthdays.length} celebrations</p>
                     </div>
                     <div className="dashboard__birthdays">
                         {loading ? (
                             <p className="dashboard__loading">Loading birthdays...</p>
-                        ) : upcomingBirthdays.length === 0 ? (
+                        ) : filteredBirthdays.length === 0 ? (
                             <p className="dashboard__empty">No upcoming birthdays</p>
                         ) : (
-                            upcomingBirthdays.map((user) => (
-                                <div key={user.id} className="dashboard__birthday">
+                            filteredBirthdays.map((user) => (
+                                <div 
+                                    key={user.id} 
+                                    className={`dashboard__birthday ${isBirthdayToday(user.dob ?? null) ? 'dashboard__birthday--today' : ''}`}
+                                >
                                     <div className="dashboard__birthday-icon">
                                         <Cake size={20} />
                                     </div>
@@ -318,7 +358,10 @@ export function DashboardPage() {
                                             {user.dob ? format(new Date(user.dob), 'MMMM dd') : 'N/A'}
                                         </p>
                                     </div>
-                                    <div className="dashboard__birthday-badge">🎂</div>
+                                    <div className="dashboard__birthday-badge">
+    
+                                        {isBirthdayToday(user.dob ?? null) ? '🎉' : '🎂'}
+                                    </div>
                                 </div>
                             ))
                         )}

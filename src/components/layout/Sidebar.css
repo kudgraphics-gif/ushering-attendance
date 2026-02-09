@@ -9,7 +9,12 @@
   padding: var(--space-lg);
   z-index: var(--z-sticky);
   box-shadow: var(--shadow-md);
+  /* Use CSS variables that respond to light/dark mode */
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
 }
+
+/* ... (Keep your existing logo and link styles) ... */
 
 .sidebar__logo {
   display: flex;
@@ -125,10 +130,25 @@
   .sidebar {
     transform: translateX(-100%);
     transition: transform var(--transition-base);
-    z-index: var(--z-modal); /* Ensure it's above the overlay */
+    z-index: 1000; /* Must be higher than overlay */
   }
   
   .sidebar.sidebar--open {
     transform: translateX(0);
   }
+
+  /* NEW: The backdrop overlay */
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0; /* Covers top, right, bottom, left */
+    background: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    backdrop-filter: blur(4px); /* Optional blur effect */
+    z-index: 999; /* Higher than content, lower than sidebar (1000) */
+    animation: fadeIn 0.2s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

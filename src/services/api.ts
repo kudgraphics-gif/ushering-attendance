@@ -155,6 +155,54 @@ export const usersAPI = {
         );
     },
 
+    uploadAvatar: async (file: File, _token: string): Promise<{ message: string; data: { avatar_url: string } }> => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const headers: HeadersInit = {
+            'Accept': 'application/json',
+        };
+
+        try {
+            console.log(`[API] POST ${BASE_URL}/users/upload-avatar`, file);
+            
+            const response = await fetch(`${BASE_URL}/users/upload-avatar`, {
+                method: 'POST',
+                headers,
+                credentials: 'include',
+                body: formData,
+            });
+
+            console.log(`[API] Response status: ${response.status}`, response);
+
+            if (!response.ok) {
+                let errorMessage = `Upload failed: ${response.statusText}`;
+                try {
+                    const error = await response.json();
+                    errorMessage = error.message || errorMessage;
+                } catch {
+                    // Response wasn't JSON
+                }
+                throw new Error(errorMessage);
+            }
+
+            const data = await response.json();
+            console.log(`[API] Upload response:`, data);
+            
+            return data;
+        } catch (error) {
+            if (error instanceof TypeError) {
+                if (error.message.includes('Failed to fetch')) {
+                    throw new Error(
+                        'Connection failed. Please check if the API server is running at: ' + BASE_URL
+                    );
+                }
+                throw new Error('Network error: ' + error.message);
+            }
+            throw error;
+        }
+    },
+
     delete: async (userId: string, token: string): Promise<{ message: string; data: null }> => {
         return apiCall<{ message: string; data: null }>(
             'DELETE',
