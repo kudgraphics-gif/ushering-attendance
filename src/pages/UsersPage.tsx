@@ -187,6 +187,28 @@ export function UsersPage() {
         }
     };
 
+    const handleResetDeviceId = async (userId: string, userName: string) => {
+        if (!token) {
+            toast.error('Not authenticated');
+            return;
+        }
+
+        // Confirm reset
+        const confirmReset = window.confirm(
+            `Are you sure you want to reset the device ID for ${userName}? They will need to log in again.`
+        );
+
+        if (!confirmReset) return;
+
+        try {
+            await usersAPI.resetDeviceId(userId, token);
+            toast.success(`Device ID reset successfully for ${userName}`);
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Device ID reset failed');
+            console.error(error);
+        }
+    };
+
     return (
         <motion.div
             className="users-page"
@@ -296,6 +318,7 @@ export function UsersPage() {
                         onCheckIn={handleCheckInUser}
                         onViewAttendance={handleViewAttendance}
                         onDelete={handleDeleteUser}
+                        onResetDeviceId={handleResetDeviceId}
                         isAdmin={currentUser?.role === 'Admin'}
                         isCheckingIn={checkingInUser}
                     />

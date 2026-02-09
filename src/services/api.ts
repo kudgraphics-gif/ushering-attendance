@@ -5,6 +5,12 @@ import type {
     CreateEventRequest,
     UpdateEventRequest,
     CheckIntoEventRequest,
+    PaginatedResult,
+    ActivityLogResponse,
+    NewRoster,
+    UpdateRosterRequest,
+    Roster,
+    AttendanceWithUser,
 } from '../types';
 
 const BASE_URL = 'https://api.koinoniaushers.cloud/api/v1';
@@ -22,12 +28,12 @@ async function apiCall<T>(
     };
 
     if (token) {
-       // headers['Authorization'] = `Bearer ${token}`;
+        // headers['Authorization'] = `Bearer ${token}`;
     }
 
     try {
         console.log(`[API] ${method} ${BASE_URL}${endpoint}`, data);
-        
+
         const response = await fetch(`${BASE_URL}${endpoint}`, {
             method,
             headers,
@@ -53,12 +59,12 @@ async function apiCall<T>(
         try {
             const text = await response.text();
             console.log(`[API] Response body: ${text}`);
-            
+
             if (!text) {
                 console.warn(`[API] Empty response body for ${method} ${endpoint}`);
                 return {} as T;
             }
-            
+
             responseData = JSON.parse(text);
         } catch (parseError) {
             console.error(`[API] Failed to parse JSON response:`, parseError);
@@ -165,7 +171,7 @@ export const usersAPI = {
 
         try {
             console.log(`[API] POST ${BASE_URL}/users/upload-avatar`, file);
-            
+
             const response = await fetch(`${BASE_URL}/users/upload-avatar`, {
                 method: 'POST',
                 headers,
@@ -188,7 +194,7 @@ export const usersAPI = {
 
             const data = await response.json();
             console.log(`[API] Upload response:`, data);
-            
+
             return data;
         } catch (error) {
             if (error instanceof TypeError) {
@@ -208,6 +214,15 @@ export const usersAPI = {
             'DELETE',
             `/users/admin/delete/${userId}`,
             undefined,
+            token
+        );
+    },
+
+    resetDeviceId: async (userId: string, token: string): Promise<{ message: string; data: null }> => {
+        return apiCall<{ message: string; data: null }>(
+            'PATCH',
+            `/users/admin/reset-device-id/${userId}`,
+            {},
             token
         );
     },
@@ -291,15 +306,11 @@ export const analyticsAPI = {
 
     getUsersOnDay: async (date: string, token: string): Promise<{
         message: string;
-        status_code: number;
-        data?: {
-            presentees: UserDto[];
-            absentees: UserDto[];
-        };
+        data: AttendanceWithUser[];
     }> => {
         return apiCall(
             'GET',
-            `/analytics/users-on-day?date=${date}`,
+            `/attendance/on-day/${date}`,
             undefined,
             token
         );
@@ -358,5 +369,91 @@ export const usersExportAPI = {
         }
 
         return response.json();
+    },
+};
+
+// Activity Logs APIs
+export interface ActivityLog {
+    id: string;
+    user_id: string;
+    user_name: string;
+    user_email: string | null;
+    user_role: string;
+    first_name: string | null;
+    last_name: string | null;
+    activity_type: string;
+    created_at: string;
+}
+
+export const activityLogsAPI = {
+    getAll: async (page: number = 1, size: number = 10, token: string): Promise<PaginatedResult<ActivityLogResponse>> => {
+        return apiCall<PaginatedResult<ActivityLogResponse>>(
+            'GET',
+            `/logs?page=${page}&size=${size}`,
+            undefined,
+            token
+        );
+    },
+
+    getByUserId: async (userId: string, token: string): Promise<ActivityLogResponse[]> => {
+        return apiCall<ActivityLogResponse[]>(
+            'GET',
+            `/logs/${userId}`,
+            undefined,
+            token
+        );
+    },
+};
+
+// Roster Management APIs
+// Roster interface is imported from ../types
+
+export const rosterAPI = {
+    create: async (payload: NewRoster, token: string): Promise<{ message: string; data: Roster }> => {
+        return apiCall<{ message: string; data: Roster }>(
+            'POST',
+            '/roster/create',
+            payload,
+            token
+        );
+    },
+
+    update: async (payload: UpdateRosterRequest, token: string): Promise<{ message: string; data: Roster }> => {
+        return apiCall<{ message: string; data: Roster }>(
+            'PATCH',
+            '/roster/update',
+            payload,
+            token
+        );
+    },
+
+    getById: async (id: string, token: string): Promise<Roster> => {
+        return apiCall<Roster>(
+            'GET',
+            `/roster/${id}`,
+            undefined,
+            token
+        );
+    },
+
+    getAll: async (token: string): Promise<Roster[]> => {
+        return apiCall<Roster[]>(
+            'GET',
+            '/roster/all',
+            undefined,
+            token
+        );
+    },
+};
+
+// Attendance Revoke API
+export const attendanceRevokeAPI = {
+    revoke: async (attendanceId: string, token: string): Promise<{ message: string; data: null }> => {
+        return apiCall<{ message: string; data: null }>(
+            'DELETE',
+            `/attendance/admin/revoke/${attendanceId}`,
+            undefined,
+            token
+        );
     },
 };

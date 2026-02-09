@@ -154,3 +154,108 @@ export interface AttendanceTrend {
     count: number;
     rate: number;
 }
+// New Data Models
+export interface UserAttendanceDto {
+    id: string;
+    user_id: string;
+    date: string;
+    time_in: string;
+    time_out: string | null;
+    marked_by: string | null;
+    event_id: string | null;
+    attendance_type: AttendanceType;
+    created_at: string;
+    updated_at: string;
+    week_day: string;
+}
+
+export interface AttendanceWithUser {
+    attendance: UserAttendanceDto;
+    user: UserDto;
+}
+
+export type ActivityType =
+    | "UserLogin"
+    | "UserLogout"
+    | "UserCreated"
+    | "UserUpdated"
+    | "UserActivation"
+    | "UserDeactivation"
+    | "UserMarkedAttendance"
+    | "AdminMarkedAttendanceForUser"
+    | "UserImported"
+    | "PasswordChanged"
+    | "DeviceReset"
+    | "EventCreated"
+    | "EventUpdated"
+    | "EventDeleted"
+    | "EventCheckIn"
+    | "RosterCreated"
+    | "RosterUpdated"
+    | "RosterDeleted"
+    | "AttendanceRevoked";
+
+export interface ActivityLog {
+    id: string;
+    user_id: string;
+    activity_type: ActivityType;
+    target_id: string | null;
+    target_type: string | null;
+    details: any;
+    created_at: string;
+}
+
+export interface ActivityLogResponse {
+    id: string;
+    user_id: string;
+    user_name: string;
+    user_email: string | null;
+    user_role: string;
+    first_name: string | null;
+    last_name: string | null;
+    activity_type: ActivityType;
+    created_at: string;
+}
+
+export interface NewRoster {
+    name: string;
+    is_active: boolean;
+    start_date: string;
+    end_date: string;
+    num_for_hall_one: number;
+    num_for_main_hall: number;
+    num_for_gallery: number;
+    num_for_basement: number;
+    num_for_outside: number;
+    year: string;
+}
+
+export interface Roster {
+    id: string;
+    name: string;
+    is_active: boolean;
+    start_date: string;
+    end_date: string;
+    num_for_hall_one: number;
+    num_for_main_hall: number;
+    num_for_gallery: number;
+    num_for_basement: number;
+    num_for_outside: number;
+    year: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface UpdateRosterRequest extends Partial<NewRoster> {
+    id: string;
+}
+
+export interface PaginatedResult<T> {
+    items: T[];
+    metadata: {
+        page: number;
+        size: number;
+        total_items: number;
+        num_pages: number;
+    };
+}

@@ -6,6 +6,8 @@ import { EventsPage } from './pages/EventsPage';
 import { UsersPage } from './pages/UsersPage';
 import { AttendancePage } from './pages/AttendancePage';
 import { SettingsPage } from './pages/SettingsPage';
+import { ActivityLogsPage } from './pages/ActivityLogsPage';
+import { RosterManagementPage } from './pages/RosterManagementPage';
 import { PaymentsPage } from './pages/PaymentsPage';
 import { KoinoniaPage } from './pages/KoinoniaPage';
 import { MainLayout } from './components/layout/MainLayout';
@@ -41,8 +43,16 @@ function App() {
             element={<ProtectedRoute allowedRoles={['Admin']}><AttendancePage /></ProtectedRoute>} 
           />
           <Route 
-            path="/settings" 
-            element={<ProtectedRoute allowedRoles={['Admin']}><SettingsPage /></ProtectedRoute>} 
+            path="/profile" 
+            element={<SettingsPage />} 
+          />
+          <Route 
+            path="/activity-logs" 
+            element={<ProtectedRoute allowedRoles={['Admin']}><ActivityLogsPage /></ProtectedRoute>} 
+          />
+          <Route 
+            path="/roster-management" 
+            element={<ProtectedRoute allowedRoles={['Admin']}><RosterManagementPage /></ProtectedRoute>} 
           />
         </Route>
 

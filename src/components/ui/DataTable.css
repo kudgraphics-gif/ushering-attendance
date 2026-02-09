@@ -144,9 +144,78 @@ html.light .users-table__action-btn {
   border-color: rgba(0, 0, 0, 0.1);
 }
 
+.users-table__action-btn--delete:hover:not(:disabled) {
+  background: rgba(255, 107, 107, 0.2);
+  border-color: rgba(255, 107, 107, 0.3);
+}
+
+html.light .users-table__action-btn {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
 html.light .users-table__action-btn:hover:not(:disabled) {
   background: rgba(0, 0, 0, 0.1);
   border-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Activity Logs Table Styles */
+.activity-logs-table__user-cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.activity-logs-table__user-name {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+.activity-logs-table__user-role {
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs);
+  text-transform: capitalize;
+}
+
+.activity-logs-table__activity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.activity-logs-table__indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.activity-logs-table__actions {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+  justify-content: center;
+}
+
+.activity-logs-table__action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.activity-logs-table__action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-primary);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 @media (max-width: 1024px) {

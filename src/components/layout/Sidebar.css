@@ -12,6 +12,7 @@
   /* Use CSS variables that respond to light/dark mode */
   background: var(--color-bg-secondary);
   color: var(--color-text-primary);
+  overflow-y: auto;
 }
 
 /* ... (Keep your existing logo and link styles) ... */

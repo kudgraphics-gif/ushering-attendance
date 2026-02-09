@@ -4,10 +4,12 @@ import {
     Calendar,
     Users,
     ClipboardCheck,
-    Settings,
+    User,
     LogOut,
     DollarSign,
-    Music
+    Music,
+    Eye,
+    List
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import clsx from 'clsx';
@@ -20,7 +22,9 @@ const adminNavItems = [
     { icon: ClipboardCheck, label: 'Attendance', path: '/attendance' },
     { icon: DollarSign, label: 'Payments', path: '/payments' },
     { icon: Music, label: 'Koinonia', path: '/koinonia' },
-    { icon: Settings, label: 'Settings', path: '/settings' },
+    { icon: Eye, label: 'Activity Logs', path: '/activity-logs' },
+    { icon: List, label: 'Roster Management', path: '/roster-management' },
+    { icon: User, label: 'Profile', path: '/profile' },
 ];
 
 const userNavItems = [
@@ -28,7 +32,7 @@ const userNavItems = [
     { icon: Calendar, label: 'Events', path: '/events' },
     { icon: DollarSign, label: 'Payments', path: '/payments' },
     { icon: Music, label: 'Koinonia', path: '/koinonia' },
-    { icon: Settings, label: 'Settings', path: '/settings' },
+    { icon: User, label: 'Profile', path: '/profile' },
 ];
 
 interface SidebarProps {

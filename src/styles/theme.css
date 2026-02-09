@@ -30,6 +30,14 @@
   --color-accent-orange: #DAA520;
   --color-accent-purple: #D4AF37; /* Fallback to Gold */
   
+  /* Status colors */
+  --color-success: #10B981;
+  --color-error: #EF4444;
+  --color-warning: #F59E0B;
+  --color-info: #3B82F6;
+  --color-secondary: #8B5CF6;
+  --color-primary: #D4AF37;
+  
   /* Gradients */
   --gradient-primary: linear-gradient(135deg, #D4AF37 0%, #AA8C2C 100%);
   --gradient-success: linear-gradient(135deg, #2E8B57 0%, #3CB371 100%);
