@@ -115,7 +115,7 @@ export function AttendancePage() {
         }
 
         navigator.geolocation.getCurrentPosition(
-            async (position) => {
+            async () => {
                 toast.success("Location check-in successful!");
                 setCheckInLoading(false);
             },

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
-import { ArrowLeft, Download, ChevronDown, User, MapPin } from 'lucide-react';
+import { ArrowLeft, Download, ChevronDown, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';

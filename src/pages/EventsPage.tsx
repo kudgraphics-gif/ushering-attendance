@@ -76,7 +76,6 @@ export function EventsPage() {
         }
     };
 
-    const now = new Date();
     const filteredEvents = events.filter(event => {
         const eventDate = new Date(event.date);
         // Normalize times for comparison

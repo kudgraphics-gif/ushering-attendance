@@ -3,7 +3,7 @@ import { useAuthStore } from '../stores/authStore';
 import { analyticsAPI, eventsAPI, attendanceAPI } from '../services/api';
 import type { Event, UserDto } from '../types';
 import toast from 'react-hot-toast';
-import { MapPin, Calendar, CheckCircle2, AlertCircle, User, Info } from 'lucide-react';
+import { MapPin, Calendar, CheckCircle2, User, Info } from 'lucide-react';
 import { getDeviceId, recordDeviceCheckIn, hasDeviceCheckedInToday } from '../utils/deviceId';
 import './UserDashboard.css';
 

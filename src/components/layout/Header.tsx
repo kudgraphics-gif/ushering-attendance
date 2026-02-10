@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { Search, Menu, RotateCcw, MapPin } from 'lucide-react'; // Added MapPin
+import { Search, Menu, MapPin } from 'lucide-react'; // Added MapPin
 import { useAuthStore } from '../../stores/authStore';
 import { Avatar } from '../ui/Avatar';
 import { ThemeToggle } from '../ui/ThemeToggle';
-import toast from 'react-hot-toast';
 import './Header.css';
 
 interface HeaderProps {
@@ -13,7 +12,7 @@ interface HeaderProps {
 export function Header({ onMenuClick }: HeaderProps) {
     const user = useAuthStore((state) => state.user);
     const [searchQuery, setSearchQuery] = useState('');
-    const [isRefreshing, setIsRefreshing] = useState(false);
+    
 
 
     // Helper to get the display string
