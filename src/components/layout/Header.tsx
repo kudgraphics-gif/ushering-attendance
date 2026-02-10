@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Menu, RotateCcw } from 'lucide-react';
+import { Search, Menu, RotateCcw, MapPin } from 'lucide-react'; // Added MapPin
 import { useAuthStore } from '../../stores/authStore';
 import { Avatar } from '../ui/Avatar';
 import { ThemeToggle } from '../ui/ThemeToggle';
@@ -12,21 +12,24 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
     const user = useAuthStore((state) => state.user);
-    const refresh = useAuthStore((state) => state.refresh);
     const [searchQuery, setSearchQuery] = useState('');
     const [isRefreshing, setIsRefreshing] = useState(false);
 
-    const handleRefresh = async () => {
-        setIsRefreshing(true);
-        try {
-            await refresh();
-            toast.success('Session refreshed');
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : 'Refresh failed');
-        } finally {
-            setIsRefreshing(false);
-        }
+
+    // Helper to get the display string
+    const getRosterDisplay = () => {
+        if (!user) return '';
+        // Access properties directly (assuming they exist on the user object based on API response)
+        const hall = (user as any).current_roster_hall;
+        const allocation = (user as any).current_roster_allocation;
+
+        if (!hall) return 'Pending';
+        if (allocation) return `${hall} - ${allocation}`;
+        return hall;
     };
+
+    const rosterStatus = getRosterDisplay();
+    const isPending = rosterStatus === 'Pending';
 
     return (
         <header className="header glass-md">
@@ -47,25 +50,29 @@ export function Header({ onMenuClick }: HeaderProps) {
 
             <div className="header__actions">
                 <ThemeToggle />
-                <button 
-                    className="header__notification-btn"
-                    onClick={handleRefresh}
-                    disabled={isRefreshing}
-                    title="Refresh session"
-                >
-                    <RotateCcw size={20} className={isRefreshing ? 'header__refresh-spinning' : ''} />
-                </button>
+            
 
                 {user && (
-                    <div className="header__user">
-                        <Avatar src={user.avatar_url} alt={user.first_name} size="md" />
-                        <div className="header__user-info">
-                            <span className="header__user-name">
-                                {user.first_name} {user.last_name}
-                            </span>
-                            <span className="header__user-role">{user.role}</span>
+                    <>
+                        {/* Roster Status Badge */}
+                        <div 
+                            className={`header__roster-status ${isPending ? 'header__roster-status--pending' : 'header__roster-status--active'}`}
+                            title="Current Roster Allocation"
+                        >
+                            <MapPin size={14} />
+                            <span>{rosterStatus}</span>
                         </div>
-                    </div>
+
+                        <div className="header__user">
+                            <Avatar src={user.avatar_url} alt={user.first_name} size="md" />
+                            <div className="header__user-info">
+                                <span className="header__user-name">
+                                    {user.first_name} {user.last_name}
+                                </span>
+                                <span className="header__user-role">{user.role}</span>
+                            </div>
+                        </div>
+                    </>
                 )}
             </div>
         </header>

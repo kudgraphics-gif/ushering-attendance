@@ -3,7 +3,7 @@ import { useAuthStore } from '../stores/authStore';
 import { analyticsAPI, eventsAPI, attendanceAPI } from '../services/api';
 import type { Event, UserDto } from '../types';
 import toast from 'react-hot-toast';
-import { MapPin, Calendar, CheckCircle2 } from 'lucide-react';
+import { MapPin, Calendar, CheckCircle2, AlertCircle, User, Info } from 'lucide-react';
 import { getDeviceId, recordDeviceCheckIn, hasDeviceCheckedInToday } from '../utils/deviceId';
 import './UserDashboard.css';
 
@@ -152,10 +152,10 @@ export function UserDashboardPage() {
                 toast.error(message);
             },
            {
-    enableHighAccuracy: false,
-    timeout: 30000,       // Give the laptop 30 seconds to find WiFi networks
-    maximumAge: Infinity  // Accept a cached location if available
-}
+                enableHighAccuracy: false,
+                timeout: 30000,       // Give the laptop 30 seconds to find WiFi networks
+                maximumAge: Infinity  // Accept a cached location if available
+            }
         );
     };
 
@@ -176,6 +176,11 @@ export function UserDashboardPage() {
         : 0;
     const daysPresent = attendanceData?.summary?.days_present || 0;
     const totalDays = attendanceData?.summary?.total_days || 0;
+
+    // Roster Info Calculation
+    const rosterHall = (user as any)?.current_roster_hall;
+    const rosterAllocation = (user as any)?.current_roster_allocation;
+    const isRosterActive = !!rosterHall;
 
     return (
         <div className="user-dashboard">
@@ -251,6 +256,40 @@ export function UserDashboardPage() {
                     </div>
                 </div>
             )}
+
+            {/* NEW SECTION: Roster Information */}
+            <div className="user-dashboard__section">
+                <h2>Roster Assignment</h2>
+                <div className={`roster-card ${isRosterActive ? 'roster-card--active' : 'roster-card--pending'}`}>
+                    <div className="roster-card__header">
+                        <div className="roster-card__icon">
+                            {isRosterActive ? <MapPin size={24} /> : <Info size={24} />}
+                        </div>
+                        <div className="roster-card__status">
+                            {isRosterActive ? 'Active' : 'Pending'}
+                        </div>
+                    </div>
+                    
+                    <div className="roster-card__content">
+                        {isRosterActive ? (
+                            <>
+                                <div className="roster-card__hall">{rosterHall}</div>
+                                <div className="roster-card__allocation">
+                                    <User size={14} style={{ marginRight: '6px' }}/>
+                                    {rosterAllocation || 'Member'}
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className="roster-card__pending-title">No Hall Assigned</div>
+                                <div className="roster-card__pending-text">
+                                    You have not been assigned to a roster yet. Please check back later.
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            </div>
 
             {/* Recent Check-ins */}
             {attendanceData?.history && attendanceData.history.length > 0 && (

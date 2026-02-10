@@ -334,6 +334,23 @@ export const analyticsAPI = {
             token
         );
     },
+    
+    getEventReport: async (eventId: string, token: string): Promise<{
+        message: string;
+        data: {
+            total_attendees: number;
+            eligible_attendees_count: number;
+            attendees: any[];
+            absentees: any[];
+        };
+    }> => {
+        return apiCall(
+            'GET',
+            `/analytics/event-report/${eventId}`,
+            undefined,
+            token
+        );
+    },
 };
 
 // Users import/export APIs
@@ -407,6 +424,14 @@ export const activityLogsAPI = {
 
 // Roster Management APIs
 // Roster interface is imported from ../types
+export interface RosterAssignment {
+    id: string;
+    user_id: string;
+    first_name: string;
+    last_name: string;
+    reg_no: string;
+    hall: string;
+}
 
 export const rosterAPI = {
     create: async (payload: NewRoster, token: string): Promise<{ message: string; data: Roster }> => {
@@ -443,6 +468,56 @@ export const rosterAPI = {
             undefined,
             token
         );
+    },
+
+    activate: async (id: string, token: string): Promise<{ message: string }> => {
+        return apiCall<{ message: string }>(
+            'POST',
+            `/roster/activate/${id}`,
+            undefined,
+            token
+        );
+    },
+
+    getAssignments: async (id: string, token: string): Promise<RosterAssignment[]> => {
+        return apiCall<RosterAssignment[]>(
+            'GET',
+            `/roster/${id}/assignments`,
+            undefined,
+            token
+        );
+    },
+
+    exportCombined: async (id: string, _token: string): Promise<Blob> => {
+        const response = await fetch(`${BASE_URL}/roster/export/${id}`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                'Accept': 'text/csv',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Export failed: ${response.statusText}`);
+        }
+
+        return response.blob();
+    },
+
+    exportHall: async (id: string, hall: string, _token: string): Promise<Blob> => {
+        const response = await fetch(`${BASE_URL}/roster/export/${id}/hall?hall=${hall}`, {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                'Accept': 'text/csv',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Export failed: ${response.statusText}`);
+        }
+
+        return response.blob();
     },
 };
 

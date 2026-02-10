@@ -8,6 +8,7 @@ import { AttendancePage } from './pages/AttendancePage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ActivityLogsPage } from './pages/ActivityLogsPage';
 import { RosterManagementPage } from './pages/RosterManagementPage';
+import { RosterAssignmentsPage } from './pages/RosterAssignmentPage'; // New Import
 import { PaymentsPage } from './pages/PaymentsPage';
 import { KoinoniaPage } from './pages/KoinoniaPage';
 import { MainLayout } from './components/layout/MainLayout';
@@ -53,6 +54,11 @@ function App() {
           <Route 
             path="/roster-management" 
             element={<ProtectedRoute allowedRoles={['Admin']}><RosterManagementPage /></ProtectedRoute>} 
+          />
+          {/* New Route for Roster Assignments */}
+          <Route 
+            path="/roster/:id" 
+            element={<ProtectedRoute allowedRoles={['Admin']}><RosterAssignmentsPage /></ProtectedRoute>} 
           />
         </Route>
 

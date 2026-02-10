@@ -63,6 +63,40 @@
   color: var(--color-text-tertiary);
 }
 
+.header__roster-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.5px;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+}
+
+.header__roster-status--active {
+  background: rgba(16, 185, 129, 0.1); /* Green tint */
+  color: var(--color-success);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.header__roster-status--active svg {
+  color: var(--color-success);
+}
+
+.header__roster-status--pending {
+  background: rgba(245, 158, 11, 0.1); /* Orange/Warning tint */
+  color: var(--color-warning);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.header__roster-status--pending svg {
+  color: var(--color-warning);
+}
+
 .header__actions {
   display: flex;
   align-items: center;

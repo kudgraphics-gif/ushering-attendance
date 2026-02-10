@@ -7,6 +7,115 @@
     margin: 0 auto;
 }
 
+.roster-card {
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Active State */
+.roster-card--active {
+    background: linear-gradient(135deg, rgba(52, 199, 89, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+    border-color: rgba(52, 199, 89, 0.2);
+}
+
+.roster-card--active .roster-card__icon {
+    color: #34C759;
+    background: rgba(52, 199, 89, 0.15);
+}
+
+.roster-card--active .roster-card__status {
+    background: #34C759;
+    color: white;
+}
+
+/* Pending State */
+.roster-card--pending {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+    border-color: rgba(245, 158, 11, 0.2);
+}
+
+.roster-card--pending .roster-card__icon {
+    color: #F59E0B;
+    background: rgba(245, 158, 11, 0.15);
+}
+
+.roster-card--pending .roster-card__status {
+    background: rgba(245, 158, 11, 0.2);
+    color: #F59E0B;
+}
+
+/* Roster Card Inner Layout */
+.roster-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.roster-card__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.roster-card__status {
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.roster-card__content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.roster-card__hall {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.roster-card__allocation {
+    display: flex;
+    align-items: center;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.roster-card__pending-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.roster-card__pending-text {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.user-dashboard__section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
 /* Header */
 .user-dashboard__header {
     text-align: center;

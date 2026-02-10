@@ -1,7 +1,17 @@
 import { useState, useEffect } from 'react';
 import DataTable from 'react-data-table-component';
 import { motion } from 'framer-motion';
-import { Users, CheckCircle2, AlertCircle, Trash2, MapPin, Download } from 'lucide-react';
+import { 
+    Users, 
+    CheckCircle2, 
+    AlertCircle, 
+    Trash2, 
+    MapPin, 
+    Download, 
+    Clock, 
+    Calendar,
+    Activity 
+} from 'lucide-react';
 import { format } from 'date-fns';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import toast from 'react-hot-toast';
@@ -51,11 +61,14 @@ export function AttendancePage() {
             const attendees = attendanceResponse.data || [];
             const allUsers = usersResponse;
 
-            // Map attendees to a more usable format
+            // Map attendees to a more usable format including the new fields
             const presenteesList = attendees.map((record: any) => ({
                 ...record.user,
                 attendance_id: record.attendance.id,
-                attendance_time_in: record.attendance.time_in
+                attendance_time_in: record.attendance.time_in,
+                attendance_date: record.attendance.date,
+                attendance_weekday: record.attendance.week_day,
+                attendance_type: record.attendance.attendance_type
             }));
 
             // Calculate absentees
@@ -82,7 +95,7 @@ export function AttendancePage() {
         try {
             await attendanceRevokeAPI.revoke(attendanceId, token);
             setPresentees(prev => prev.filter(p => p.attendance_id !== attendanceId));
-            // Add to absentees list (simplified, ideally re-fetch)
+            // Trigger a refresh to ensure consistency
             fetchAttendanceData();
             toast.success(`Attendance revoked for ${userName}`);
         } catch (error) {
@@ -103,8 +116,6 @@ export function AttendancePage() {
 
         navigator.geolocation.getCurrentPosition(
             async (position) => {
-                // This part would typically call an API to check in based on location
-                // But for now we just show success as per previous logic or placeholder
                 toast.success("Location check-in successful!");
                 setCheckInLoading(false);
             },
@@ -149,6 +160,11 @@ export function AttendancePage() {
         (item.reg_no && item.reg_no.toLowerCase().includes(filterText.toLowerCase()))
     );
 
+    // Sort by most recent time_in for the Activity Feed
+    const recentActivities = [...filteredPresentees].sort((a, b) => {
+        return new Date(b.attendance_time_in).getTime() - new Date(a.attendance_time_in).getTime();
+    });
+
     const pieData = attendanceRates ? [
         { name: 'Present', value: presentees.length, color: '#10B981' }, // Green
         { name: 'Absent', value: absentees.length, color: '#EF4444' },   // Red
@@ -165,12 +181,17 @@ export function AttendancePage() {
                 backgroundColor: 'rgba(255, 255, 255, 0.05)',
                 color: 'var(--color-text-secondary)',
                 borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                fontSize: '13px',
+                fontWeight: '600',
+                textTransform: 'uppercase' as const,
+                letterSpacing: '0.5px',
             },
         },
         rows: {
             style: {
                 backgroundColor: 'transparent',
                 color: 'var(--color-text-primary)',
+                minHeight: '60px',
                 '&:not(:last-of-type)': {
                     borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
                 },
@@ -187,6 +208,62 @@ export function AttendancePage() {
             },
         },
     };
+
+    // Columns for the new Recent Activity Table
+    const recentActivityColumns = [
+        {
+            name: 'User Details',
+            selector: (row: any) => row.last_name,
+            cell: (row: any) => (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', padding: '8px 0' }}>
+                    <span style={{ fontWeight: 600, fontSize: '14px' }}>{row.first_name} {row.last_name}</span>
+                    <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>{row.reg_no}</span>
+                </div>
+            ),
+            width: '250px',
+        },
+        {
+            name: 'Check-in Time',
+            selector: (row: any) => row.attendance_time_in,
+            cell: (row: any) => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Clock size={16} className="text-secondary" />
+                    <span>{format(new Date(row.attendance_time_in), 'h:mm a')}</span>
+                </div>
+            ),
+            sortable: true,
+            width: '180px',
+        },
+        {
+            name: 'Day',
+            selector: (row: any) => row.attendance_date,
+            cell: (row: any) => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-secondary)' }}>
+                    <Calendar size={16} />
+                    <span>{row.attendance_weekday}, {format(new Date(row.attendance_date), 'MMM d')}</span>
+                </div>
+            ),
+            width: '200px',
+        },
+        {
+            name: 'Type',
+            selector: (row: any) => row.attendance_type,
+            cell: (row: any) => (
+                <span style={{
+                    padding: '4px 12px',
+                    borderRadius: '99px',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    backgroundColor: row.attendance_type === 'Onsite' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)',
+                    color: row.attendance_type === 'Onsite' ? '#10B981' : '#3B82F6',
+                    border: row.attendance_type === 'Onsite' ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid rgba(59, 130, 246, 0.2)'
+                }}>
+                    {row.attendance_type}
+                </span>
+            ),
+            width: '150px',
+        }
+    ];
 
     return (
         <motion.div
@@ -295,11 +372,53 @@ export function AttendancePage() {
                         </Card>
                     </div>
 
-                    {/* Check Attendance by Date */}
+                    {/* NEW SECTION: Recent Activity Feed */}
+                    <div style={{ marginBottom: 'var(--space-2xl)' }}>
+                         <Card glass className="attendance-by-date-card">
+                            <div className="attendance-by-date-card__header" style={{ borderBottom: 'none', paddingBottom: '0' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <div style={{ padding: '10px', backgroundColor: 'rgba(212, 175, 55, 0.1)', borderRadius: '12px', color: 'var(--color-primary)' }}>
+                                        <Activity size={24} />
+                                    </div>
+                                    <div>
+                                        <h2 className="attendance-by-date-card__title" style={{ margin: 0, fontSize: '20px' }}>Recent Activity</h2>
+                                        <p style={{ color: 'var(--color-text-secondary)', fontSize: '14px', marginTop: '4px' }}>
+                                            Live check-in feed for {format(new Date(selectedDate), 'EEEE, MMMM do, yyyy')}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style={{ marginTop: '20px' }}>
+                                {loadingData ? (
+                                    <div className="attendance-page__loading">
+                                        <p>Loading activity feed...</p>
+                                    </div>
+                                ) : recentActivities.length === 0 ? (
+                                    <div className="attendance-page__empty">
+                                        <Clock size={48} />
+                                        <p>No activity recorded yet for this date.</p>
+                                    </div>
+                                ) : (
+                                    <DataTable
+                                        columns={recentActivityColumns}
+                                        data={recentActivities}
+                                        pagination
+                                        paginationPerPage={5}
+                                        paginationRowsPerPageOptions={[5, 10, 20]}
+                                        customStyles={customTableStyles}
+                                        theme="dark"
+                                    />
+                                )}
+                            </div>
+                        </Card>
+                    </div>
+
+                    {/* Check Attendance by Date (Management) */}
                     <Card glass className="attendance-by-date-card">
                         <div className="attendance-by-date-card__header">
                             <div>
-                                <h2 className="attendance-by-date-card__title">Check Attendance by Date</h2>
+                                <h2 className="attendance-by-date-card__title">Attendance Management</h2>
                                 <div className="attendance-tabs">
                                     <button
                                         className={`attendance-tab ${activeTab === 'presentees' ? 'attendance-tab--active' : ''}`}
@@ -359,14 +478,16 @@ export function AttendancePage() {
                                             width: '120px',
                                         },
                                         {
+                                            name: 'Time In',
+                                            selector: (row: any) => row.attendance_time_in,
+                                            cell: (row: any) => format(new Date(row.attendance_time_in), 'h:mm a'),
+                                            sortable: true,
+                                            width: '120px',
+                                        },
+                                        {
                                             name: 'Email',
                                             selector: (row: any) => row.email,
                                             width: '220px',
-                                        },
-                                        {
-                                            name: 'Phone',
-                                            selector: (row: any) => row.phone || 'N/A',
-                                            width: '140px',
                                         },
                                         {
                                             name: 'Action',
@@ -385,15 +506,8 @@ export function AttendancePage() {
                                     data={filteredPresentees}
                                     pagination
                                     paginationPerPage={rowsPerPage}
-                                    paginationComponentOptions={{
-                                        rowsPerPageText: 'Rows per page:',
-                                        rangeSeparatorText: 'of',
-                                        noRowsPerPage: false,
-                                        selectAllRowsItem: false,
-                                        selectAllRowsItemText: 'All',
-                                    }}
                                     customStyles={customTableStyles}
-                                    theme="dark" // Assuming dark theme default
+                                    theme="dark"
                                 />
                             )
                         ) : filteredAbsentees.length === 0 ? (
@@ -429,13 +543,6 @@ export function AttendancePage() {
                                 data={filteredAbsentees}
                                 pagination
                                 paginationPerPage={rowsPerPage}
-                                paginationComponentOptions={{
-                                    rowsPerPageText: 'Rows per page:',
-                                    rangeSeparatorText: 'of',
-                                    noRowsPerPage: false,
-                                    selectAllRowsItem: false,
-                                    selectAllRowsItemText: 'All',
-                                }}
                                 customStyles={customTableStyles}
                                 theme="dark"
                             />

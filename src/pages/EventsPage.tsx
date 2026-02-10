@@ -1,24 +1,47 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, MapPin, Plus, Edit2, Trash2, AlertCircle } from 'lucide-react';
+import { 
+    Calendar, 
+    Clock, 
+    MapPin, 
+    Plus, 
+    Edit2, 
+    Trash2, 
+    AlertCircle, 
+    CheckCircle2, 
+    Hourglass, 
+    BarChart2 
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { EventFormModal } from '../components/ui/EventFormModal';
+import { EventStatsModal } from '../components/ui/EventStatsModal';
 import { eventsAPI } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import type { Event, CreateEventRequest, UpdateEventRequest } from '../types';
-import { format } from 'date-fns';
+import { format, isSameDay } from 'date-fns';
 import './EventsPage.css';
 
 export function EventsPage() {
     const [activeTab, setActiveTab] = useState<'upcoming' | 'past' | 'all'>('upcoming');
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(false);
+    
+    // Form Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState<Event | undefined>();
     const [formLoading, setFormLoading] = useState(false);
+    
+    // Stats Modal State
+    const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
+    const [statsEventId, setStatsEventId] = useState<string | null>(null);
+    const [statsEventTitle, setStatsEventTitle] = useState('');
+
+    // Check-in State
+    const [checkInLoading, setCheckInLoading] = useState<string | null>(null);
+    
     const { token, user } = useAuthStore();
     const isAdmin = user?.role === 'Admin';
 
@@ -56,8 +79,13 @@ export function EventsPage() {
     const now = new Date();
     const filteredEvents = events.filter(event => {
         const eventDate = new Date(event.date);
-        if (activeTab === 'upcoming') return eventDate >= now;
-        if (activeTab === 'past') return eventDate < now;
+        // Normalize times for comparison
+        eventDate.setHours(0, 0, 0, 0);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (activeTab === 'upcoming') return eventDate >= today;
+        if (activeTab === 'past') return eventDate < today;
         return true;
     });
 
@@ -83,6 +111,53 @@ export function EventsPage() {
         }
     };
 
+    const handleStatsClick = (event: Event) => {
+        setStatsEventId(event.id);
+        setStatsEventTitle(event.title);
+        setIsStatsModalOpen(true);
+    };
+
+    const handleCheckIn = async (event: Event) => {
+        if (!token || !user) return;
+        
+        setCheckInLoading(event.id);
+
+        if (!navigator.geolocation) {
+            toast.error("Geolocation is not supported by your browser");
+            setCheckInLoading(null);
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                try {
+                    const payload = {
+                        event_id: event.id,
+                        user_id: user.id,
+                        attendance_type: 'Onsite',
+                        location: {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        }
+                    };
+
+                    await eventsAPI.checkIn(payload, token);
+                    toast.success(`Checked in to ${event.title} successfully!`);
+                } catch (error) {
+                    console.error(error);
+                    toast.error(error instanceof Error ? error.message : "Failed to check in");
+                } finally {
+                    setCheckInLoading(null);
+                }
+            },
+            (error) => {
+                console.error(error);
+                toast.error("Unable to retrieve location. Location access is required for check-in.");
+                setCheckInLoading(null);
+            }
+        );
+    };
+
     const handleFormSubmit = async (data: CreateEventRequest | UpdateEventRequest) => {
         if (!token) {
             toast.error('Not authenticated');
@@ -102,6 +177,7 @@ export function EventsPage() {
                 setEvents([...events, created]);
                 toast.success('Event created successfully');
             }
+            setIsModalOpen(false); // Close modal on success
         } catch (error) {
             toast.error(error instanceof Error ? error.message : 'Operation failed');
         } finally {
@@ -171,6 +247,9 @@ export function EventsPage() {
                             index={index}
                             onEdit={handleEditClick}
                             onDelete={handleDeleteClick}
+                            onCheckIn={handleCheckIn}
+                            onViewStats={handleStatsClick}
+                            checkInLoading={checkInLoading === event.id}
                             isAdmin={isAdmin}
                         />
                     ))}
@@ -184,6 +263,13 @@ export function EventsPage() {
                 event={selectedEvent}
                 loading={formLoading}
             />
+
+            <EventStatsModal 
+                isOpen={isStatsModalOpen}
+                onClose={() => setIsStatsModalOpen(false)}
+                eventId={statsEventId}
+                eventTitle={statsEventTitle}
+            />
         </motion.div>
     );
 }
@@ -193,14 +279,41 @@ function EventCard({
     index,
     onEdit,
     onDelete,
+    onCheckIn,
+    onViewStats,
+    checkInLoading,
     isAdmin = false,
 }: {
     event: Event;
     index: number;
     onEdit: (event: Event) => void;
     onDelete: (event: Event) => void;
+    onCheckIn: (event: Event) => void;
+    onViewStats: (event: Event) => void;
+    checkInLoading: boolean;
     isAdmin?: boolean;
 }) {
+    // --- Time & Logic ---
+    const now = new Date();
+    
+    // Parse Event Date (e.g. "2026-02-14")
+    const eventDate = new Date(event.date); 
+    const isToday = isSameDay(eventDate, now);
+
+    // Parse Event Time (e.g. "08:00:00")
+    // Note: 'date-fns' or manual parsing ensures local time consistency
+    const [hours, minutes] = event.time.split(':').map(Number);
+    const eventDateTime = new Date(eventDate);
+    eventDateTime.setHours(hours, minutes, 0, 0);
+
+    // Allow check-in 1 hour before event start
+    const checkInOpenTime = new Date(eventDateTime.getTime() - 60 * 60 * 1000); // 1 hour buffer
+
+    // Button Logic:
+    // 1. Must be the correct day
+    // 2. Current time must be past the (start time - 1 hour)
+    const canCheckIn = isToday && now >= checkInOpenTime;
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -233,28 +346,72 @@ function EventCard({
                         <MapPin size={16} />
                         <span>{event.location}</span>
                     </div>
+                    {event.grace_period_in_minutes > 0 && (
+                        <div className="event-card__detail" title="Grace Period">
+                            <Hourglass size={16} />
+                            <span>{event.grace_period_in_minutes} mins grace</span>
+                        </div>
+                    )}
                 </div>
 
-                {isAdmin && (
-                    <div className="event-card__actions">
+                <div className="event-card__actions" style={{ marginTop: 'var(--space-md)' }}>
+                    {/* Check In Button Logic */}
+                    {canCheckIn ? (
+                        <Button
+                            variant="primary"
+                            size="sm"
+                            icon={<CheckCircle2 size={16} />}
+                            onClick={() => onCheckIn(event)}
+                            loading={checkInLoading}
+                            className="w-full"
+                            style={{ flex: 1 }}
+                        >
+                            Check In
+                        </Button>
+                    ) : isToday ? (
+                        // Show disabled state if it's today but too early
                         <Button
                             variant="secondary"
                             size="sm"
-                            icon={<Edit2 size={16} />}
-                            onClick={() => onEdit(event)}
+                            disabled
+                            className="w-full"
+                            style={{ flex: 1, opacity: 0.6, cursor: 'not-allowed' }}
                         >
-                            Edit
+                            Opens at {format(checkInOpenTime, 'h:mm a')}
                         </Button>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            icon={<Trash2 size={16} />}
-                            onClick={() => onDelete(event)}
-                        >
-                            Delete
-                        </Button>
-                    </div>
-                )}
+                    ) : null}
+
+                    {/* Admin Actions */}
+                    {isAdmin && (
+                        <>
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                icon={<BarChart2 size={16} />}
+                                onClick={() => onViewStats(event)}
+                                title="View Stats"
+                            >
+                                Stats
+                            </Button>
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                icon={<Edit2 size={16} />}
+                                onClick={() => onEdit(event)}
+                            >
+                                Edit
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                icon={<Trash2 size={16} />}
+                                onClick={() => onDelete(event)}
+                            >
+                                Delete
+                            </Button>
+                        </>
+                    )}
+                </div>
             </Card>
         </motion.div>
     );

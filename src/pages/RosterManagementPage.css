@@ -81,6 +81,7 @@
     gap: var(--space-lg);
     transition: all var(--transition-base);
     height: 100%;
+    position: relative; /* Added relative positioning */
 }
 
 .roster-card:hover {
@@ -171,7 +172,10 @@
 
 .roster-card__footer {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between; /* Pushes actions to left, date to right */
+    align-items: center; /* Vertically align them */
+    margin-top: auto; /* Pushes footer to the bottom of the card */
+    padding-top: var(--space-md); /* Add a little breathing room */
 }
 
 .roster-card__created {
