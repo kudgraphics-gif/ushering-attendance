@@ -461,6 +461,15 @@ export const rosterAPI = {
         );
     },
 
+    delete: async (id: string, token: string): Promise<{ message: string; data: null }> => {
+        return apiCall<{ message: string; data: null }>(
+            'DELETE',
+            `/roster/${id}`,
+            undefined,
+            token
+        );
+    },
+
     getAll: async (token: string): Promise<Roster[]> => {
         return apiCall<Roster[]>(
             'GET',

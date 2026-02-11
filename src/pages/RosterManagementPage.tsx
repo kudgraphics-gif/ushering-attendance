@@ -153,10 +153,15 @@ export function RosterManagementPage() {
 
         setLoading(true);
         try {
+            // Add the API call here
+            await rosterAPI.delete(roster.id, token);
+            
+            // If successful, remove it from the UI
             setRosters(rosters.filter(r => r.id !== roster.id));
             toast.success('Roster deleted successfully');
         } catch (error) {
-            toast.error('Failed to delete roster');
+            toast.error(error instanceof Error ? error.message : 'Failed to delete roster');
+            console.error(error);
         } finally {
             setLoading(false);
         }
