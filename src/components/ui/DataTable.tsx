@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Avatar } from './Avatar';
 import { Badge } from './Badge';
-import { LogIn, Trash2, Eye, RotateCcw } from 'lucide-react';
+import { LogIn, Trash2, Eye, RotateCcw, Edit } from 'lucide-react';
 import type { UserDto, ActivityLogResponse } from '../../types';
 import './DataTable.css';
 
@@ -157,6 +157,14 @@ export function UsersTable({
                             >
                                 <Eye size={18} />
                             </button>
+                            <button
+                                className="users-table__action-btn"
+                                title="Edit User"
+                                onClick={() => onEdit?.(user)}
+                            >
+                                <Edit size={18} />
+                            </button>
+                            
                             <button
                                 className="users-table__action-btn"
                                 title="Reset Device ID"
