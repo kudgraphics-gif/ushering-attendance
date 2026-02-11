@@ -38,7 +38,7 @@ export function ProfileCompletionPopup() {
         setIsVisible(false);
         const today = new Date().toDateString();
         localStorage.setItem('profile-popup-dismissed', today);
-        window.location.href = '/settings';
+        window.location.href = '/profile';
     };
 
     if (!user || user.role === 'Admin') {
@@ -53,7 +53,7 @@ export function ProfileCompletionPopup() {
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.3 }}
+                    transition={{ duration: 0.9 }}
                 >
                     <div className="profile-completion-popup__content">
                         <div className="profile-completion-popup__icon">

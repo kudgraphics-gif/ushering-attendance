@@ -12,7 +12,7 @@ import {
     Calendar,
     Activity 
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import toast from 'react-hot-toast';
 
@@ -64,15 +64,15 @@ export function AttendancePage() {
             // Map attendees to a more usable format including the new fields
             const presenteesList = attendees.map((record: any) => ({
                 ...record.user,
-                attendance_id: record.attendance.id,
-                attendance_time_in: record.attendance.time_in,
-                attendance_date: record.attendance.date,
-                attendance_weekday: record.attendance.week_day,
-                attendance_type: record.attendance.attendance_type
+                attendance_id: record.attendance?.id,
+                attendance_time_in: record.attendance?.time_in,
+                attendance_date: record.attendance?.date,
+                attendance_weekday: record.attendance?.week_day,
+                attendance_type: record.attendance?.attendance_type
             }));
 
             // Calculate absentees
-            const presentUserIds = new Set(attendees.map((a: any) => a.user.id));
+            const presentUserIds = new Set(attendees.map((a: any) => a.user?.id));
             const absenteesList = allUsers.filter((u: any) => !presentUserIds.has(u.id));
 
             setPresentees(presenteesList);
@@ -86,7 +86,7 @@ export function AttendancePage() {
     };
 
     const handleRevokeAttendance = async (attendanceId: string, userName: string) => {
-        if (!token) return;
+        if (!token || !attendanceId) return;
 
         if (!window.confirm(`Are you sure you want to revoke attendance for ${userName}?`)) {
             return;
@@ -160,9 +160,11 @@ export function AttendancePage() {
         (item.reg_no && item.reg_no.toLowerCase().includes(filterText.toLowerCase()))
     );
 
-    // Sort by most recent time_in for the Activity Feed
+    // Sort by most recent time_in for the Activity Feed with safety check
     const recentActivities = [...filteredPresentees].sort((a, b) => {
-        return new Date(b.attendance_time_in).getTime() - new Date(a.attendance_time_in).getTime();
+        const timeA = a.attendance_time_in ? new Date(a.attendance_time_in).getTime() : 0;
+        const timeB = b.attendance_time_in ? new Date(b.attendance_time_in).getTime() : 0;
+        return timeB - timeA;
     });
 
     const pieData = attendanceRates ? [
@@ -225,24 +227,34 @@ export function AttendancePage() {
         {
             name: 'Check-in Time',
             selector: (row: any) => row.attendance_time_in,
-            cell: (row: any) => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Clock size={16} className="text-secondary" />
-                    <span>{format(new Date(row.attendance_time_in), 'h:mm a')}</span>
-                </div>
-            ),
+            cell: (row: any) => {
+                const dateObj = row.attendance_time_in ? new Date(row.attendance_time_in) : null;
+                const formattedTime = dateObj && isValid(dateObj) ? format(dateObj, 'h:mm a') : 'N/A';
+                
+                return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Clock size={16} className="text-secondary" />
+                        <span>{formattedTime}</span>
+                    </div>
+                );
+            },
             sortable: true,
             width: '180px',
         },
         {
             name: 'Day',
             selector: (row: any) => row.attendance_date,
-            cell: (row: any) => (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-secondary)' }}>
-                    <Calendar size={16} />
-                    <span>{row.attendance_weekday}, {format(new Date(row.attendance_date), 'MMM d')}</span>
-                </div>
-            ),
+            cell: (row: any) => {
+                const dateObj = row.attendance_date ? new Date(row.attendance_date) : null;
+                const formattedDate = dateObj && isValid(dateObj) ? format(dateObj, 'MMM d') : 'N/A';
+                
+                return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-secondary)' }}>
+                        <Calendar size={16} />
+                        <span>{row.attendance_weekday || 'N/A'}, {formattedDate}</span>
+                    </div>
+                );
+            },
             width: '200px',
         },
         {
@@ -258,7 +270,7 @@ export function AttendancePage() {
                     color: row.attendance_type === 'Onsite' ? '#10B981' : '#3B82F6',
                     border: row.attendance_type === 'Onsite' ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid rgba(59, 130, 246, 0.2)'
                 }}>
-                    {row.attendance_type}
+                    {row.attendance_type || 'N/A'}
                 </span>
             ),
             width: '150px',
@@ -480,7 +492,10 @@ export function AttendancePage() {
                                         {
                                             name: 'Time In',
                                             selector: (row: any) => row.attendance_time_in,
-                                            cell: (row: any) => format(new Date(row.attendance_time_in), 'h:mm a'),
+                                            cell: (row: any) => {
+                                                const dateObj = row.attendance_time_in ? new Date(row.attendance_time_in) : null;
+                                                return dateObj && isValid(dateObj) ? format(dateObj, 'h:mm a') : 'N/A';
+                                            },
                                             sortable: true,
                                             width: '120px',
                                         },
