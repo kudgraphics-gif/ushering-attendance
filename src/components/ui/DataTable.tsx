@@ -76,6 +76,7 @@ interface UsersTableProps {
     onResetDeviceId?: (userId: string, userName: string) => void;
     isAdmin: boolean;
     isCheckingIn?: string | null;
+    onEdit?: (user: UserDto) => void;
 }
 
 export function UsersTable({
@@ -86,6 +87,7 @@ export function UsersTable({
     onResetDeviceId,
     isAdmin,
     isCheckingIn,
+    onEdit,
 }: UsersTableProps) {
     const columns = [
         {

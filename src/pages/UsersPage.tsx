@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Download, Upload, AlertCircle, Grid3x3, List, LogIn, Eye, Trash2 } from 'lucide-react';
+import { Plus, Search, Download, Upload, AlertCircle, Grid3x3, List, LogIn, Eye, Trash2, Edit2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -132,6 +132,11 @@ export function UsersPage() {
         setIsModalOpen(true);
     };
 
+    const handleEditUser = (user: UserDto) => {
+        setSelectedUser(user);
+        setIsModalOpen(true);
+    };
+
     const handleViewAttendance = (user: UserDto) => {
         setSelectedUserForAttendance(user);
         setAttendanceModalOpen(true);
@@ -146,8 +151,8 @@ export function UsersPage() {
         setFormLoading(true);
         try {
             if (selectedUser) {
-                // Update existing user
-                await usersAPI.update({ ...data, id: selectedUser.id }, token);
+                // Update existing user using the new admin update endpoint
+                await usersAPI.adminUpdate(selectedUser.id, data, token);
                 setUsers(users.map(u => u.id === selectedUser.id ? { ...u, ...data } : u));
                 toast.success('User updated successfully');
             } else {
@@ -157,6 +162,7 @@ export function UsersPage() {
                 await fetchUsers();
                 toast.success('User registered successfully');
             }
+            setIsModalOpen(false);
         } catch (error) {
             toast.error(error instanceof Error ? error.message : 'Operation failed');
         } finally {
@@ -305,6 +311,7 @@ export function UsersPage() {
                             index={index}
                             onCheckIn={handleCheckInUser}
                             onViewAttendance={handleViewAttendance}
+                            onEdit={handleEditUser} // Passed down here
                             onDelete={handleDeleteUser}
                             isCheckingIn={checkingInUser === user.id}
                             isAdmin={currentUser?.role === 'Admin'}
@@ -317,6 +324,7 @@ export function UsersPage() {
                         users={filteredUsers}
                         onCheckIn={handleCheckInUser}
                         onViewAttendance={handleViewAttendance}
+                        onEdit={handleEditUser} // Passed down here
                         onDelete={handleDeleteUser}
                         onResetDeviceId={handleResetDeviceId}
                         isAdmin={currentUser?.role === 'Admin'}
@@ -352,6 +360,7 @@ function UserCard({
     index,
     onCheckIn,
     onViewAttendance,
+    onEdit,
     onDelete,
     isCheckingIn,
     isAdmin,
@@ -360,6 +369,7 @@ function UserCard({
     index: number;
     onCheckIn: (userId: string, userName: string) => Promise<void>;
     onViewAttendance: (user: UserDto) => void;
+    onEdit: (user: UserDto) => void;
     onDelete: (userId: string, userName: string) => Promise<void>;
     isCheckingIn: boolean;
     isAdmin: boolean;
@@ -421,6 +431,15 @@ function UserCard({
                             onClick={() => onViewAttendance(user)}
                         >
                             <Eye size={20} />
+                        </button>
+                    )}
+                    {isAdmin && (
+                        <button
+                            className="user-card__action-btn"
+                            title="Edit User"
+                            onClick={() => onEdit(user)}
+                        >
+                            <Edit2 size={20} />
                         </button>
                     )}
                     {isAdmin && (

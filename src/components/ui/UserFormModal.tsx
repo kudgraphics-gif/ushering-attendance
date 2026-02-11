@@ -31,38 +31,43 @@ export function UserFormModal({
         password: '',
         dob: '',
         year_joined: new Date().getFullYear().toString(),
-        role: 'User' as const,
-        gender: '' as '' | 'male' | 'female',
+        role: 'User' as 'User' | 'Admin',
+        gender: '' as 'male' | 'female' | '',
         phone: '',
     });
 
     useEffect(() => {
-        if (user && mode === 'edit') {
-            setFormData({
-                first_name: user.first_name,
-                last_name: user.last_name,
-                email: user.email,
-                password: '',
-                dob: user.dob ? user.dob.split('T')[0] : '',
-                year_joined: user.year_joined,
-                role: (user.role === 'Admin' ? 'Admin' : 'User') as any,
-                gender: (user.gender as 'male' | 'female' | '') || '',
-                phone: user.phone || '',
-            });
-        } else {
-            setFormData({
-                first_name: '',
-                last_name: '',
-                email: '',
-                password: '',
-                dob: '',
-                year_joined: new Date().getFullYear().toString(),
-                role: 'User',
-                gender: '',
-                phone: '',
-            });
+        // Only run this logic when the modal is actually open
+        if (isOpen) {
+            if (mode === 'edit' && user) {
+                // Pre-fill fields. Use || '' to prevent 'null' from breaking the inputs
+                setFormData({
+                    first_name: user.first_name || '',
+                    last_name: user.last_name || '',
+                    email: user.email || '',
+                    password: '', // Always empty on edit, unless they type a new one
+                    dob: user.dob ? user.dob.split('T')[0] : '',
+                    year_joined: user.year_joined || new Date().getFullYear().toString(),
+                    role: (user.role === 'Admin' ? 'Admin' : 'User'),
+                    gender: (user.gender as 'male' | 'female' | '') || '',
+                    phone: user.phone || '',
+                });
+            } else {
+                // Reset form completely for 'create' mode
+                setFormData({
+                    first_name: '',
+                    last_name: '',
+                    email: '',
+                    password: '',
+                    dob: '',
+                    year_joined: new Date().getFullYear().toString(),
+                    role: 'User',
+                    gender: '',
+                    phone: '',
+                });
+            }
         }
-    }, [user, isOpen, mode]);
+    }, [isOpen, user, mode]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -80,17 +85,20 @@ export function UserFormModal({
                 last_name: formData.last_name,
                 email: formData.email,
                 year_joined: formData.year_joined,
-                role: formData.role as any,
-                gender: formData.gender || undefined,
-                phone: formData.phone || undefined,
+                role: formData.role,
                 is_active: true,
             };
+
+            // Only append optional fields if they have a value
+            if (formData.gender) submitData.gender = formData.gender as any;
+            if (formData.phone) submitData.phone = formData.phone;
 
             // Format DOB as ISO DateTime with default 00:00:00.000 time
             if (formData.dob) {
                 submitData.dob = `${formData.dob}T00:00:00.000`;
             }
 
+            // Handle Password safely
             if (formData.password) {
                 submitData.password = formData.password;
             }
@@ -101,7 +109,8 @@ export function UserFormModal({
             }
 
             await onSubmit(submitData);
-            onClose();
+            // The parent component should handle closing the modal upon success, 
+            // but we leave this here if your flow relies on it.
         } catch (error) {
             console.error('Form submission error:', error);
         }
@@ -251,4 +260,4 @@ export function UserFormModal({
             </motion.div>
         </Modal>
     );
-}
+}  

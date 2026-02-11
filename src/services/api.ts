@@ -152,6 +152,15 @@ export const usersAPI = {
         return apiCall<UserDto>('GET', `/users/get/${userId}`, undefined, token);
     },
 
+    adminUpdate: async (userId: string, payload: Partial<UserDto> & { password?: string }, token: string): Promise<{ message: string; data: null }> => {
+        return apiCall<{ message: string; data: null }>(
+            'PATCH',
+            `/users/admin/update/${userId}`,
+            payload,
+            token
+        );
+    },
+
     update: async (payload: Partial<UserDto> & { password?: string }, token: string): Promise<{ message: string; data: null }> => {
         return apiCall<{ message: string; data: null }>(
             'PATCH',
