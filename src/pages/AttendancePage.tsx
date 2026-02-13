@@ -16,10 +16,11 @@ import { format, isValid } from 'date-fns';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import toast from 'react-hot-toast';
 
-import { analyticsAPI, usersAPI, attendanceRevokeAPI, usersExportAPI } from '../services/api';
+import { analyticsAPI, usersAPI, attendanceRevokeAPI, usersExportAPI, attendanceAPI } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import { getDeviceId, recordDeviceCheckIn, hasDeviceCheckedInToday } from '../utils/deviceId';
 import './AttendancePage.css';
 
 export function AttendancePage() {
@@ -105,24 +106,79 @@ export function AttendancePage() {
     };
 
     const handleLocationCheckIn = async () => {
-        if (!token || !user) return;
-        setCheckInLoading(true);
-
-        if (!navigator.geolocation) {
-            toast.error("Geolocation is not supported by your browser");
-            setCheckInLoading(false);
+        if (!token || !user) {
+            toast.error('You must be logged in to check in');
             return;
         }
 
+        // Check if device already checked in today
+        if (hasDeviceCheckedInToday()) {
+            toast.error("You've already checked in today");
+            return;
+        }
+
+        if (!navigator.geolocation) {
+            toast.error('Location not supported on your device');
+            return;
+        }
+
+        setCheckInLoading(true);
+
         navigator.geolocation.getCurrentPosition(
-            async () => {
-                toast.success("Location check-in successful!");
-                setCheckInLoading(false);
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+
+                try {
+                    const deviceId = getDeviceId();
+
+                    await attendanceAPI.checkIn(
+                        {
+                            location: {
+                                lat: latitude,
+                                lng: longitude,
+                            },
+                            device_id: deviceId,
+                        },
+                        token
+                    );
+
+                    recordDeviceCheckIn(user.id);
+                    toast.success('Admin Check-in successful');
+
+                    // Refresh data
+                    fetchAttendanceData();
+
+                } catch (error) {
+                    toast.error(
+                        error instanceof Error ? error.message : 'Check-in failed, please try again'
+                    );
+                } finally {
+                    setCheckInLoading(false);
+                }
             },
             (error) => {
-                console.error(error);
-                toast.error("Unable to retrieve your location");
                 setCheckInLoading(false);
+
+                let message = 'Unable to retrieve location. ';
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        message += 'Please enable location permissions.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        message += 'Location unavailable.';
+                        break;
+                    case error.TIMEOUT:
+                        message += 'Request timed out.';
+                        break;
+                    default:
+                        message += 'Ensure location services are enabled.';
+                }
+                toast.error(message);
+            },
+            {
+                enableHighAccuracy: false,
+                timeout: 30000,
+                maximumAge: Infinity
             }
         );
     };
@@ -180,9 +236,9 @@ export function AttendancePage() {
         },
         headRow: {
             style: {
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                color: 'var(--color-text-secondary)',
-                borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                backgroundColor: 'var(--surface-hover)',
+                color: 'var(--text-secondary)',
+                borderBottom: '1px solid var(--border-color)',
                 fontSize: '13px',
                 fontWeight: '600',
                 textTransform: 'uppercase' as const,
@@ -192,21 +248,21 @@ export function AttendancePage() {
         rows: {
             style: {
                 backgroundColor: 'transparent',
-                color: 'var(--color-text-primary)',
+                color: 'var(--text-primary)',
                 minHeight: '60px',
                 '&:not(:last-of-type)': {
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                    borderBottom: '1px solid var(--border-color)',
                 },
                 '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                    backgroundColor: 'var(--surface-hover)',
                 },
             },
         },
         pagination: {
             style: {
                 backgroundColor: 'transparent',
-                color: 'var(--color-text-secondary)',
-                borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+                color: 'var(--text-secondary)',
+                borderTop: '1px solid var(--border-color)',
             },
         },
     };

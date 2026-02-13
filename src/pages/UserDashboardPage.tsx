@@ -6,7 +6,9 @@ import toast from 'react-hot-toast';
 import { MapPin, Calendar, CheckCircle2, User, Info, Crown } from 'lucide-react';
 import { getDeviceId, recordDeviceCheckIn, hasDeviceCheckedInToday } from '../utils/deviceId';
 import { SuggestionBox } from '../components/ui/SuggestionBox';
+import { motion, AnimatePresence } from 'framer-motion';
 import './UserDashboard.css';
+import '../pages/LoginPageValues.css'; // Import Core Values CSS
 
 interface AttendanceRecord {
     id: string;
@@ -32,12 +34,31 @@ interface UserAttendance {
     };
 }
 
+const CORE_VALUES = [
+    "Our Core Values", // Added as the title/intro
+    "Character",
+    "Love",
+    "Supremacy of The Word",
+    "Excellence",
+    "Service",
+    "Faith",
+    "The Anointing"
+];
+
 export function UserDashboardPage() {
     const { user, token } = useAuthStore();
     const [attendanceData, setAttendanceData] = useState<UserAttendance | null>(null);
     const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
     const [checkingIn, setCheckingIn] = useState(false);
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentIndex((prev) => (prev + 1) % CORE_VALUES.length);
+        }, 3000); // Change every 3 seconds
+        return () => clearInterval(timer);
+    }, []);
 
     useEffect(() => {
         const loadData = async () => {
@@ -191,6 +212,22 @@ export function UserDashboardPage() {
         <div className="user-dashboard">
             {/* Header */}
             <div className="user-dashboard__header">
+                {/* Core Values Badge */}
+                <div className="login-page__core-value-container" style={{ marginBottom: '1rem' }}>
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={currentIndex}
+                            initial={{ opacity: 0, y: 10, filter: 'blur(5px)' }}
+                            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                            exit={{ opacity: 0, y: -10, filter: 'blur(5px)' }}
+                            transition={{ duration: 0.5, ease: "easeInOut" }}
+                            className="login-page__core-value-text"
+                        >
+                            {CORE_VALUES[currentIndex]}
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+
                 <h1>Hello, {user?.first_name}</h1>
                 <div className="usher-badge">
                     <div className="usher-badge__icon">

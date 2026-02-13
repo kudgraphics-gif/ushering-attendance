@@ -54,6 +54,14 @@ export const useAuthStore = create<AuthState>()(
                     // Generate a token (in a real app, this comes from the backend)
                     const token = `token_${userData.id}`;
 
+                    // Check for locally persisted avatar
+                    const localAvatarKey = `avatar_${userData.email}`;
+                    const localAvatar = localStorage.getItem(localAvatarKey);
+
+                    if (localAvatar) {
+                        userData.avatar_url = localAvatar;
+                    }
+
                     set({
                         user: userData,
                         isAuthenticated: true,

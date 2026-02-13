@@ -53,8 +53,12 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
                 country: currentUser.country || '',
             });
 
-            // Set initial avatar preview if available
-            if (currentUser.avatar_url) {
+            // Set initial avatar preview
+            const localAvatar = localStorage.getItem(`avatar_${currentUser.email}`);
+            if (localAvatar) {
+                setAvatarPreview(localAvatar);
+                // Optionally update the prompt user state if needed, but for now just form persistence
+            } else if (currentUser.avatar_url) {
                 setAvatarPreview(currentUser.avatar_url);
             }
         }
@@ -99,7 +103,7 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
     };
 
     const uploadAvatar = async (file: File) => {
-        if (!token) {
+        if (!token || !currentUser) {
             toast.error('Not authenticated');
             return;
         }
@@ -112,28 +116,27 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
             reader.onload = async () => {
                 const base64Image = reader.result as string;
 
-                // Save to LocalStorage with a unique key for this user
-                // Using a separate key to avoid bloating the main auth store too much, 
-                // though auth store could hold it too. 
-                // However, the prompt says "picture doesn't go to any server but saved in the device localstorage".
-                // I will save it in the auth store's user object so it persists via the existing persist middleware.
+                // Persist to local storage for device-level persistence
+                localStorage.setItem(`avatar_${currentUser.email}`, base64Image);
 
                 // Update the user with new avatar URL (which is now a data URI)
                 const updatedUser: UserDto = {
-                    ...currentUser!,
+                    ...currentUser,
                     avatar_url: base64Image,
                 };
 
-                // Update Zustand store (which persists to localStorage)
+                // Update Zustand store
                 setUser(updatedUser);
                 setAvatarPreview(base64Image);
 
-                toast.success('Profile picture updated successfully (Local only)');
+                toast.success('Profile picture updated successfully');
             };
 
         } catch (error) {
             toast.error(error instanceof Error ? error.message : 'Failed to save profile picture');
-            setAvatarPreview(currentUser?.avatar_url || null);
+            // Revert to saved
+            const localAvatar = localStorage.getItem(`avatar_${currentUser.email}`);
+            setAvatarPreview(localAvatar || currentUser?.avatar_url || null);
         } finally {
             setUploadingAvatar(false);
         }

@@ -158,17 +158,17 @@
   gap: 2px;
 }
 
-.header__user-name {
-  font-size: var(--text-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text-primary);
-  white-space: nowrap;
-}
-
-.header__user-role {
-  font-size: var(--text-xs);
-  color: var(--color-text-secondary);
-}
+  .header__user-name {
+    font-size: var(--text-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+    white-space: nowrap;
+  }
+  
+  .header__user-role {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+  }
 
 /* Mobile styles */
 @media (max-width: 1024px) {

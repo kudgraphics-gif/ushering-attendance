@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Mail, Lock, LogIn } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../stores/authStore';
@@ -10,35 +10,11 @@ import { Button } from '../components/ui/Button';
 import './LoginPage.css';
 import './LoginPageValues.css';
 
-// Animation Variants for the desktop entrance
-
-
-const CORE_VALUES = [
-    "Our Core Values", // Added as the title/intro
-    "Character",
-    "Love",
-    "Supremacy of The Word",
-    "Excellence",
-    "Service",
-    "Faith",
-    "The Anointing"
-];
-
 export function LoginPage() {
     const navigate = useNavigate();
     const { login, loading, logout } = useAuthStore();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-
-    // Mobile: Cycling values state
-    const [currentIndex, setCurrentIndex] = useState(0);
-
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setCurrentIndex((prev) => (prev + 1) % CORE_VALUES.length);
-        }, 3000); // Change every 3 seconds
-        return () => clearInterval(timer);
-    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -89,23 +65,6 @@ export function LoginPage() {
                 transition={{ duration: 0.5 }}
             >
                 <div className="login-page__header">
-
-                    {/* Animated Core Value Cycler (Subtle & Beautiful) */}
-                    <div className="login-page__core-value-container">
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={currentIndex}
-                                initial={{ opacity: 0, y: 10, filter: 'blur(5px)' }}
-                                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                                exit={{ opacity: 0, y: -10, filter: 'blur(5px)' }}
-                                transition={{ duration: 0.5, ease: "easeInOut" }}
-                                className="login-page__core-value-text"
-                            >
-                                {CORE_VALUES[currentIndex]}
-                            </motion.div>
-                        </AnimatePresence>
-                    </div>
-
                     <motion.div
                         className="login-page__icon"
                         initial={{ scale: 0 }}
@@ -139,6 +98,7 @@ export function LoginPage() {
                         required
                         disabled={loading}
                     />
+
 
                     <Button
                         type="submit"

@@ -240,19 +240,19 @@ export function DashboardPage() {
                                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
                                 <XAxis
                                     dataKey="date"
-                                    stroke="rgba(255,255,255,0.5)"
+                                    stroke="var(--text-secondary)"
                                     style={{ fontSize: '12px' }}
                                 />
                                 <YAxis
-                                    stroke="rgba(255,255,255,0.5)"
+                                    stroke="var(--text-secondary)"
                                     style={{ fontSize: '12px' }}
                                 />
                                 <Tooltip
                                     contentStyle={{
-                                        background: 'rgba(28, 28, 30, 0.9)',
-                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        background: 'var(--surface-card, #1c1c1e)',
+                                        border: '1px solid var(--border-color)',
                                         borderRadius: '12px',
-                                        color: '#fff'
+                                        color: 'var(--text-primary)'
                                     }}
                                 />
                                 <Line
