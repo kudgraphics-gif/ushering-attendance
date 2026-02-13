@@ -13,6 +13,9 @@ interface AuthState {
     logout: () => void;
     setUser: (user: UserDto) => void;
     refresh: () => Promise<void>;
+    lastActivity: number; // Timestamp of last user activity
+    updateActivity: () => void;
+    checkInactivity: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -23,16 +26,34 @@ export const useAuthStore = create<AuthState>()(
             loading: false,
             error: null,
             token: null,
+            lastActivity: Date.now(),
+
+            updateActivity: () => {
+                set({ lastActivity: Date.now() });
+            },
+
+            checkInactivity: () => {
+                const { lastActivity, isAuthenticated, logout } = get();
+                if (!isAuthenticated) return;
+
+                const EIGHT_HOURS = 8 * 60 * 60 * 1000;
+                const timeSinceLastActivity = Date.now() - lastActivity;
+
+                if (timeSinceLastActivity > EIGHT_HOURS) {
+                    logout();
+                    // Optionally triggers a toast or redirect logic in the component observing this
+                }
+            },
 
             login: async (email: string, password: string) => {
                 set({ loading: true, error: null });
                 try {
                     const payload: LoginPayload = { user: email, password };
                     const userData = await authAPI.login(payload);
-                    
+
                     // Generate a token (in a real app, this comes from the backend)
                     const token = `token_${userData.id}`;
-                    
+
                     set({
                         user: userData,
                         isAuthenticated: true,
@@ -72,7 +93,7 @@ export const useAuthStore = create<AuthState>()(
                     // Re-validate against the backend using the stored user data
                     // (Adjust this call based on your actual API needs)
                     const userData = await authAPI.login({ user: user.email, password: user.email }); // Assuming simple refresh
-                    
+
                     set({
                         user: userData,
                         isAuthenticated: true,
@@ -92,12 +113,13 @@ export const useAuthStore = create<AuthState>()(
         {
             name: 'auth-storage', // <--- 3. Unique name for localStorage key
             storage: createJSONStorage(() => localStorage), // (Optional) Explicitly use localStorage
-            
+
             // 4. (Optional) Only persist specific fields to avoid saving loading/error states
-            partialize: (state) => ({ 
-                user: state.user, 
-                token: state.token, 
-                isAuthenticated: state.isAuthenticated 
+            partialize: (state) => ({
+                user: state.user,
+                token: state.token,
+                isAuthenticated: state.isAuthenticated,
+                lastActivity: state.lastActivity
             }),
         }
     )

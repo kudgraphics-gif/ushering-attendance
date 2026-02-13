@@ -2,7 +2,9 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
-import { ArrowLeft, Download, ChevronDown, MapPin } from 'lucide-react';
+import { ArrowLeft, Upload, ChevronDown, MapPin } from 'lucide-react';
+
+
 import toast from 'react-hot-toast';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -14,7 +16,7 @@ export function RosterAssignmentsPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { token } = useAuthStore();
-    
+
     const [assignments, setAssignments] = useState<RosterAssignment[]>([]);
     const [loading, setLoading] = useState(false);
     const [filterText, setFilterText] = useState('');
@@ -44,7 +46,7 @@ export function RosterAssignmentsPage() {
         if (!id || !token) return;
         setExportLoading(true);
         setExportMenuOpen(false); // Close dropdown
-        
+
         try {
             let blob: Blob;
             let filename = `roster_assignments_${type}_${new Date().toISOString().split('T')[0]}.csv`;
@@ -78,9 +80,9 @@ export function RosterAssignmentsPage() {
 
     const filteredItems = assignments.filter(
         item => item.first_name.toLowerCase().includes(filterText.toLowerCase()) ||
-                item.last_name.toLowerCase().includes(filterText.toLowerCase()) ||
-                item.reg_no.toLowerCase().includes(filterText.toLowerCase()) ||
-                item.hall.toLowerCase().includes(filterText.toLowerCase())
+            item.last_name.toLowerCase().includes(filterText.toLowerCase()) ||
+            item.reg_no.toLowerCase().includes(filterText.toLowerCase()) ||
+            item.hall.toLowerCase().includes(filterText.toLowerCase())
     );
 
     const columns = [
@@ -158,51 +160,65 @@ export function RosterAssignmentsPage() {
                 </div>
 
                 <div style={{ position: 'relative' }}>
-                    <Button 
-                        variant="primary" 
-                        icon={<Download size={18} />} 
+                    <Button
+                        variant="primary"
+                        icon={<Upload size={18} />}
                         onClick={() => setExportMenuOpen(!exportMenuOpen)}
                         loading={exportLoading}
                     >
                         Export <ChevronDown size={16} style={{ marginLeft: '4px' }} />
                     </Button>
-                    
+
                     {exportMenuOpen && (
-                        <div style={{
-                            position: 'absolute',
-                            top: '100%',
-                            right: 0,
-                            marginTop: '8px',
-                            background: 'var(--color-bg-elevated)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: 'var(--radius-md)',
-                            boxShadow: 'var(--shadow-lg)',
-                            zIndex: 100,
-                            minWidth: '180px',
-                            overflow: 'hidden'
-                        }}>
-                            {['Combined', 'MainHall', 'HallOne', 'Gallery', 'Basement', 'Outside'].map((type) => (
-                                <button
-                                    key={type}
-                                    onClick={() => handleExport(type)}
-                                    style={{
-                                        display: 'block',
-                                        width: '100%',
-                                        padding: '12px 16px',
-                                        textAlign: 'left',
-                                        background: 'transparent',
-                                        border: 'none',
-                                        color: 'var(--color-text-primary)',
-                                        cursor: 'pointer',
-                                        transition: 'background 0.2s'
-                                    }}
-                                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                                >
-                                    Export {type === 'Combined' ? 'All' : type}
-                                </button>
-                            ))}
-                        </div>
+                        <>
+                            <div
+                                style={{
+                                    position: 'fixed',
+                                    top: 0,
+                                    left: 0,
+                                    right: 0,
+                                    bottom: 0,
+                                    zIndex: 99,
+                                    cursor: 'default'
+                                }}
+                                onClick={() => setExportMenuOpen(false)}
+                            />
+                            <div style={{
+                                position: 'absolute',
+                                top: '100%',
+                                right: 0,
+                                marginTop: '8px',
+                                background: 'var(--color-bg-elevated)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: 'var(--radius-md)',
+                                boxShadow: 'var(--shadow-lg)',
+                                zIndex: 100,
+                                minWidth: '180px',
+                                overflow: 'hidden'
+                            }}>
+                                {['Combined', 'MainHall', 'HallOne', 'Gallery', 'Basement', 'Outside'].map((type) => (
+                                    <button
+                                        key={type}
+                                        onClick={() => handleExport(type)}
+                                        style={{
+                                            display: 'block',
+                                            width: '100%',
+                                            padding: '12px 16px',
+                                            textAlign: 'left',
+                                            background: 'transparent',
+                                            border: 'none',
+                                            color: 'var(--color-text-primary)',
+                                            cursor: 'pointer',
+                                            transition: 'background 0.2s'
+                                        }}
+                                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                                        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                                    >
+                                        Export {type === 'Combined' ? 'All' : type}
+                                    </button>
+                                ))}
+                            </div>
+                        </>
                     )}
                 </div>
             </div>
@@ -226,7 +242,7 @@ export function RosterAssignmentsPage() {
                         }}
                     />
                 </div>
-                
+
                 {loading ? (
                     <div className="roster-management-page__loading">Loading...</div>
                 ) : (

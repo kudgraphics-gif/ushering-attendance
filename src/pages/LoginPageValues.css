@@ -1,0 +1,44 @@
+/* src/pages/LoginPageValues.css */
+
+/* Remove old styles cleanly to avoid conflicts */
+.login-page__values,
+.login-page__values-mobile,
+.desktop-only,
+.mobile-only {
+  display: none !important;
+}
+
+/* --- NEW INTEGRATED CYCLER --- */
+.login-page__core-value-container {
+  height: 30px; /* Fixed height to prevent layout jumps */
+  margin-bottom: var(--space-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.login-page__core-value-text {
+  font-size: 0.85rem;
+  font-weight: 600; /* Slightly bolder for readability */
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--color-brand-gold, #D4AF37); /* Gold color */
+  text-shadow: 0 0 15px rgba(212, 175, 55, 0.4); /* Glow effect */
+  white-space: nowrap;
+  
+  /* Badge styling */
+  background: rgba(212, 175, 55, 0.1);
+  padding: 4px 12px;
+  border-radius: 9999px; /* Pill shape */
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+/* Mobile Tweak (make it slightly smaller if needed) */
+@media (max-width: 768px) {
+  .login-page__core-value-text {
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+  }
+}

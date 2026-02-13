@@ -106,19 +106,33 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
 
         setUploadingAvatar(true);
         try {
-            const response = await usersAPI.uploadAvatar(file, token);
-            
-            // Update the user with new avatar URL
-            const updatedUser: UserDto = {
-                ...currentUser!,
-                avatar_url: response.data.avatar_url,
+            // Convert to Base64
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = async () => {
+                const base64Image = reader.result as string;
+
+                // Save to LocalStorage with a unique key for this user
+                // Using a separate key to avoid bloating the main auth store too much, 
+                // though auth store could hold it too. 
+                // However, the prompt says "picture doesn't go to any server but saved in the device localstorage".
+                // I will save it in the auth store's user object so it persists via the existing persist middleware.
+
+                // Update the user with new avatar URL (which is now a data URI)
+                const updatedUser: UserDto = {
+                    ...currentUser!,
+                    avatar_url: base64Image,
+                };
+
+                // Update Zustand store (which persists to localStorage)
+                setUser(updatedUser);
+                setAvatarPreview(base64Image);
+
+                toast.success('Profile picture updated successfully (Local only)');
             };
-            setUser(updatedUser);
-            
-            toast.success('Profile picture updated successfully');
+
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : 'Failed to upload profile picture');
-            // Reset preview on error
+            toast.error(error instanceof Error ? error.message : 'Failed to save profile picture');
             setAvatarPreview(currentUser?.avatar_url || null);
         } finally {
             setUploadingAvatar(false);
@@ -131,7 +145,7 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!token || !currentUser) {
             toast.error('Not authenticated');
             return;
@@ -152,7 +166,7 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
             };
 
             await usersAPI.update(updatePayload, token);
-            
+
             // Update the auth store with new user data
             const updatedUser: UserDto = {
                 ...currentUser,
@@ -160,7 +174,7 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
                 dob: dobWithTime,
             };
             setUser(updatedUser);
-            
+
             toast.success('Profile updated successfully');
             onSuccess?.(updatedUser);
         } catch (error) {
@@ -180,7 +194,7 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
                 <form onSubmit={handleSubmit} className="update-profile-form">
                     <div className="update-profile-form__section">
                         <h2 className="update-profile-form__section-title">Personal Information</h2>
-                        
+
                         <div className="update-profile-form__grid">
                             <div className="update-profile-form__field">
                                 <label className="update-profile-form__label">First Name</label>
@@ -192,7 +206,7 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
                                     placeholder="First name"
                                 />
                             </div>
-                            
+
                             <div className="update-profile-form__field">
                                 <label className="update-profile-form__label">Last Name</label>
                                 <Input
@@ -217,7 +231,7 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
                                     icon={<Mail size={18} />}
                                 />
                             </div>
-                            
+
                             <div className="update-profile-form__field">
                                 <label className="update-profile-form__label">Phone</label>
                                 <Input
@@ -246,7 +260,7 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
                                     <option value="other">Other</option>
                                 </select>
                             </div>
-                            
+
                             <div className="update-profile-form__field">
                                 <label className="update-profile-form__label">Date of Birth</label>
                                 <Input
@@ -261,7 +275,7 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
 
                     <div className="update-profile-form__section">
                         <h2 className="update-profile-form__section-title">Location Information</h2>
-                        
+
                         <div className="update-profile-form__grid">
                             <div className="update-profile-form__field">
                                 <label className="update-profile-form__label">Address</label>
@@ -287,7 +301,7 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
                                     placeholder="City"
                                 />
                             </div>
-                            
+
                             <div className="update-profile-form__field">
                                 <label className="update-profile-form__label">State</label>
                                 <Input
@@ -298,7 +312,7 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
                                     placeholder="State/Province"
                                 />
                             </div>
-                            
+
                             <div className="update-profile-form__field">
                                 <label className="update-profile-form__label">Country</label>
                                 <Input

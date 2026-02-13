@@ -3,8 +3,9 @@ import { useAuthStore } from '../stores/authStore';
 import { analyticsAPI, eventsAPI, attendanceAPI } from '../services/api';
 import type { Event, UserDto } from '../types';
 import toast from 'react-hot-toast';
-import { MapPin, Calendar, CheckCircle2, User, Info } from 'lucide-react';
+import { MapPin, Calendar, CheckCircle2, User, Info, Crown } from 'lucide-react';
 import { getDeviceId, recordDeviceCheckIn, hasDeviceCheckedInToday } from '../utils/deviceId';
+import { SuggestionBox } from '../components/ui/SuggestionBox';
 import './UserDashboard.css';
 
 interface AttendanceRecord {
@@ -43,7 +44,7 @@ export function UserDashboardPage() {
             if (!user || !token) return;
 
             setLoading(true);
-            
+
             try {
                 // Try to load user attendance data
                 try {
@@ -99,7 +100,7 @@ export function UserDashboardPage() {
         navigator.geolocation.getCurrentPosition(
             async (position) => {
                 const { latitude, longitude } = position.coords;
-                
+
                 try {
                     const deviceId = getDeviceId();
 
@@ -116,7 +117,7 @@ export function UserDashboardPage() {
 
                     recordDeviceCheckIn(user.id);
                     toast.success('Checked in successfully');
-                    
+
                     // Reload attendance data
                     try {
                         const updatedData = await analyticsAPI.getUserAttendance(user.id, token);
@@ -134,7 +135,7 @@ export function UserDashboardPage() {
             },
             (error) => {
                 setCheckingIn(false);
-                
+
                 let message = 'Unable to access your location. ';
                 switch (error.code) {
                     case error.PERMISSION_DENIED:
@@ -151,7 +152,7 @@ export function UserDashboardPage() {
                 }
                 toast.error(message);
             },
-           {
+            {
                 enableHighAccuracy: false,
                 timeout: 30000,       // Give the laptop 30 seconds to find WiFi networks
                 maximumAge: Infinity  // Accept a cached location if available
@@ -178,8 +179,12 @@ export function UserDashboardPage() {
     const totalDays = attendanceData?.summary?.total_days || 0;
 
     // Roster Info Calculation
-    const rosterHall = (user as any)?.current_roster_hall;
-    const rosterAllocation = (user as any)?.current_roster_allocation;
+    let rosterHall = (user as any)?.current_roster_hall;
+    let rosterAllocation = (user as any)?.current_roster_allocation;
+
+    // Strip quotes
+    if (rosterHall) rosterHall = rosterHall.replace(/^"|"$/g, '');
+    if (rosterAllocation) rosterAllocation = rosterAllocation.replace(/^"|"$/g, '');
     const isRosterActive = !!rosterHall;
 
     return (
@@ -187,6 +192,12 @@ export function UserDashboardPage() {
             {/* Header */}
             <div className="user-dashboard__header">
                 <h1>Hello, {user?.first_name}</h1>
+                <div className="usher-badge">
+                    <div className="usher-badge__icon">
+                        <Crown size={18} fill="#D4AF37" strokeWidth={1.5} />
+                    </div>
+                    <span>Usher with a Difference</span>
+                </div>
             </div>
 
             {/* Check-in Button - Large and Prominent */}
@@ -269,13 +280,13 @@ export function UserDashboardPage() {
                             {isRosterActive ? 'Active' : 'Pending'}
                         </div>
                     </div>
-                    
+
                     <div className="roster-card__content">
                         {isRosterActive ? (
                             <>
                                 <div className="roster-card__hall">{rosterHall}</div>
                                 <div className="roster-card__allocation">
-                                    <User size={14} style={{ marginRight: '6px' }}/>
+                                    <User size={14} style={{ marginRight: '6px' }} />
                                     {rosterAllocation || 'Member'}
                                 </div>
                             </>
@@ -314,6 +325,8 @@ export function UserDashboardPage() {
                     </div>
                 </div>
             )}
+
+            <SuggestionBox />
         </div>
     );
 }

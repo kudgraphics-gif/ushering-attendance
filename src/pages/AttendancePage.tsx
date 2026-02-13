@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react';
 import DataTable from 'react-data-table-component';
 import { motion } from 'framer-motion';
-import { 
-    Users, 
-    CheckCircle2, 
-    AlertCircle, 
-    Trash2, 
-    MapPin, 
-    Download, 
-    Clock, 
+import {
+    Users,
+    CheckCircle2,
+    AlertCircle,
+    Trash2,
+    MapPin,
+    Download,
+    Upload,
+    Clock,
     Calendar,
-    Activity 
+    Activity
 } from 'lucide-react';
 import { format, isValid } from 'date-fns';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
@@ -230,7 +231,7 @@ export function AttendancePage() {
             cell: (row: any) => {
                 const dateObj = row.attendance_time_in ? new Date(row.attendance_time_in) : null;
                 const formattedTime = dateObj && isValid(dateObj) ? format(dateObj, 'h:mm a') : 'N/A';
-                
+
                 return (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <Clock size={16} className="text-secondary" />
@@ -247,7 +248,7 @@ export function AttendancePage() {
             cell: (row: any) => {
                 const dateObj = row.attendance_date ? new Date(row.attendance_date) : null;
                 const formattedDate = dateObj && isValid(dateObj) ? format(dateObj, 'MMM d') : 'N/A';
-                
+
                 return (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-text-secondary)' }}>
                         <Calendar size={16} />
@@ -290,7 +291,7 @@ export function AttendancePage() {
                     <p className="attendance-page__subtitle">Track and manage attendance records</p>
                 </div>
                 <div className="attendance-page__actions">
-                    <Button variant="secondary" icon={<Download size={20} />} onClick={handleExport}>
+                    <Button variant="secondary" icon={<Upload size={20} />} onClick={handleExport}>
                         Export
                     </Button>
                     <Button
@@ -386,7 +387,7 @@ export function AttendancePage() {
 
                     {/* NEW SECTION: Recent Activity Feed */}
                     <div style={{ marginBottom: 'var(--space-2xl)' }}>
-                         <Card glass className="attendance-by-date-card">
+                        <Card glass className="attendance-by-date-card">
                             <div className="attendance-by-date-card__header" style={{ borderBottom: 'none', paddingBottom: '0' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                     <div style={{ padding: '10px', backgroundColor: 'rgba(212, 175, 55, 0.1)', borderRadius: '12px', color: 'var(--color-primary)' }}>
@@ -400,7 +401,7 @@ export function AttendancePage() {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div style={{ marginTop: '20px' }}>
                                 {loadingData ? (
                                     <div className="attendance-page__loading">

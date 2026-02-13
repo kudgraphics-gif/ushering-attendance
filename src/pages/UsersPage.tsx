@@ -255,7 +255,7 @@ export function UsersPage() {
                         />
                         <Button
                             variant="secondary"
-                            icon={<Upload size={20} />}
+                            icon={<Download size={20} />}
                             onClick={() => document.getElementById('import-file')?.click()}
                             loading={importing}
                         >
@@ -264,7 +264,7 @@ export function UsersPage() {
                     </div>
                     <Button
                         variant="secondary"
-                        icon={<Download size={20} />}
+                        icon={<Upload size={20} />}
                         onClick={handleExport}
                         loading={exporting}
                     >

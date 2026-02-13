@@ -24,6 +24,7 @@ import {
     ResponsiveContainer
 } from 'recharts';
 import { format, getMonth, getDate } from 'date-fns';
+import { SuggestionBox } from '../components/ui/SuggestionBox';
 import './DashboardPage.css';
 
 interface StatCardProps {
@@ -98,16 +99,16 @@ export function DashboardPage() {
 
             // Fetch upcoming birthdays
             try {
-    const birthdaysData = await analyticsAPI.getUpcomingBirthdays(token);
-    
-    // CHANGE THIS: Remove .slice(0, 5)
-    // Pass the full list so the filter logic below can find the right people
-    setUpcomingBirthdays(birthdaysData.data); 
-    
-} catch (error) {
-    console.error('Failed to fetch birthdays:', error);
-    setUpcomingBirthdays([]);
-}
+                const birthdaysData = await analyticsAPI.getUpcomingBirthdays(token);
+
+                // CHANGE THIS: Remove .slice(0, 5)
+                // Pass the full list so the filter logic below can find the right people
+                setUpcomingBirthdays(birthdaysData.data);
+
+            } catch (error) {
+                console.error('Failed to fetch birthdays:', error);
+                setUpcomingBirthdays([]);
+            }
 
             // Fetch attendance rates (admin only)
             if (user?.role === 'Admin') {
@@ -129,13 +130,13 @@ export function DashboardPage() {
     const today = new Date();
     const todayMonth = getMonth(today);
     const todayDate = getDate(today);
-    
+
     const filteredBirthdays = upcomingBirthdays.filter(user => {
         if (!user.dob) return false;
         const birthDob = new Date(user.dob);
         const birthMonth = getMonth(birthDob);
         const birthDate = getDate(birthDob);
-        
+
         // Compare month and day only (not the year)
         if (birthMonth > todayMonth) return true;
         if (birthMonth === todayMonth && birthDate >= todayDate) return true;
@@ -147,7 +148,7 @@ export function DashboardPage() {
         const dateA = getDate(dobA);
         const monthB = getMonth(dobB);
         const dateB = getDate(dobB);
-        
+
         if (monthA !== monthB) return monthA - monthB;
         return dateA - dateB;
     }).slice(0, 5);
@@ -218,7 +219,7 @@ export function DashboardPage() {
                     color="pink"
                 />
             </div>
- 
+
             {/* Main Grid */}
             <div className="dashboard__grid">
                 {/* Attendance Chart */}
@@ -343,8 +344,8 @@ export function DashboardPage() {
                             <p className="dashboard__empty">No upcoming birthdays</p>
                         ) : (
                             filteredBirthdays.map((user) => (
-                                <div 
-                                    key={user.id} 
+                                <div
+                                    key={user.id}
                                     className={`dashboard__birthday ${isBirthdayToday(user.dob ?? null) ? 'dashboard__birthday--today' : ''}`}
                                 >
                                     <div className="dashboard__birthday-icon">
@@ -359,7 +360,7 @@ export function DashboardPage() {
                                         </p>
                                     </div>
                                     <div className="dashboard__birthday-badge">
-    
+
                                         {isBirthdayToday(user.dob ?? null) ? '🎉' : '🎂'}
                                     </div>
                                 </div>
@@ -368,6 +369,7 @@ export function DashboardPage() {
                     </div>
                 </Card>
             </div>
+            <SuggestionBox />
         </motion.div>
     );
 }

@@ -1,0 +1,172 @@
+/* src/components/ui/SuggestionBox.css */
+
+/* Floating Action Button */
+.suggestion-box__fab {
+  position: fixed;
+  bottom: var(--space-lg);
+  right: var(--space-lg);
+  z-index: var(--z-fixed);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--gradient-gold);
+  border: none;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-xl);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.suggestion-box__fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.6);
+}
+
+/* Popup Container */
+.suggestion-box__popup {
+  position: fixed;
+  bottom: 80px; /* Space for FAB */
+  right: var(--space-lg);
+  width: 90vw;
+  max-width: 360px;
+  background: var(--color-bg-elevated);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-2xl);
+  overflow: hidden;
+  z-index: var(--z-fixed);
+}
+
+/* Header */
+.suggestion-box__header {
+  padding: var(--space-md);
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), transparent);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.suggestion-box__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.suggestion-box__title svg {
+  color: var(--color-brand-gold);
+}
+
+.suggestion-box__badge {
+  background: rgba(212, 175, 55, 0.2);
+  color: var(--color-brand-gold);
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* Content Area */
+.suggestion-box__content {
+  padding: var(--space-md);
+}
+
+/* Admin List */
+.suggestion-list {
+  max-height: 350px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.suggestion-item {
+  background: rgba(255, 255, 255, 0.03);
+  padding: var(--space-md);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.2s;
+}
+
+.suggestion-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.suggestion-item__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-xs);
+}
+
+.suggestion-item__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.suggestion-item__info {
+  flex: 1;
+}
+
+.suggestion-item__name {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.suggestion-item__date {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+}
+
+.suggestion-item__message {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* User Form */
+.suggestion-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.suggestion-form__hint {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.suggestion-form__input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm);
+  color: #fff;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 100px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.suggestion-form__input:focus {
+  border-color: var(--color-brand-gold);
+}
+
+.suggestion-form__actions {
+  display: flex;
+  justify-content: flex-end;
+}

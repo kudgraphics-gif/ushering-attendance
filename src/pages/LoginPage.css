@@ -1,11 +1,13 @@
 .login-page {
   min-height: 100vh;
   display: flex;
+  flex-direction: column; /* Changed from default row-ish behavior implicit in center/center */
   align-items: center;
   justify-content: center;
   padding: var(--space-lg);
   position: relative;
-  overflow: hidden;
+  overflow-y: auto; /* Allow scrolling if content is too tall */
+  overflow-x: hidden;
 }
 
 .login-page__background {

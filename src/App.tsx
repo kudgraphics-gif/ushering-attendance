@@ -14,10 +14,38 @@ import { KoinoniaPage } from './pages/KoinoniaPage';
 import { MainLayout } from './components/layout/MainLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { useAuthStore } from './stores/authStore';
+import { useEffect } from 'react'; // Added useEffect
 
 function App() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
+  const updateActivity = useAuthStore((state) => state.updateActivity);
+  const checkInactivity = useAuthStore((state) => state.checkInactivity);
+
+  useEffect(() => {
+    const handleActivity = () => {
+      updateActivity();
+      checkInactivity();
+    };
+
+    // Check inactivity on mount and periodically
+    checkInactivity();
+    const interval = setInterval(checkInactivity, 60 * 1000); // Check every minute
+
+    // Listen for user interactions
+    window.addEventListener('mousemove', handleActivity);
+    window.addEventListener('keydown', handleActivity);
+    window.addEventListener('click', handleActivity);
+    window.addEventListener('scroll', handleActivity);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('mousemove', handleActivity);
+      window.removeEventListener('keydown', handleActivity);
+      window.removeEventListener('click', handleActivity);
+      window.removeEventListener('scroll', handleActivity);
+    };
+  }, [updateActivity, checkInactivity]);
 
   return (
     <BrowserRouter>
@@ -28,37 +56,37 @@ function App() {
         />
 
         <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-          <Route 
-            path="/dashboard" 
-            element={user?.role === 'Admin' ? <DashboardPage /> : <UserDashboardPage />} 
+          <Route
+            path="/dashboard"
+            element={user?.role === 'Admin' ? <DashboardPage /> : <UserDashboardPage />}
           />
           <Route path="/events" element={<EventsPage />} />
           <Route path="/payments" element={<PaymentsPage />} />
           <Route path="/koinonia" element={<KoinoniaPage />} />
-          <Route 
-            path="/users" 
-            element={<ProtectedRoute allowedRoles={['Admin']}><UsersPage /></ProtectedRoute>} 
+          <Route
+            path="/users"
+            element={<ProtectedRoute allowedRoles={['Admin']}><UsersPage /></ProtectedRoute>}
           />
-          <Route 
-            path="/attendance" 
-            element={<ProtectedRoute allowedRoles={['Admin']}><AttendancePage /></ProtectedRoute>} 
+          <Route
+            path="/attendance"
+            element={<ProtectedRoute allowedRoles={['Admin']}><AttendancePage /></ProtectedRoute>}
           />
-          <Route 
-            path="/profile" 
-            element={<SettingsPage />} 
+          <Route
+            path="/profile"
+            element={<SettingsPage />}
           />
-          <Route 
-            path="/activity-logs" 
-            element={<ProtectedRoute allowedRoles={['Admin']}><ActivityLogsPage /></ProtectedRoute>} 
+          <Route
+            path="/activity-logs"
+            element={<ProtectedRoute allowedRoles={['Admin']}><ActivityLogsPage /></ProtectedRoute>}
           />
-          <Route 
-            path="/roster-management" 
-            element={<ProtectedRoute allowedRoles={['Admin']}><RosterManagementPage /></ProtectedRoute>} 
+          <Route
+            path="/roster-management"
+            element={<ProtectedRoute allowedRoles={['Admin']}><RosterManagementPage /></ProtectedRoute>}
           />
           {/* New Route for Roster Assignments */}
-          <Route 
-            path="/roster/:id" 
-            element={<ProtectedRoute allowedRoles={['Admin']}><RosterAssignmentsPage /></ProtectedRoute>} 
+          <Route
+            path="/roster/:id"
+            element={<ProtectedRoute allowedRoles={['Admin']}><RosterAssignmentsPage /></ProtectedRoute>}
           />
         </Route>
 
