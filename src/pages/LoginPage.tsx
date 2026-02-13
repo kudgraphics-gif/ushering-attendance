@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, type Variants, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, LogIn } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../stores/authStore';
@@ -11,27 +11,7 @@ import './LoginPage.css';
 import './LoginPageValues.css';
 
 // Animation Variants for the desktop entrance
-const containerVariants: Variants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: {
-        opacity: 1,
-        x: 0,
-        transition: {
-            delayChildren: 0.5,
-            staggerChildren: 0.1,
-            duration: 0.8
-        }
-    }
-};
 
-const itemVariants: Variants = {
-    hidden: { opacity: 0, x: -10 },
-    visible: {
-        opacity: 1,
-        x: 0,
-        transition: { duration: 0.5 }
-    }
-};
 
 const CORE_VALUES = [
     "Our Core Values", // Added as the title/intro
