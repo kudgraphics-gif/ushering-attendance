@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
-import { ArrowLeft, Upload, ChevronDown, MapPin } from 'lucide-react';
+import { ArrowLeft, Upload, ChevronDown, MapPin, Edit3 } from 'lucide-react';
 
 
 import toast from 'react-hot-toast';
@@ -11,6 +11,8 @@ import { Button } from '../components/ui/Button';
 import { rosterAPI, type RosterAssignment } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import './RosterManagementPage.css'; // Reusing styles
+
+const ALL_HALLS = ['Gallery', 'Outside', 'MainHall', 'Basement', 'HallOne'];
 
 export function RosterAssignmentsPage() {
     const { id } = useParams<{ id: string }>();
@@ -22,6 +24,8 @@ export function RosterAssignmentsPage() {
     const [filterText, setFilterText] = useState('');
     const [exportMenuOpen, setExportMenuOpen] = useState(false);
     const [exportLoading, setExportLoading] = useState(false);
+    const [editingUserId, setEditingUserId] = useState<string | null>(null);
+    const [updatingHall, setUpdatingHall] = useState(false);
 
     useEffect(() => {
         if (id && token) {
@@ -78,6 +82,33 @@ export function RosterAssignmentsPage() {
         }
     };
 
+    const handleUpdateHall = async (assignment: RosterAssignment, newHall: string) => {
+        if (!token || !id) return;
+
+        setUpdatingHall(true);
+        setEditingUserId(null);
+
+        try {
+            await rosterAPI.updateUserHall(
+                {
+                    user_id: assignment.user_id,
+                    user_roster_id: assignment.id,
+                    hall: newHall,
+                },
+                token
+            );
+
+            toast.success(`Updated ${assignment.first_name}'s hall to ${newHall}`);
+            // Refresh the assignments
+            await fetchAssignments(id);
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to update hall assignment');
+        } finally {
+            setUpdatingHall(false);
+        }
+    };
+
     const filteredItems = assignments.filter(
         item => item.first_name.toLowerCase().includes(filterText.toLowerCase()) ||
             item.last_name.toLowerCase().includes(filterText.toLowerCase()) ||
@@ -113,7 +144,98 @@ export function RosterAssignmentsPage() {
                 </div>
             ),
             sortable: true,
-        }
+        },
+        {
+            name: 'Actions',
+            cell: (row: RosterAssignment) => {
+                const availableHalls = ALL_HALLS.filter(hall => hall !== row.hall);
+                const isOpen = editingUserId === row.user_id;
+
+                return (
+                    <div style={{ position: 'relative' }}>
+                        <button
+                            onClick={() => setEditingUserId(isOpen ? null : row.user_id)}
+                            disabled={updatingHall}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                padding: '6px 12px',
+                                background: 'var(--color-accent-blue)',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: 'var(--radius-md)',
+                                cursor: updatingHall ? 'not-allowed' : 'pointer',
+                                fontSize: '13px',
+                                fontWeight: 500,
+                                opacity: updatingHall ? 0.6 : 1,
+                                transition: 'all 0.2s',
+                            }}
+                            onMouseEnter={(e) => !updatingHall && (e.currentTarget.style.background = '#0066cc')}
+                            onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--color-accent-blue)')}
+                        >
+                            <Edit3 size={14} />
+                            Edit Hall
+                        </button>
+
+                        {isOpen && (
+                            <>
+                                <div
+                                    style={{
+                                        position: 'fixed',
+                                        top: 0,
+                                        left: 0,
+                                        right: 0,
+                                        bottom: 0,
+                                        zIndex: 99,
+                                    }}
+                                    onClick={() => setEditingUserId(null)}
+                                />
+                                <div
+                                    style={{
+                                        position: 'absolute',
+                                        top: '100%',
+                                        right: 0,
+                                        marginTop: '4px',
+                                        background: 'var(--surface-card, #1e1e1e)',
+                                        border: '1px solid var(--border-color)',
+                                        borderRadius: 'var(--radius-md)',
+                                        boxShadow: 'var(--shadow-lg)',
+                                        zIndex: 100,
+                                        minWidth: '150px',
+                                        overflow: 'hidden',
+                                    }}
+                                >
+                                    {availableHalls.map((hall) => (
+                                        <button
+                                            key={hall}
+                                            onClick={() => handleUpdateHall(row, hall)}
+                                            style={{
+                                                display: 'block',
+                                                width: '100%',
+                                                padding: '10px 14px',
+                                                textAlign: 'left',
+                                                background: 'transparent',
+                                                border: 'none',
+                                                color: 'var(--text-primary)',
+                                                cursor: 'pointer',
+                                                fontSize: '13px',
+                                                transition: 'background 0.2s',
+                                            }}
+                                            onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--surface-hover)')}
+                                            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                                        >
+                                            {hall}
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </div>
+                );
+            },
+            right: true,
+        },
     ];
 
     const customTableStyles = {

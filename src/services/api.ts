@@ -343,7 +343,7 @@ export const analyticsAPI = {
             token
         );
     },
-    
+
     getEventReport: async (eventId: string, token: string): Promise<{
         message: string;
         data: {
@@ -536,6 +536,18 @@ export const rosterAPI = {
         }
 
         return response.blob();
+    },
+
+    updateUserHall: async (
+        payload: { user_id: string; user_roster_id: string; hall: string },
+        token: string
+    ): Promise<{ message: string; data: null }> => {
+        return apiCall<{ message: string; data: null }>(
+            'PATCH',
+            '/roster/hall',
+            payload,
+            token
+        );
     },
 };
 
