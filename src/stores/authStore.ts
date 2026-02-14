@@ -55,11 +55,27 @@ export const useAuthStore = create<AuthState>()(
                     const token = `token_${userData.id}`;
 
                     // Check for locally persisted avatar
-                    const localAvatarKey = `avatar_${userData.email}`;
-                    const localAvatar = localStorage.getItem(localAvatarKey);
+                    try {
+                        const localAvatarKey = `avatar_${userData.email}`;
+                        const localAvatar = localStorage.getItem(localAvatarKey);
 
-                    if (localAvatar) {
-                        userData.avatar_url = localAvatar;
+                        if (localAvatar) {
+                            userData.avatar_url = localAvatar;
+                        }
+                    } catch (storageError) {
+                        // If localStorage has issues, just skip avatar loading
+                        console.warn('Failed to load avatar from localStorage:', storageError);
+
+                        // If quota exceeded, clear old avatars
+                        if (storageError instanceof Error && storageError.name === 'QuotaExceededError') {
+                            try {
+                                const { clearAllAvatars } = await import('../utils/imageCompression');
+                                clearAllAvatars();
+                                console.log('Cleared avatars due to quota exceeded');
+                            } catch (clearError) {
+                                console.error('Failed to clear avatars:', clearError);
+                            }
+                        }
                     }
 
                     set({

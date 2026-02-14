@@ -110,29 +110,62 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
 
         setUploadingAvatar(true);
         try {
-            // Convert to Base64
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = async () => {
-                const base64Image = reader.result as string;
+            // Import compression utility
+            const { compressImage, clearAllAvatars } = await import('../../utils/imageCompression');
 
-                // Persist to local storage for device-level persistence
-                localStorage.setItem(`avatar_${currentUser.email}`, base64Image);
+            // Check original file size
+            const originalSizeKB = file.size / 1024;
 
-                // Update the user with new avatar URL (which is now a data URI)
-                const updatedUser: UserDto = {
-                    ...currentUser,
-                    avatar_url: base64Image,
-                };
+            // Show compression message if file is large
+            if (originalSizeKB > 100) {
+                toast.loading('Image is too large, reducing image size...', { id: 'compress' });
+            }
 
-                // Update Zustand store
-                setUser(updatedUser);
-                setAvatarPreview(base64Image);
+            // Compress the image to max 100KB
+            const compressedBase64 = await compressImage(file, 100);
 
-                toast.success('Profile picture updated successfully');
+            // Dismiss compression toast
+            if (originalSizeKB > 100) {
+                toast.dismiss('compress');
+                toast.success('Image compressed successfully');
+            }
+
+            try {
+                // Try to save to localStorage
+                localStorage.setItem(`avatar_${currentUser.email}`, compressedBase64);
+            } catch (storageError) {
+                // If quota exceeded, clear old avatars and retry
+                if (storageError instanceof Error && storageError.name === 'QuotaExceededError') {
+                    toast.loading('Storage full, clearing old images...', { id: 'clear' });
+                    clearAllAvatars();
+                    toast.dismiss('clear');
+
+                    // Retry saving
+                    try {
+                        localStorage.setItem(`avatar_${currentUser.email}`, compressedBase64);
+                        toast.success('Old images cleared, profile picture saved');
+                    } catch (retryError) {
+                        throw new Error('Storage quota exceeded even after clearing. Image may be too large.');
+                    }
+                } else {
+                    throw storageError;
+                }
+            }
+
+            // Update the user with new avatar URL (which is now a compressed data URI)
+            const updatedUser: UserDto = {
+                ...currentUser,
+                avatar_url: compressedBase64,
             };
 
+            // Update Zustand store
+            setUser(updatedUser);
+            setAvatarPreview(compressedBase64);
+
+            toast.success('Profile picture updated successfully');
+
         } catch (error) {
+            console.error('Avatar upload error:', error);
             toast.error(error instanceof Error ? error.message : 'Failed to save profile picture');
             // Revert to saved
             const localAvatar = localStorage.getItem(`avatar_${currentUser.email}`);
