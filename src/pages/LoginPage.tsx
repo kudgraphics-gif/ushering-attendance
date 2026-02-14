@@ -49,6 +49,20 @@ export function LoginPage() {
         }
     };
 
+    const handleClearStorage = () => {
+        if (confirm('⚠️ This will clear all stored data including avatars. Continue?')) {
+            try {
+                const itemCount = Object.keys(localStorage).length;
+                localStorage.clear();
+                toast.success(`Cleared ${itemCount} items from storage`);
+                console.log('✅ Storage cleared manually by user');
+            } catch (error) {
+                toast.error('Failed to clear storage');
+                console.error('Failed to clear storage:', error);
+            }
+        }
+    };
+
     return (
         <div className="login-page">
             <div className="login-page__background">
@@ -109,6 +123,30 @@ export function LoginPage() {
                     >
                         Sign In
                     </Button>
+
+                    <div style={{
+                        textAlign: 'center',
+                        marginTop: '12px',
+                        fontSize: '12px',
+                        color: 'var(--text-tertiary)'
+                    }}>
+                        Having storage issues?{' '}
+                        <button
+                            type="button"
+                            onClick={handleClearStorage}
+                            style={{
+                                background: 'none',
+                                border: 'none',
+                                color: 'var(--color-primary)',
+                                textDecoration: 'underline',
+                                cursor: 'pointer',
+                                fontSize: '12px',
+                                padding: 0
+                            }}
+                        >
+                            Clear Storage
+                        </button>
+                    </div>
                 </form>
             </motion.div>
         </div>

@@ -48,42 +48,63 @@ export const useAuthStore = create<AuthState>()(
             login: async (email: string, password: string) => {
                 set({ loading: true, error: null });
                 try {
+                    // Proactively clear all avatars to prevent quota issues
+                    try {
+                        const { clearAllAvatars } = await import('../utils/imageCompression');
+                        clearAllAvatars();
+                        console.log('Cleared all avatars before login to prevent quota issues');
+                    } catch (clearError) {
+                        console.warn('Failed to clear avatars:', clearError);
+                    }
+
                     const payload: LoginPayload = { user: email, password };
                     const userData = await authAPI.login(payload);
 
                     // Generate a token (in a real app, this comes from the backend)
                     const token = `token_${userData.id}`;
 
-                    // Check for locally persisted avatar
+                    // Don't load avatar from localStorage anymore - it's been cleared
+                    // Users will need to re-upload their avatars after login
+
                     try {
-                        const localAvatarKey = `avatar_${userData.email}`;
-                        const localAvatar = localStorage.getItem(localAvatarKey);
+                        set({
+                            user: userData,
+                            isAuthenticated: true,
+                            token,
+                            loading: false,
+                        });
+                    } catch (persistError) {
+                        // If Zustand persist fails due to quota, clear everything and retry
+                        const isQuotaError = persistError instanceof Error && (
+                            persistError.name === 'QuotaExceededError' ||
+                            persistError.message?.includes('quota') ||
+                            persistError.message?.includes('QuotaExceededError') ||
+                            persistError.message?.includes('storage')
+                        );
 
-                        if (localAvatar) {
-                            userData.avatar_url = localAvatar;
-                        }
-                    } catch (storageError) {
-                        // If localStorage has issues, just skip avatar loading
-                        console.warn('Failed to load avatar from localStorage:', storageError);
+                        if (isQuotaError) {
+                            console.error('✅ QUOTA ERROR DETECTED - Clearing localStorage...');
+                            console.error('Error details:', persistError);
 
-                        // If quota exceeded, clear old avatars
-                        if (storageError instanceof Error && storageError.name === 'QuotaExceededError') {
+                            // Clear all localStorage
                             try {
-                                const { clearAllAvatars } = await import('../utils/imageCompression');
-                                clearAllAvatars();
-                                console.log('Cleared avatars due to quota exceeded');
-                            } catch (clearError) {
-                                console.error('Failed to clear avatars:', clearError);
+                                localStorage.clear();
+                                console.log('Cleared all localStorage');
+                            } catch (e) {
+                                console.error('Failed to clear localStorage:', e);
                             }
+
+                            // Retry set
+                            set({
+                                user: userData,
+                                isAuthenticated: true,
+                                token,
+                                loading: false,
+                            });
+                        } else {
+                            throw persistError;
                         }
                     }
-
-                    set({
-                        user: userData,
-                        isAuthenticated: true,
-                        token,
-                        loading: false,
-                    });
                     // Note: No need to manually localStorage.setItem, persist does it for you!
                 } catch (error) {
                     const errorMessage = error instanceof Error ? error.message : 'Login failed';
