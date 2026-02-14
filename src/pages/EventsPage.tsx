@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-    Calendar, 
-    Clock, 
-    MapPin, 
-    Plus, 
-    Edit2, 
-    Trash2, 
-    AlertCircle, 
-    CheckCircle2, 
-    Hourglass, 
-    BarChart2 
+import {
+    Calendar,
+    Clock,
+    MapPin,
+    Plus,
+    Edit2,
+    Trash2,
+    AlertCircle,
+    CheckCircle2,
+    Hourglass,
+    BarChart2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card } from '../components/ui/Card';
@@ -28,12 +28,12 @@ export function EventsPage() {
     const [activeTab, setActiveTab] = useState<'upcoming' | 'past' | 'all'>('upcoming');
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(false);
-    
+
     // Form Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState<Event | undefined>();
     const [formLoading, setFormLoading] = useState(false);
-    
+
     // Stats Modal State
     const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
     const [statsEventId, setStatsEventId] = useState<string | null>(null);
@@ -41,13 +41,13 @@ export function EventsPage() {
 
     // Check-in State
     const [checkInLoading, setCheckInLoading] = useState<string | null>(null);
-    
+
     const { token, user } = useAuthStore();
     const isAdmin = user?.role === 'Admin';
 
     useEffect(() => {
         fetchEvents();
-    }, []);
+    }, [activeTab]); // Re-fetch when tab changes
 
     const fetchEvents = async () => {
         if (!token) {
@@ -57,16 +57,24 @@ export function EventsPage() {
 
         setLoading(true);
         try {
-            // Non-admins can only see upcoming events
-            const data = isAdmin ? await eventsAPI.getAll(token) : await eventsAPI.getUpcoming(token);
+            let data: Event[];
+
+            // Fetch based on active tab
+            if (activeTab === 'upcoming') {
+                data = await eventsAPI.getUpcoming(token);
+            } else if (activeTab === 'past') {
+                data = await eventsAPI.getPast(token);
+            } else {
+                // 'all' tab - fetch all events
+                data = await eventsAPI.getAll(token);
+            }
+
             setEvents(data);
         } catch (error) {
             if (error instanceof Error && error.message.includes('403')) {
                 // Handle 403 Forbidden - user doesn't have permission
                 setEvents([]);
-                if (isAdmin) {
-                    toast.error('You do not have permission to view all events');
-                }
+                toast.error('You do not have permission to view these events');
             } else {
                 toast.error('Failed to load events');
             }
@@ -75,18 +83,6 @@ export function EventsPage() {
             setLoading(false);
         }
     };
-
-    const filteredEvents = events.filter(event => {
-        const eventDate = new Date(event.date);
-        // Normalize times for comparison
-        eventDate.setHours(0, 0, 0, 0);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        if (activeTab === 'upcoming') return eventDate >= today;
-        if (activeTab === 'past') return eventDate < today;
-        return true;
-    });
 
     const handleCreateClick = () => {
         setSelectedEvent(undefined);
@@ -118,7 +114,7 @@ export function EventsPage() {
 
     const handleCheckIn = async (event: Event) => {
         if (!token || !user) return;
-        
+
         setCheckInLoading(event.id);
 
         if (!navigator.geolocation) {
@@ -232,14 +228,14 @@ export function EventsPage() {
                 <div className="events-page__loading">
                     <p>Loading events...</p>
                 </div>
-            ) : filteredEvents.length === 0 ? (
+            ) : events.length === 0 ? (
                 <div className="events-page__empty">
                     <AlertCircle size={48} />
                     <p>No events to display</p>
                 </div>
             ) : (
                 <div className="events-page__grid">
-                    {filteredEvents.map((event, index) => (
+                    {events.map((event, index) => (
                         <EventCard
                             key={event.id}
                             event={event}
@@ -250,6 +246,7 @@ export function EventsPage() {
                             onViewStats={handleStatsClick}
                             checkInLoading={checkInLoading === event.id}
                             isAdmin={isAdmin}
+                            isPastTab={activeTab === 'past'}
                         />
                     ))}
                 </div>
@@ -263,7 +260,7 @@ export function EventsPage() {
                 loading={formLoading}
             />
 
-            <EventStatsModal 
+            <EventStatsModal
                 isOpen={isStatsModalOpen}
                 onClose={() => setIsStatsModalOpen(false)}
                 eventId={statsEventId}
@@ -282,6 +279,7 @@ function EventCard({
     onViewStats,
     checkInLoading,
     isAdmin = false,
+    isPastTab = false,
 }: {
     event: Event;
     index: number;
@@ -291,12 +289,13 @@ function EventCard({
     onViewStats: (event: Event) => void;
     checkInLoading: boolean;
     isAdmin?: boolean;
+    isPastTab?: boolean;
 }) {
     // --- Time & Logic ---
     const now = new Date();
-    
+
     // Parse Event Date (e.g. "2026-02-14")
-    const eventDate = new Date(event.date); 
+    const eventDate = new Date(event.date);
     const isToday = isSameDay(eventDate, now);
 
     // Parse Event Time (e.g. "08:00:00")
@@ -354,7 +353,7 @@ function EventCard({
                 </div>
 
                 <div className="event-card__actions" style={{ marginTop: 'var(--space-md)' }}>
-                    {/* Check In Button Logic */}
+                    {/* Check In Button Logic - Show for all events when it's time */}
                     {canCheckIn ? (
                         <Button
                             variant="primary"
@@ -383,15 +382,18 @@ function EventCard({
                     {/* Admin Actions */}
                     {isAdmin && (
                         <>
-                            <Button
-                                variant="secondary"
-                                size="sm"
-                                icon={<BarChart2 size={16} />}
-                                onClick={() => onViewStats(event)}
-                                title="View Stats"
-                            >
-                                Stats
-                            </Button>
+                            {/* Show View Stats only on Past tab */}
+                            {isPastTab && (
+                                <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    icon={<BarChart2 size={16} />}
+                                    onClick={() => onViewStats(event)}
+                                    title="View Stats"
+                                >
+                                    Stats
+                                </Button>
+                            )}
                             <Button
                                 variant="secondary"
                                 size="sm"
