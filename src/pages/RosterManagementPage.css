@@ -476,3 +476,72 @@
 .roster-modal__actions button[type="submit"]:hover::before {
     left: 100%;
 }
+
+html.light .roster-modal {
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+html.light .roster-modal__header {
+    background: rgba(255, 255, 255, 0.98);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+html.light .roster-modal__title {
+    color: var(--color-text-primary);
+}
+
+html.light .roster-modal__close {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+    color: var(--color-text-secondary);
+}
+
+html.light .roster-modal__close:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: var(--color-text-primary);
+}
+
+html.light .roster-modal__label,
+html.light .roster-modal__checkbox-label {
+    color: var(--color-text-secondary);
+}
+
+html.light .roster-modal .input-container {
+    background: rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+html.light .roster-modal .input-container:hover {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.2);
+}
+
+html.light .roster-modal .input-container:focus-within {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.15);
+}
+
+html.light .roster-modal .input-field {
+    color: var(--color-text-primary);
+}
+
+html.light .roster-modal__checkbox-field {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+html.light .roster-modal__checkbox-field:hover {
+    border-color: rgba(0, 0, 0, 0.2);
+}
+
+html.light .roster-modal__section-title {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+html.light .roster-modal__actions {
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}

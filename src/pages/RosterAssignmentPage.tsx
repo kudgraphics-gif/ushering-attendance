@@ -4,7 +4,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
 import { ArrowLeft, Upload, ChevronDown, MapPin, Edit3 } from 'lucide-react';
 
-
 import toast from 'react-hot-toast';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -24,7 +23,6 @@ export function RosterAssignmentsPage() {
     const [filterText, setFilterText] = useState('');
     const [exportMenuOpen, setExportMenuOpen] = useState(false);
     const [exportLoading, setExportLoading] = useState(false);
-    const [editingUserId, setEditingUserId] = useState<string | null>(null);
     const [updatingHall, setUpdatingHall] = useState(false);
 
     useEffect(() => {
@@ -49,7 +47,7 @@ export function RosterAssignmentsPage() {
     const handleExport = async (type: string) => {
         if (!id || !token) return;
         setExportLoading(true);
-        setExportMenuOpen(false); // Close dropdown
+        setExportMenuOpen(false);
 
         try {
             let blob: Blob;
@@ -58,10 +56,7 @@ export function RosterAssignmentsPage() {
             if (type === 'Combined') {
                 blob = await rosterAPI.exportCombined(id, token);
             } else {
-                // Map display name to API param if necessary. 
-                // The prompt says halls are MainHall, HallOne, Gallery, Basement, Outside
-                // If user selects "Hall One", we pass "HallOne"
-                const hallParam = type.replace(/\s/g, ''); // Simple sanitation: "Hall One" -> "HallOne"
+                const hallParam = type.replace(/\s/g, ''); 
                 blob = await rosterAPI.exportHall(id, hallParam, token);
             }
 
@@ -86,7 +81,6 @@ export function RosterAssignmentsPage() {
         if (!token || !id) return;
 
         setUpdatingHall(true);
-        setEditingUserId(null);
 
         try {
             await rosterAPI.updateUserHall(
@@ -99,7 +93,6 @@ export function RosterAssignmentsPage() {
             );
 
             toast.success(`Updated ${assignment.first_name}'s hall to ${newHall}`);
-            // Refresh the assignments
             await fetchAssignments(id);
         } catch (error) {
             console.error(error);
@@ -149,18 +142,21 @@ export function RosterAssignmentsPage() {
             name: 'Actions',
             cell: (row: RosterAssignment) => {
                 const availableHalls = ALL_HALLS.filter(hall => hall !== row.hall);
-                const isOpen = editingUserId === row.user_id;
 
                 return (
-                    <div style={{ position: 'relative' }}>
-                        <button
-                            onClick={() => setEditingUserId(isOpen ? null : row.user_id)}
+                    <div style={{ position: 'relative', display: 'inline-block' }}>
+                        {/* Native Select disguised as a button to fix mobile and table clipping */}
+                        <select
+                            value=""
+                            onChange={(e) => {
+                                if (e.target.value) handleUpdateHall(row, e.target.value);
+                            }}
                             disabled={updatingHall}
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '6px',
-                                padding: '6px 12px',
+                                width: '120px',
+                                padding: '6px 30px 6px 12px',
                                 background: 'var(--color-accent-blue)',
                                 color: 'white',
                                 border: 'none',
@@ -169,68 +165,28 @@ export function RosterAssignmentsPage() {
                                 fontSize: '13px',
                                 fontWeight: 500,
                                 opacity: updatingHall ? 0.6 : 1,
-                                transition: 'all 0.2s',
+                                appearance: 'none', // Hides default OS arrow
+                                WebkitAppearance: 'none',
                             }}
-                            onMouseEnter={(e) => !updatingHall && (e.currentTarget.style.background = '#0066cc')}
-                            onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--color-accent-blue)')}
                         >
-                            <Edit3 size={14} />
-                            Edit Hall
-                        </button>
-
-                        {isOpen && (
-                            <>
-                                <div
-                                    style={{
-                                        position: 'fixed',
-                                        top: 0,
-                                        left: 0,
-                                        right: 0,
-                                        bottom: 0,
-                                        zIndex: 99,
-                                    }}
-                                    onClick={() => setEditingUserId(null)}
-                                />
-                                <div
-                                    style={{
-                                        position: 'absolute',
-                                        top: '100%',
-                                        right: 0,
-                                        marginTop: '4px',
-                                        background: 'var(--surface-card, #1e1e1e)',
-                                        border: '1px solid var(--border-color)',
-                                        borderRadius: 'var(--radius-md)',
-                                        boxShadow: 'var(--shadow-lg)',
-                                        zIndex: 100,
-                                        minWidth: '150px',
-                                        overflow: 'hidden',
-                                    }}
-                                >
-                                    {availableHalls.map((hall) => (
-                                        <button
-                                            key={hall}
-                                            onClick={() => handleUpdateHall(row, hall)}
-                                            style={{
-                                                display: 'block',
-                                                width: '100%',
-                                                padding: '10px 14px',
-                                                textAlign: 'left',
-                                                background: 'transparent',
-                                                border: 'none',
-                                                color: 'var(--text-primary)',
-                                                cursor: 'pointer',
-                                                fontSize: '13px',
-                                                transition: 'background 0.2s',
-                                            }}
-                                            onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--surface-hover)')}
-                                            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                                        >
-                                            {hall}
-                                        </button>
-                                    ))}
-                                </div>
-                            </>
-                        )}
+                            <option value="" disabled>Edit Hall</option>
+                            {availableHalls.map((hall) => (
+                                <option key={hall} value={hall} style={{ color: '#000' }}>
+                                    {hall}
+                                </option>
+                            ))}
+                        </select>
+                        <Edit3
+                            size={14}
+                            style={{
+                                position: 'absolute',
+                                right: '12px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                color: 'white',
+                                pointerEvents: 'none'
+                            }}
+                        />
                     </div>
                 );
             },
@@ -357,7 +313,7 @@ export function RosterAssignmentsPage() {
                             borderRadius: '8px',
                             border: '1px solid rgba(255,255,255,0.1)',
                             background: 'rgba(255,255,255,0.05)',
-                            color: 'white',
+                            color: 'var(--color-text-primary)',
                             width: '100%',
                             maxWidth: '400px',
                             outline: 'none'
@@ -368,15 +324,17 @@ export function RosterAssignmentsPage() {
                 {loading ? (
                     <div className="roster-management-page__loading">Loading...</div>
                 ) : (
-                    <DataTable
-                        columns={columns}
-                        data={filteredItems}
-                        pagination
-                        paginationPerPage={20}
-                        customStyles={customTableStyles}
-                        theme="dark"
-                        noDataComponent={<div className="p-8 text-center text-gray-500">No assignments found for this roster.</div>}
-                    />
+                    <div style={{ overflowX: 'auto', minHeight: '300px' }}>
+                        <DataTable
+                            columns={columns}
+                            data={filteredItems}
+                            pagination
+                            paginationPerPage={20}
+                            customStyles={customTableStyles}
+                            theme="dark"
+                            noDataComponent={<div className="p-8 text-center text-gray-500">No assignments found for this roster.</div>}
+                        />
+                    </div>
                 )}
             </Card>
         </motion.div>
