@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Avatar } from './Avatar';
 import { Badge } from './Badge';
-import { LogIn, Trash2, Eye, RotateCcw, Edit } from 'lucide-react';
+import { LogIn, Trash2, Eye, RotateCcw, Edit, UserCheck, UserX } from 'lucide-react';
 import type { UserDto, ActivityLogResponse } from '../../types';
 import './DataTable.css';
 
@@ -77,6 +77,7 @@ interface UsersTableProps {
     isAdmin: boolean;
     isCheckingIn?: string | null;
     onEdit?: (user: UserDto) => void;
+    onToggleStatus?: (user: UserDto) => void;
 }
 
 export function UsersTable({
@@ -88,6 +89,7 @@ export function UsersTable({
     isAdmin,
     isCheckingIn,
     onEdit,
+    onToggleStatus,
 }: UsersTableProps) {
     const columns = [
         {
@@ -164,7 +166,13 @@ export function UsersTable({
                             >
                                 <Edit size={18} />
                             </button>
-                            
+                            <button
+                                className={`users-table__action-btn ${user.is_active ? 'user-card__action-btn--deactivate' : 'user-card__action-btn--activate'}`}
+                                title={user.is_active ? "Deactivate User" : "Activate User"}
+                                onClick={() => onToggleStatus?.(user)}
+                            >
+                                {user.is_active ? <UserX size={18} /> : <UserCheck size={18} />}
+                            </button>
                             <button
                                 className="users-table__action-btn"
                                 title="Reset Device ID"

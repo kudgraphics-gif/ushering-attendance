@@ -235,6 +235,24 @@ export const usersAPI = {
             token
         );
     },
+
+    activate: async (userId: string, token: string): Promise<{ message: string; data: null }> => {
+        return apiCall<{ message: string; data: null }>(
+            'PATCH', // NOTE: If your backend uses POST instead of PATCH, change this to 'POST'
+            `/users/admin/activate/${userId}`,
+            undefined,
+            token
+        );
+    },
+
+    deactivate: async (userId: string, token: string): Promise<{ message: string; data: null }> => {
+        return apiCall<{ message: string; data: null }>(
+            'PATCH', // NOTE: If your backend uses POST instead of PATCH, change this to 'POST'
+            `/users/admin/deactivate/${userId}`,
+            undefined,
+            token
+        );
+    },
 };
 
 // Attendance APIs

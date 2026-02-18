@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Download, Upload, AlertCircle, Grid3x3, List, LogIn, Eye, Trash2, Edit2 } from 'lucide-react';
+import { Plus, Search, Download, Upload, AlertCircle, Grid3x3, List, LogIn, Eye, Trash2, Edit2, UserCheck, UserX } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -102,7 +102,6 @@ export function UsersPage() {
             return;
         }
 
-        // Validate file type
         if (!file.name.endsWith('.csv') && !file.name.endsWith('.xlsx')) {
             toast.error('Please select a CSV or Excel file');
             return;
@@ -112,13 +111,12 @@ export function UsersPage() {
         try {
             await usersExportAPI.importUsers(file, token);
             toast.success('Users imported successfully');
-            await fetchUsers(); // Refresh the user list
+            await fetchUsers(); 
         } catch (error) {
             toast.error(error instanceof Error ? error.message : 'Import failed');
             console.error(error);
         } finally {
             setImporting(false);
-            // Reset file input
             event.target.value = '';
         }
     };
@@ -151,14 +149,11 @@ export function UsersPage() {
         setFormLoading(true);
         try {
             if (selectedUser) {
-                // Update existing user using the new admin update endpoint
                 await usersAPI.adminUpdate(selectedUser.id, data, token);
                 setUsers(users.map(u => u.id === selectedUser.id ? { ...u, ...data } : u));
                 toast.success('User updated successfully');
             } else {
-                // Create new user
                 await usersAPI.register(data as any, token);
-                // Refresh the user list
                 await fetchUsers();
                 toast.success('User registered successfully');
             }
@@ -176,7 +171,6 @@ export function UsersPage() {
             return;
         }
 
-        // Confirm deletion
         const confirmDelete = window.confirm(
             `Are you sure you want to delete ${userName}? This action cannot be undone.`
         );
@@ -199,7 +193,6 @@ export function UsersPage() {
             return;
         }
 
-        // Confirm reset
         const confirmReset = window.confirm(
             `Are you sure you want to reset the device ID for ${userName}? They will need to log in again.`
         );
@@ -211,6 +204,36 @@ export function UsersPage() {
             toast.success(`Device ID reset successfully for ${userName}`);
         } catch (error) {
             toast.error(error instanceof Error ? error.message : 'Device ID reset failed');
+            console.error(error);
+        }
+    };
+
+    // NEW: Activate / Deactivate Handler
+    const handleToggleStatus = async (user: UserDto) => {
+        if (!token) {
+            toast.error('Not authenticated');
+            return;
+        }
+
+        const action = user.is_active ? 'deactivate' : 'activate';
+        const confirmAction = window.confirm(
+            `Are you sure you want to ${action} ${user.first_name}?`
+        );
+
+        if (!confirmAction) return;
+
+        try {
+            if (user.is_active) {
+                await usersAPI.deactivate(user.id, token);
+                toast.success('User deactivated successfully');
+            } else {
+                await usersAPI.activate(user.id, token);
+                toast.success('User activated successfully');
+            }
+            // Update local state without refreshing the whole list
+            setUsers(users.map(u => u.id === user.id ? { ...u, is_active: !user.is_active } : u));
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : `Failed to ${action} user`);
             console.error(error);
         }
     };
@@ -311,8 +334,9 @@ export function UsersPage() {
                             index={index}
                             onCheckIn={handleCheckInUser}
                             onViewAttendance={handleViewAttendance}
-                            onEdit={handleEditUser} // Passed down here
+                            onEdit={handleEditUser}
                             onDelete={handleDeleteUser}
+                            onToggleStatus={handleToggleStatus} // Passed down
                             isCheckingIn={checkingInUser === user.id}
                             isAdmin={currentUser?.role === 'Admin'}
                         />
@@ -324,9 +348,10 @@ export function UsersPage() {
                         users={filteredUsers}
                         onCheckIn={handleCheckInUser}
                         onViewAttendance={handleViewAttendance}
-                        onEdit={handleEditUser} // Passed down here
+                        onEdit={handleEditUser}
                         onDelete={handleDeleteUser}
                         onResetDeviceId={handleResetDeviceId}
+                        onToggleStatus={handleToggleStatus} // Passed down for table view
                         isAdmin={currentUser?.role === 'Admin'}
                         isCheckingIn={checkingInUser}
                     />
@@ -362,6 +387,7 @@ function UserCard({
     onViewAttendance,
     onEdit,
     onDelete,
+    onToggleStatus,
     isCheckingIn,
     isAdmin,
 }: {
@@ -371,6 +397,7 @@ function UserCard({
     onViewAttendance: (user: UserDto) => void;
     onEdit: (user: UserDto) => void;
     onDelete: (userId: string, userName: string) => Promise<void>;
+    onToggleStatus: (user: UserDto) => Promise<void>;
     isCheckingIn: boolean;
     isAdmin: boolean;
 }) {
@@ -440,6 +467,16 @@ function UserCard({
                             onClick={() => onEdit(user)}
                         >
                             <Edit2 size={20} />
+                        </button>
+                    )}
+                    {/* NEW: Activate / Deactivate Button */}
+                    {isAdmin && (
+                        <button
+                            className={`user-card__action-btn ${user.is_active ? 'user-card__action-btn--deactivate' : 'user-card__action-btn--activate'}`}
+                            title={user.is_active ? "Deactivate User" : "Activate User"}
+                            onClick={() => onToggleStatus(user)}
+                        >
+                            {user.is_active ? <UserX size={20} /> : <UserCheck size={20} />}
                         </button>
                     )}
                     {isAdmin && (

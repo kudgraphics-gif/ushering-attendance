@@ -264,6 +264,38 @@
   color: #ff6b6b;
 }
 
+/* --- New Activate / Deactivate Button Styles --- */
+.user-card__action-btn--activate {
+  background: rgba(48, 209, 88, 0.1);
+  color: #30d158;
+}
+
+.user-card__action-btn--activate:hover:not(:disabled) {
+  background: rgba(48, 209, 88, 0.2);
+  border-color: #30d158;
+  color: #30d158;
+}
+
+.user-card__action-btn--deactivate {
+  background: rgba(255, 159, 10, 0.1);
+  color: #ff9f0a; /* Orange to distinguish from the Red Delete button */
+}
+
+.user-card__action-btn--deactivate:hover:not(:disabled) {
+  background: rgba(255, 159, 10, 0.2);
+  border-color: #ff9f0a;
+  color: #ff9f0a;
+}
+
+/* Light Theme Overrides */
+html.light .user-card__action-btn--activate {
+  background: rgba(48, 209, 88, 0.15);
+}
+
+html.light .user-card__action-btn--deactivate {
+  background: rgba(255, 159, 10, 0.15);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .users-page__header {
