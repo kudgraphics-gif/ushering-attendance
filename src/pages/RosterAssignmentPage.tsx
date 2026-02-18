@@ -1,14 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
-import { ArrowLeft, Upload, ChevronDown, MapPin, Edit3 } from 'lucide-react';
-
 import toast from 'react-hot-toast';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { rosterAPI, type RosterAssignment } from '../services/api';
+import { rosterAPI, type RosterAssignment, type RosterStats } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
+import {
+    CheckCircle2,
+    Mars,
+    Venus,
+    PieChart as PieIcon,
+    ArrowLeft,
+    Upload,
+    ChevronDown,
+    MapPin,
+    Edit3
+} from 'lucide-react';
+import {
+    PieChart,
+    Pie,
+    Cell,
+    Tooltip,
+    ResponsiveContainer,
+    Legend
+} from 'recharts';
 import './RosterManagementPage.css'; // Reusing styles
 
 const ALL_HALLS = ['Gallery', 'Outside', 'MainHall', 'Basement', 'HallOne'];
@@ -19,7 +36,10 @@ export function RosterAssignmentsPage() {
     const { token } = useAuthStore();
 
     const [assignments, setAssignments] = useState<RosterAssignment[]>([]);
+    const [allStats, setAllStats] = useState<RosterStats[]>([]);
+    const [selectedHall, setSelectedHall] = useState<string>('All');
     const [loading, setLoading] = useState(false);
+    const [statsLoading, setStatsLoading] = useState(false);
     const [filterText, setFilterText] = useState('');
     const [exportMenuOpen, setExportMenuOpen] = useState(false);
     const [exportLoading, setExportLoading] = useState(false);
@@ -28,8 +48,52 @@ export function RosterAssignmentsPage() {
     useEffect(() => {
         if (id && token) {
             fetchAssignments(id);
+            fetchStats(id);
         }
     }, [id, token]);
+
+    const fetchStats = async (rosterId: string) => {
+        setStatsLoading(true);
+        try {
+            const data = await rosterAPI.getStats(rosterId, token!);
+            if (Array.isArray(data)) {
+                setAllStats(data);
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setStatsLoading(false);
+        }
+    };
+
+    // Derived stats for the selected tab
+    const currentStats: RosterStats | null = useMemo(() => {
+        if (!allStats.length) return null;
+
+        if (selectedHall === 'All') {
+            return allStats.reduce((acc, curr) => ({
+                ...curr,
+                total_expected: acc.total_expected + curr.total_expected,
+                total_assigned: acc.total_assigned + curr.total_assigned,
+                total_unassigned: acc.total_unassigned + curr.total_unassigned,
+                number_of_male: acc.number_of_male + curr.number_of_male,
+                number_of_female: acc.number_of_female + curr.number_of_female,
+                hall: 'All',
+            }), {
+                hall: 'All',
+                roster_id: id || '',
+                total_expected: 0,
+                total_assigned: 0,
+                total_unassigned: 0,
+                percentage_assigned: 0,
+                percentage_unassigned: 0,
+                number_of_male: 0,
+                number_of_female: 0,
+            } as RosterStats);
+        }
+
+        return allStats.find(s => s.hall === selectedHall) || null;
+    }, [allStats, selectedHall, id]);
 
     const fetchAssignments = async (rosterId: string) => {
         setLoading(true);
@@ -56,7 +120,7 @@ export function RosterAssignmentsPage() {
             if (type === 'Combined') {
                 blob = await rosterAPI.exportCombined(id, token);
             } else {
-                const hallParam = type.replace(/\s/g, ''); 
+                const hallParam = type.replace(/\s/g, '');
                 blob = await rosterAPI.exportHall(id, hallParam, token);
             }
 
@@ -155,21 +219,28 @@ export function RosterAssignmentsPage() {
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                width: '120px',
-                                padding: '6px 30px 6px 12px',
-                                background: 'var(--color-accent-blue)',
-                                color: 'white',
-                                border: 'none',
+                                padding: '5px 24px 5px 10px',
+                                background: 'rgba(10, 132, 255, 0.1)',
+                                color: 'var(--color-accent-blue)',
+                                border: '1px solid rgba(10, 132, 255, 0.2)',
                                 borderRadius: 'var(--radius-md)',
                                 cursor: updatingHall ? 'not-allowed' : 'pointer',
-                                fontSize: '13px',
-                                fontWeight: 500,
+                                fontSize: '12px',
+                                fontWeight: 600,
                                 opacity: updatingHall ? 0.6 : 1,
-                                appearance: 'none', // Hides default OS arrow
+                                appearance: 'none',
                                 WebkitAppearance: 'none',
+                                width: '90px',
+                                transition: 'all 0.2s',
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'rgba(10, 132, 255, 0.2)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'rgba(10, 132, 255, 0.1)';
                             }}
                         >
-                            <option value="" disabled>Edit Hall</option>
+                            <option value="" disabled>Edit</option>
                             {availableHalls.map((hall) => (
                                 <option key={hall} value={hall} style={{ color: '#000' }}>
                                     {hall}
@@ -177,13 +248,13 @@ export function RosterAssignmentsPage() {
                             ))}
                         </select>
                         <Edit3
-                            size={14}
+                            size={12}
                             style={{
                                 position: 'absolute',
-                                right: '12px',
+                                right: '8px',
                                 top: '50%',
                                 transform: 'translateY(-50%)',
-                                color: 'white',
+                                color: 'var(--color-accent-blue)',
                                 pointerEvents: 'none'
                             }}
                         />
@@ -219,6 +290,11 @@ export function RosterAssignmentsPage() {
             },
         },
     };
+
+    const chartData = currentStats ? [
+        { name: 'Male', value: currentStats.number_of_male, color: '#0a84ff' },
+        { name: 'Female', value: currentStats.number_of_female, color: '#ff375f' },
+    ] : [];
 
     return (
         <motion.div
@@ -298,6 +374,91 @@ export function RosterAssignmentsPage() {
                             </div>
                         </>
                     )}
+                </div>
+            </div>
+
+            {/* Metrics Section */}
+            <div className="roster-stats">
+                <div className="roster-stats__hall-tabs">
+                    {['All', ...ALL_HALLS].map((hall) => (
+                        <button
+                            key={hall}
+                            className={`roster-stats__tab ${selectedHall === hall ? 'roster-stats__tab--active' : ''}`}
+                            onClick={() => setSelectedHall(hall)}
+                        >
+                            {hall}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="roster-stats__grid">
+                    <Card glass className="roster-stats__chart-card">
+                        <h3 className="roster-stat-card__label" style={{ marginBottom: '20px' }}>Gender Distribution</h3>
+                        {statsLoading ? (
+                            <div className="p-8 text-secondary">Loading chart...</div>
+                        ) : currentStats && (currentStats.number_of_male > 0 || currentStats.number_of_female > 0) ? (
+                            <ResponsiveContainer width="100%" height={220}>
+                                <PieChart>
+                                    <Pie
+                                        data={chartData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={60}
+                                        outerRadius={80}
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                    >
+                                        {chartData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip
+                                        contentStyle={{
+                                            background: 'var(--color-bg-elevated)',
+                                            border: '1px solid rgba(255,255,255,0.1)',
+                                            borderRadius: '12px',
+                                            color: 'var(--color-text-primary)'
+                                        }}
+                                    />
+                                    <Legend />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="p-8 text-secondary text-center">
+                                <PieIcon size={48} style={{ opacity: 0.2, marginBottom: '12px' }} />
+                                <p>No distribution data available</p>
+                            </div>
+                        )}
+                    </Card>
+
+                    <div className="roster-stats__cards">
+                        <Card glass padding="lg" className="roster-stat-card">
+                            <div className="roster-stat-card__label">Total Assigned</div>
+                            <div className="roster-stat-card__value">{statsLoading ? '...' : currentStats?.total_assigned || 0}</div>
+                            <div className="roster-stat-card__footer">
+                                Members currently assigned
+                            </div>
+                            <div className="roster-stat-card__icon"><CheckCircle2 size={64} color="var(--color-success)" /></div>
+                        </Card>
+
+                        <Card glass padding="lg" className="roster-stat-card">
+                            <div className="roster-stat-card__label">Male Ratio</div>
+                            <div className="roster-stat-card__value">{statsLoading ? '...' : currentStats?.number_of_male || 0}</div>
+                            <div className="roster-stat-card__footer">
+                                Total male members
+                            </div>
+                            <div className="roster-stat-card__icon"><Mars size={64} color="#0a84ff" /></div>
+                        </Card>
+
+                        <Card glass padding="lg" className="roster-stat-card">
+                            <div className="roster-stat-card__label">Female Ratio</div>
+                            <div className="roster-stat-card__value">{statsLoading ? '...' : currentStats?.number_of_female || 0}</div>
+                            <div className="roster-stat-card__footer">
+                                Total female members
+                            </div>
+                            <div className="roster-stat-card__icon"><Venus size={64} color="#ff375f" /></div>
+                        </Card>
+                    </div>
                 </div>
             </div>
 

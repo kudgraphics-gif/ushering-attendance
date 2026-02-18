@@ -460,6 +460,18 @@ export interface RosterAssignment {
     hall: string;
 }
 
+export interface RosterStats {
+    hall: string;
+    roster_id: string;
+    total_expected: number;
+    total_assigned: number;
+    total_unassigned: number;
+    percentage_assigned: number;
+    percentage_unassigned: number;
+    number_of_male: number;
+    number_of_female: number;
+}
+
 export const rosterAPI = {
     create: async (payload: NewRoster, token: string): Promise<{ message: string; data: Roster }> => {
         return apiCall<{ message: string; data: Roster }>(
@@ -564,6 +576,16 @@ export const rosterAPI = {
             'PATCH',
             '/roster/hall',
             payload,
+            token
+        );
+    },
+
+    getStats: async (id: string, token: string, hall?: string): Promise<RosterStats | RosterStats[]> => {
+        const endpoint = hall ? `/roster/${id}/stats/${hall}` : `/roster/${id}/stats`;
+        return apiCall<RosterStats | RosterStats[]>(
+            'GET',
+            endpoint,
+            undefined,
             token
         );
     },
