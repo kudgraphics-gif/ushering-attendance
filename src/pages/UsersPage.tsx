@@ -111,7 +111,7 @@ export function UsersPage() {
         try {
             await usersExportAPI.importUsers(file, token);
             toast.success('Users imported successfully');
-            await fetchUsers(); 
+            await fetchUsers();
         } catch (error) {
             toast.error(error instanceof Error ? error.message : 'Import failed');
             console.error(error);
@@ -410,14 +410,19 @@ function UserCard({
             <Card glass hover className="user-card">
                 <div className="user-card__header">
                     <Avatar src={user.avatar_url} alt={user.first_name} size="lg" />
-                    <Badge role={user.role} size="sm">{user.role}</Badge>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-end' }}>
+                        <Badge role={user.role} size="sm">{user.role}</Badge>
+                        <Badge variant={user.current_roster_hall ? 'success' : 'info'} size="sm">
+                            {user.current_roster_hall ? user.current_roster_hall.replace(/^"|"$/g, '') : 'Pending'}
+                        </Badge>
+                    </div>
                 </div>
 
                 <div className="user-card__content">
                     <h3 className="user-card__name">
                         {user.first_name} {user.last_name}
                     </h3>
-                    <p className="user-card__email">{user.email}</p>
+                    <p className="user-card__email" title={user.email}>{user.email}</p>
                     <p className="user-card__reg">REG: {user.reg_no}</p>
                 </div>
 

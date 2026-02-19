@@ -7,27 +7,69 @@
   top: calc(100% + var(--space-md));
   right: 0;
   width: 350px;
-  background: var(--surface-card, #ffffff); /* Fallback to white for safety in light mode */
+  max-height: 85vh; /* Limit height */
+  background: var(--surface-card, #ffffff);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xl);
-  padding: var(--space-lg);
+  padding: 0; /* Remove modal padding to handle it in sections */
   box-shadow: var(--shadow-2xl);
   z-index: 1000;
   overflow: hidden;
-}
-
-[data-theme='dark'] .header__profile-modal {
-    background: var(--surface-card, #1e1e1e);
+  display: flex;
+  flex-direction: column;
 }
 
 .header__profile-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--space-md);
-  padding-bottom: var(--space-sm);
+  padding: var(--space-lg) var(--space-lg) var(--space-sm);
   border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
 }
+
+.header__profile-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  overflow-y: auto; /* Enable scrolling */
+  flex: 1;
+}
+
+/* Custom Scrollbar for better aesthetics */
+.header__profile-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.header__profile-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.header__profile-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+[data-theme='light'] .header__profile-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.header__profile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-lg) var(--space-lg);
+  border-top: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+[data-theme='dark'] .header__profile-modal {
+    background: var(--surface-card, #1e1e1e);
+}
+
 
 .header__profile-title {
   margin: 0;
@@ -51,14 +93,6 @@
   color: var(--text-primary);
 }
 
-.header__profile-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: var(--space-md);
-  margin-bottom: var(--space-lg);
-}
 
 .header__profile-avatar-large {
   position: relative;
@@ -142,11 +176,6 @@
   border: 1px solid rgba(212, 175, 55, 0.2);
 }
 
-.header__profile-actions {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-}
 
 .header__profile-action-btn {
   display: flex;

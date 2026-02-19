@@ -580,6 +580,18 @@ export const rosterAPI = {
         );
     },
 
+    addUser: async (
+        payload: { user_id: string; roster_id: string; hall: string },
+        token: string
+    ): Promise<{ message: string; data: null }> => {
+        return apiCall<{ message: string; data: null }>(
+            'POST',
+            '/roster/add-user',
+            payload,
+            token
+        );
+    },
+
     getStats: async (id: string, token: string, hall?: string): Promise<RosterStats | RosterStats[]> => {
         const endpoint = hall ? `/roster/${id}/stats/${hall}` : `/roster/${id}/stats`;
         return apiCall<RosterStats | RosterStats[]>(
