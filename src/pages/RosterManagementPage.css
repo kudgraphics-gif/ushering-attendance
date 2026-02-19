@@ -389,10 +389,43 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.roster-modal__grid {
+.roster-modal__halls-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+    margin-top: var(--space-md);
+}
+
+.roster-modal__hall-group {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-xl);
+    padding: var(--space-xl);
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+.roster-modal__hall-group-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: var(--space-xl);
+    color: var(--color-primary);
+    font-size: var(--text-base);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.roster-modal__hall-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Two per row */
+    grid-template-columns: 1fr 1fr 1fr;
     gap: var(--space-md);
+}
+
+@media (max-width: 640px) {
+    .roster-modal__hall-grid {
+        grid-template-columns: 1fr 1fr;
+    }
 }
 
 .roster-modal__date-grid {

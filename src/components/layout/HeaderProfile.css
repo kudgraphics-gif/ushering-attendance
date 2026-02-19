@@ -37,6 +37,7 @@
   padding: var(--space-md) var(--space-lg);
   overflow-y: auto; /* Enable scrolling */
   flex: 1;
+  min-height: 0; /* Added to ensure it can shrink and trigger scroll */
 }
 
 /* Custom Scrollbar for better aesthetics */

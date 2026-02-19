@@ -227,6 +227,16 @@ export interface NewRoster {
     num_for_gallery: number;
     num_for_basement: number;
     num_for_outside: number;
+    num_female_for_hall_one: number;
+    num_female_for_main_hall: number;
+    num_female_for_gallery: number;
+    num_female_for_basement: number;
+    num_female_for_outside: number;
+    num_male_for_hall_one: number;
+    num_male_for_main_hall: number;
+    num_male_for_gallery: number;
+    num_male_for_basement: number;
+    num_male_for_outside: number;
     year: string;
 }
 
@@ -241,6 +251,16 @@ export interface Roster {
     num_for_gallery: number;
     num_for_basement: number;
     num_for_outside: number;
+    num_female_for_hall_one: number;
+    num_female_for_main_hall: number;
+    num_female_for_gallery: number;
+    num_female_for_basement: number;
+    num_female_for_outside: number;
+    num_male_for_hall_one: number;
+    num_male_for_main_hall: number;
+    num_male_for_gallery: number;
+    num_male_for_basement: number;
+    num_male_for_outside: number;
     year: string;
     created_at: string;
     updated_at: string;

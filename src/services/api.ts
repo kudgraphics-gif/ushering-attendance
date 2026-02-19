@@ -521,7 +521,7 @@ export const rosterAPI = {
     activate: async (id: string, token: string): Promise<{ message: string }> => {
         return apiCall<{ message: string }>(
             'POST',
-            `/roster/activate/${id}`,
+            `/roster/activate-gendered/${id}`,
             undefined,
             token
         );

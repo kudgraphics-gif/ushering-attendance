@@ -41,6 +41,16 @@ export function RosterManagementPage() {
         num_for_gallery: 0,
         num_for_basement: 0,
         num_for_outside: 0,
+        num_female_for_hall_one: 0,
+        num_female_for_main_hall: 0,
+        num_female_for_gallery: 0,
+        num_female_for_basement: 0,
+        num_female_for_outside: 0,
+        num_male_for_hall_one: 0,
+        num_male_for_main_hall: 0,
+        num_male_for_gallery: 0,
+        num_male_for_basement: 0,
+        num_male_for_outside: 0,
         year: new Date().getFullYear().toString(),
     });
 
@@ -71,15 +81,25 @@ export function RosterManagementPage() {
             const endDate = new Date(roster.end_date).toISOString().split('T')[0];
             setFormData({
                 name: roster.name,
-                is_active: true,
+                is_active: roster.is_active,
                 start_date: startDate,
                 end_date: endDate,
-                num_for_hall_one: 0,
-                num_for_main_hall: 0,
-                num_for_gallery: 0,
-                num_for_basement: 0,
-                num_for_outside: 0,
-                year: new Date().getFullYear().toString(),
+                num_for_hall_one: roster.num_for_hall_one || 0,
+                num_for_main_hall: roster.num_for_main_hall || 0,
+                num_for_gallery: roster.num_for_gallery || 0,
+                num_for_basement: roster.num_for_basement || 0,
+                num_for_outside: roster.num_for_outside || 0,
+                num_female_for_hall_one: roster.num_female_for_hall_one || 0,
+                num_female_for_main_hall: roster.num_female_for_main_hall || 0,
+                num_female_for_gallery: roster.num_female_for_gallery || 0,
+                num_female_for_basement: roster.num_female_for_basement || 0,
+                num_female_for_outside: roster.num_female_for_outside || 0,
+                num_male_for_hall_one: roster.num_male_for_hall_one || 0,
+                num_male_for_main_hall: roster.num_male_for_main_hall || 0,
+                num_male_for_gallery: roster.num_male_for_gallery || 0,
+                num_male_for_basement: roster.num_male_for_basement || 0,
+                num_male_for_outside: roster.num_male_for_outside || 0,
+                year: roster.year || new Date().getFullYear().toString(),
             });
         } else {
             setEditingRoster(null);
@@ -93,6 +113,16 @@ export function RosterManagementPage() {
                 num_for_gallery: 0,
                 num_for_basement: 0,
                 num_for_outside: 0,
+                num_female_for_hall_one: 0,
+                num_female_for_main_hall: 0,
+                num_female_for_gallery: 0,
+                num_female_for_basement: 0,
+                num_female_for_outside: 0,
+                num_male_for_hall_one: 0,
+                num_male_for_main_hall: 0,
+                num_male_for_gallery: 0,
+                num_male_for_basement: 0,
+                num_male_for_outside: 0,
                 year: new Date().getFullYear().toString(),
             });
         }
@@ -112,6 +142,16 @@ export function RosterManagementPage() {
             num_for_gallery: 0,
             num_for_basement: 0,
             num_for_outside: 0,
+            num_female_for_hall_one: 0,
+            num_female_for_main_hall: 0,
+            num_female_for_gallery: 0,
+            num_female_for_basement: 0,
+            num_female_for_outside: 0,
+            num_male_for_hall_one: 0,
+            num_male_for_main_hall: 0,
+            num_male_for_gallery: 0,
+            num_male_for_basement: 0,
+            num_male_for_outside: 0,
             year: new Date().getFullYear().toString(),
         });
     };
@@ -411,28 +451,54 @@ export function RosterManagementPage() {
                                         <Input type="date" name="end_date" value={formData.end_date} onChange={handleInputChange} />
                                     </div>
                                 </div>
-                                <div className="roster-modal__section-title">Hall Allocations</div>
-                                <div className="roster-modal__grid">
-                                    <div className="roster-modal__field">
-                                        <label className="roster-modal__label">Hall One</label>
-                                        <Input type="number" name="num_for_hall_one" value={formData.num_for_hall_one || ''} onChange={handleInputChange} className="roster-modal__input-number" />
-                                    </div>
-                                    <div className="roster-modal__field">
-                                        <label className="roster-modal__label">Main Hall</label>
-                                        <Input type="number" name="num_for_main_hall" value={formData.num_for_main_hall || ''} onChange={handleInputChange} className="roster-modal__input-number" />
-                                    </div>
-                                    <div className="roster-modal__field">
-                                        <label className="roster-modal__label">Gallery</label>
-                                        <Input type="number" name="num_for_gallery" value={formData.num_for_gallery || ''} onChange={handleInputChange} className="roster-modal__input-number" />
-                                    </div>
-                                    <div className="roster-modal__field">
-                                        <label className="roster-modal__label">Basement</label>
-                                        <Input type="number" name="num_for_basement" value={formData.num_for_basement || ''} onChange={handleInputChange} className="roster-modal__input-number" />
-                                    </div>
-                                    <div className="roster-modal__field">
-                                        <label className="roster-modal__label">Outside</label>
-                                        <Input type="number" name="num_for_outside" value={formData.num_for_outside || ''} onChange={handleInputChange} className="roster-modal__input-number" />
-                                    </div>
+                                <div className="roster-modal__section-title">Hall Allocations & Capacities</div>
+                                <div className="roster-modal__halls-container">
+                                    {[
+                                        { id: 'main_hall', label: 'Main Hall' },
+                                        { id: 'hall_one', label: 'Hall One' },
+                                        { id: 'basement', label: 'Basement' },
+                                        { id: 'gallery', label: 'Gallery' },
+                                        { id: 'outside', label: 'Outside' }
+                                    ].map((hall) => (
+                                        <div key={hall.id} className="roster-modal__hall-group">
+                                            <div className="roster-modal__hall-group-header">
+                                                <MapPin size={14} />
+                                                <span>{hall.label}</span>
+                                            </div>
+                                            <div className="roster-modal__hall-grid">
+                                                <div className="roster-modal__field">
+                                                    <label className="roster-modal__label">Male</label>
+                                                    <Input
+                                                        type="number"
+                                                        name={`num_male_for_${hall.id}`}
+                                                        value={(formData[`num_male_for_${hall.id}` as keyof typeof formData] as number | string) || ''}
+                                                        onChange={handleInputChange}
+                                                        placeholder="Male"
+                                                    />
+                                                </div>
+                                                <div className="roster-modal__field">
+                                                    <label className="roster-modal__label">Female</label>
+                                                    <Input
+                                                        type="number"
+                                                        name={`num_female_for_${hall.id}`}
+                                                        value={(formData[`num_female_for_${hall.id}` as keyof typeof formData] as number | string) || ''}
+                                                        onChange={handleInputChange}
+                                                        placeholder="Female"
+                                                    />
+                                                </div>
+                                                <div className="roster-modal__field">
+                                                    <label className="roster-modal__label">Total</label>
+                                                    <Input
+                                                        type="number"
+                                                        name={`num_for_${hall.id}`}
+                                                        value={(formData[`num_for_${hall.id}` as keyof typeof formData] as number | string) || ''}
+                                                        onChange={handleInputChange}
+                                                        placeholder="Total"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
                                 <div className="roster-modal__actions">
                                     <Button type="button" variant="secondary" onClick={handleCloseModal} fullWidth>Cancel</Button>
