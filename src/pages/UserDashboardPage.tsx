@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { analyticsAPI, eventsAPI, attendanceAPI } from '../services/api';
 import type { Event, UserDto } from '../types';
 import toast from 'react-hot-toast';
 import { MapPin, Calendar, CheckCircle2, User, Info, Crown } from 'lucide-react';
 import { getDeviceId, recordDeviceCheckIn, hasDeviceCheckedInToday } from '../utils/deviceId';
+import { getNearestVenue } from '../utils/geoCheck';
 import { SuggestionBox } from '../components/ui/SuggestionBox';
+import { LocationWarningModal } from '../components/ui/LocationWarningModal';
+import { DeviceIdWarningModal } from '../components/ui/DeviceIdWarningModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import './UserDashboard.css';
 import '../pages/LoginPageValues.css'; // Import Core Values CSS
@@ -45,6 +48,26 @@ const CORE_VALUES = [
     "The Anointing"
 ];
 
+// ─── Security check session counters (reset on full page reload) ──────────────
+const SESSION_KEY = 'security_check_session';
+
+function getSessionCounts(): { locationCount: number; deviceIdCount: number } {
+    try {
+        const raw = sessionStorage.getItem(SESSION_KEY);
+        return raw ? JSON.parse(raw) : { locationCount: 0, deviceIdCount: 0 };
+    } catch {
+        return { locationCount: 0, deviceIdCount: 0 };
+    }
+}
+
+function saveSessionCounts(counts: { locationCount: number; deviceIdCount: number }) {
+    try {
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify(counts));
+    } catch {
+        // ignore
+    }
+}
+
 export function UserDashboardPage() {
     const { user, token } = useAuthStore();
     const [attendanceData, setAttendanceData] = useState<UserAttendance | null>(null);
@@ -53,13 +76,129 @@ export function UserDashboardPage() {
     const [checkingIn, setCheckingIn] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
 
+    // ── Security check state ──────────────────────────────────────────────────
+    const [locationWarning, setLocationWarning] = useState<{
+        distanceMeters: number;
+        venueName: string;
+    } | null>(null);
+    const [locationDismissCount, setLocationDismissCount] = useState(0);
+    const [rechecking, setRechecking] = useState(false);
+
+    const [showDeviceIdWarning, setShowDeviceIdWarning] = useState(false);
+    const [deviceIdDismissCount, setDeviceIdDismissCount] = useState(0);
+
+    const securityChecked = useRef(false);
+
+    // Core values ticker
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentIndex((prev) => (prev + 1) % CORE_VALUES.length);
-        }, 3000); // Change every 3 seconds
+        }, 3000);
         return () => clearInterval(timer);
     }, []);
 
+    // ── Run security checks once on mount ────────────────────────────────────
+    useEffect(() => {
+        if (!user || securityChecked.current) return;
+        securityChecked.current = true;
+
+        const counts = getSessionCounts();
+
+        // 1. Device ID check
+        const localDeviceId = getDeviceId();
+        const serverDeviceId = (user as any)?.device_id as string | undefined;
+
+        if (
+            serverDeviceId &&
+            localDeviceId !== serverDeviceId &&
+            counts.deviceIdCount < 2
+        ) {
+            setShowDeviceIdWarning(true);
+            setDeviceIdDismissCount(counts.deviceIdCount);
+        }
+
+        // 2. Geolocation check
+        if (navigator.geolocation && counts.locationCount < 2) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const result = getNearestVenue(pos.coords.latitude, pos.coords.longitude);
+                    if (!result.isWithin) {
+                        setLocationWarning({
+                            distanceMeters: result.distanceMeters,
+                            venueName: result.name,
+                        });
+                        setLocationDismissCount(counts.locationCount);
+                    }
+                },
+                () => {
+                    // Silent — we only warn if we know they're out of bounds
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 60000,
+                }
+            );
+        }
+    }, [user]);
+
+    // ── Location re-check (triggered by modal dismiss button) ────────────────
+    const handleLocationRecheck = () => {
+        setRechecking(true);
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                const result = getNearestVenue(pos.coords.latitude, pos.coords.longitude);
+                setRechecking(false);
+
+                if (result.isWithin) {
+                    // They're now within bounds — close the modal
+                    setLocationWarning(null);
+                    const counts = getSessionCounts();
+                    saveSessionCounts({ ...counts, locationCount: counts.locationCount + 1 });
+                } else {
+                    // Still out of bounds: update distance, increment dismiss count
+                    setLocationWarning({
+                        distanceMeters: result.distanceMeters,
+                        venueName: result.name,
+                    });
+                    const newCount = locationDismissCount + 1;
+                    setLocationDismissCount(newCount);
+                    const counts = getSessionCounts();
+                    saveSessionCounts({ ...counts, locationCount: newCount });
+                }
+            },
+            () => {
+                setRechecking(false);
+                const newCount = locationDismissCount + 1;
+                setLocationDismissCount(newCount);
+                const counts = getSessionCounts();
+                saveSessionCounts({ ...counts, locationCount: newCount });
+            },
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        );
+    };
+
+    const handleLocationDismiss = () => {
+        setLocationWarning(null);
+        const counts = getSessionCounts();
+        saveSessionCounts({ ...counts, locationCount: 2 });
+    };
+
+    // ── Device ID dismiss ─────────────────────────────────────────────────────
+    const handleDeviceIdDismiss = () => {
+        const newCount = deviceIdDismissCount + 1;
+        if (newCount >= 2) {
+            setShowDeviceIdWarning(false);
+            const counts = getSessionCounts();
+            saveSessionCounts({ ...counts, deviceIdCount: 2 });
+        } else {
+            setDeviceIdDismissCount(newCount);
+            const counts = getSessionCounts();
+            saveSessionCounts({ ...counts, deviceIdCount: newCount });
+        }
+    };
+
+    // ── Dashboard data load ───────────────────────────────────────────────────
     useEffect(() => {
         const loadData = async () => {
             if (!user || !token) return;
@@ -67,24 +206,17 @@ export function UserDashboardPage() {
             setLoading(true);
 
             try {
-                // Try to load user attendance data
                 try {
                     const attendanceResponse = await analyticsAPI.getUserAttendance(user.id, token);
                     setAttendanceData(attendanceResponse.data);
                 } catch {
-                    // If attendance endpoint fails, create mock data structure
                     setAttendanceData({
                         user,
                         history: [],
-                        summary: {
-                            total_days: 0,
-                            days_present: 0,
-                            rate: 0,
-                        },
+                        summary: { total_days: 0, days_present: 0, rate: 0 },
                     });
                 }
 
-                // Load upcoming events
                 try {
                     const eventsResponse = await eventsAPI.getUpcoming(token);
                     setUpcomingEvents(eventsResponse);
@@ -105,7 +237,6 @@ export function UserDashboardPage() {
             return;
         }
 
-        // Check if device already checked in today
         if (hasDeviceCheckedInToday()) {
             toast.error("You've already checked in today");
             return;
@@ -127,10 +258,7 @@ export function UserDashboardPage() {
 
                     await attendanceAPI.checkIn(
                         {
-                            location: {
-                                lat: latitude,
-                                lng: longitude,
-                            },
+                            location: { lat: latitude, lng: longitude },
                             device_id: deviceId,
                         },
                         token
@@ -139,7 +267,6 @@ export function UserDashboardPage() {
                     recordDeviceCheckIn(user.id);
                     toast.success('Checked in successfully');
 
-                    // Reload attendance data
                     try {
                         const updatedData = await analyticsAPI.getUserAttendance(user.id, token);
                         setAttendanceData(updatedData.data);
@@ -175,8 +302,8 @@ export function UserDashboardPage() {
             },
             {
                 enableHighAccuracy: false,
-                timeout: 30000,       // Give the laptop 30 seconds to find WiFi networks
-                maximumAge: Infinity  // Accept a cached location if available
+                timeout: 30000,
+                maximumAge: Infinity,
             }
         );
     };
@@ -203,13 +330,37 @@ export function UserDashboardPage() {
     let rosterHall = (user as any)?.current_roster_hall;
     let rosterAllocation = (user as any)?.current_roster_allocation;
 
-    // Strip quotes
     if (rosterHall) rosterHall = rosterHall.replace(/^"|"$/g, '');
     if (rosterAllocation) rosterAllocation = rosterAllocation.replace(/^"|"$/g, '');
     const isRosterActive = !!rosterHall;
 
     return (
         <div className="user-dashboard">
+            {/* ── Security Modals ─────────────────────────────────────────── */}
+            <AnimatePresence>
+                {locationWarning && (
+                    <LocationWarningModal
+                        key="location-warning"
+                        distanceMeters={locationWarning.distanceMeters}
+                        venueName={locationWarning.venueName}
+                        dismissCount={locationDismissCount}
+                        onRecheck={handleLocationRecheck}
+                        onDismiss={handleLocationDismiss}
+                        rechecking={rechecking}
+                    />
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {showDeviceIdWarning && (
+                    <DeviceIdWarningModal
+                        key="device-id-warning"
+                        dismissCount={deviceIdDismissCount}
+                        onDismiss={handleDeviceIdDismiss}
+                    />
+                )}
+            </AnimatePresence>
+
             {/* Header */}
             <div className="user-dashboard__header">
                 {/* Core Values Badge */}
@@ -252,7 +403,7 @@ export function UserDashboardPage() {
                 </p>
             </div>
 
-            {/* Attendance Stats - Simple */}
+            {/* Attendance Stats */}
             {attendanceData?.summary && (
                 <div className="user-dashboard__stats">
                     <div className="stat-box">
@@ -305,7 +456,7 @@ export function UserDashboardPage() {
                 </div>
             )}
 
-            {/* NEW SECTION: Roster Information */}
+            {/* Roster Information */}
             <div className="user-dashboard__section">
                 <h2>Roster Assignment</h2>
                 <div className={`roster-card ${isRosterActive ? 'roster-card--active' : 'roster-card--pending'}`}>

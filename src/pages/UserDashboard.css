@@ -445,3 +445,288 @@ html.dark {
         border-radius: 12px;
     }
 }
+
+/* ─── Security Modal ───────────────────────────────────────────────────────── */
+
+.security-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+/* Device ID modal stacks on top */
+.security-modal-overlay--top {
+    z-index: 1010;
+    align-items: center;
+}
+
+.security-modal {
+    width: 100%;
+    max-width: 480px;
+    max-height: 88vh;
+    overflow-y: auto;
+    border-radius: 24px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    /* Glassmorphism */
+    background: rgba(18, 18, 28, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+        0 32px 80px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+}
+
+html.light .security-modal {
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow:
+        0 32px 80px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(0, 0, 0, 0.04) inset;
+}
+
+/* Header */
+.security-modal__header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem 1.5rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+html.light .security-modal__header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.security-modal__header--warning {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, transparent 70%);
+}
+
+.security-modal__header--danger {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, transparent 70%);
+}
+
+.security-modal__icon-ring {
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.security-modal__icon-ring--warning {
+    background: rgba(245, 158, 11, 0.15);
+    color: #F59E0B;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.security-modal__icon-ring--danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: #EF4444;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.security-modal__title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 2px;
+    letter-spacing: -0.3px;
+}
+
+.security-modal__subtitle {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Distance / Info badge */
+.security-modal__distance-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 1rem 1.5rem 0;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    color: #F59E0B;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    line-height: 1.4;
+}
+
+.security-modal__distance-badge--danger {
+    color: #EF4444;
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+/* Body */
+.security-modal__body {
+    padding: 1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.security-modal__intro {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Tips list */
+.security-modal__tips {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    counter-reset: tip-counter;
+}
+
+.security-modal__tip {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+html.light .security-modal__tip {
+    background: rgba(0, 0, 0, 0.025);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.security-modal__tip strong {
+    display: block;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    margin-bottom: 2px;
+}
+
+.security-modal__tip p {
+    margin: 0;
+}
+
+.security-modal__tip-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+/* Footer */
+.security-modal__footer {
+    padding: 1rem 1.5rem 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+html.light .security-modal__footer {
+    border-top: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.security-modal__attempt-note {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin: 0;
+    text-align: center;
+    line-height: 1.4;
+}
+
+.security-modal__attempt-note--final {
+    color: #F59E0B;
+}
+
+/* Buttons */
+.security-modal__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.875rem 1.5rem;
+    border-radius: 14px;
+    border: none;
+    font-size: 0.925rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.security-modal__btn--recheck {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    color: #000;
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
+}
+
+.security-modal__btn--recheck:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
+}
+
+.security-modal__btn--dismiss {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+html.light .security-modal__btn--dismiss {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+.security-modal__btn--dismiss:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--text-primary);
+}
+
+html.light .security-modal__btn--dismiss:hover {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.security-modal__btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Spin animation for loading icon */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Scrollbar for modal on small screens */
+.security-modal::-webkit-scrollbar {
+    width: 4px;
+}
+.security-modal::-webkit-scrollbar-track {
+    background: transparent;
+}
+.security-modal::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+}
