@@ -1,0 +1,248 @@
+/* ===========================
+   Suggestion Box Page Styles
+   =========================== */
+
+.suggestion-page {
+    padding: var(--space-2xl);
+    max-width: 900px;
+    width: 100%;
+}
+
+.suggestion-page__header {
+    margin-bottom: var(--space-2xl);
+}
+
+.suggestion-page__title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 6px 0;
+    background: linear-gradient(135deg, var(--color-primary), #f5c842);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.suggestion-page__subtitle {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* ===========================
+   Admin: Suggestion List
+   =========================== */
+.suggestion-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    max-height: 70vh;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.suggestion-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.suggestion-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.suggestion-list::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 99px;
+}
+
+.suggestion-list::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary);
+}
+
+.suggestion-item {
+    padding: var(--space-lg) var(--space-xl);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border-color);
+    background: var(--surface-glass);
+    backdrop-filter: blur(12px);
+    transition: border-color 0.15s, transform 0.15s;
+    position: relative;
+    overflow: hidden;
+}
+
+.suggestion-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--color-primary), #f5c842);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.suggestion-item:hover {
+    border-color: rgba(212, 175, 55, 0.35);
+    transform: translateY(-1px);
+}
+
+.suggestion-item:hover::before {
+    opacity: 1;
+}
+
+.suggestion-item__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-sm);
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+}
+
+.suggestion-item__category {
+    padding: 3px 10px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    background: rgba(212, 175, 55, 0.12);
+    color: var(--color-primary);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.suggestion-item__time {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.suggestion-item__message {
+    font-size: 0.92rem;
+    color: var(--text-primary);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.suggestion-item__anon {
+    margin-top: var(--space-sm);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    opacity: 0.7;
+}
+
+.suggestion-page__loading,
+.suggestion-page__empty {
+    text-align: center;
+    padding: var(--space-2xl);
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+/* ===========================
+   User: Submit Form
+   =========================== */
+.suggestion-form-card {
+    padding: var(--space-2xl);
+}
+
+.suggestion-form__field {
+    margin-bottom: var(--space-lg);
+}
+
+.suggestion-form__label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.suggestion-form__textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background: var(--surface-hover);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 120px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    box-sizing: border-box;
+}
+
+.suggestion-form__textarea:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12);
+}
+
+.suggestion-form__select {
+    width: 100%;
+    padding: 10px 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    background: var(--surface-hover);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+    box-sizing: border-box;
+    cursor: pointer;
+}
+
+.suggestion-form__select:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12);
+}
+
+.suggestion-form__anon-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-md);
+    background: rgba(212, 175, 55, 0.07);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    color: var(--text-secondary);
+    font-size: 0.83rem;
+    line-height: 1.5;
+    margin-bottom: var(--space-xl);
+}
+
+.suggestion-form__anon-note svg {
+    flex-shrink: 0;
+    color: var(--color-primary);
+    margin-top: 1px;
+}
+
+.suggestion-form__footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* ===========================
+   Responsive
+   =========================== */
+@media (max-width: 768px) {
+    .suggestion-page {
+        padding: var(--space-lg);
+    }
+
+    .suggestion-list {
+        max-height: 60vh;
+    }
+}

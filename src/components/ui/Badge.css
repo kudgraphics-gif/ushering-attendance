@@ -58,3 +58,8 @@
   background: var(--color-accent-teal);
   color: white;
 }
+
+.badge--leader {
+  background: var(--color-accent-orange); /* Using an existing variable --color-accent-orange or you can change to another color */
+  color: white;
+}

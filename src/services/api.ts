@@ -11,6 +11,11 @@ import type {
     UpdateRosterRequest,
     Roster,
     AttendanceWithUser,
+    Group,
+    GroupDetail,
+    GroupHistoryItem,
+    GroupAttendanceResponse,
+    SuggestionListResponse,
 } from '../types';
 
 const BASE_URL = 'https://api.koinoniaushers.cloud/api/v1';
@@ -264,6 +269,18 @@ export const attendanceAPI = {
         return apiCall<{ message: string; status_code: number }>(
             'POST',
             '/attendance/check-in',
+            payload,
+            token
+        );
+    },
+
+    signOut: async (
+        payload: { location: { lat: number; lng: number }; device_id: string },
+        token: string
+    ): Promise<{ message: string; status_code: number }> => {
+        return apiCall<{ message: string; status_code: number }>(
+            'POST',
+            '/attendance/signout',
             payload,
             token
         );
@@ -612,5 +629,89 @@ export const attendanceRevokeAPI = {
             undefined,
             token
         );
+    },
+};
+
+// Groups API
+export const groupsAPI = {
+    getAll: async (token: string): Promise<Group[]> => {
+        return apiCall<Group[]>('GET', '/groups', undefined, token);
+    },
+
+    create: async (
+        payload: { name: string; description: string; group_leader: string },
+        token: string
+    ): Promise<Group> => {
+        return apiCall<Group>('POST', '/groups', payload, token);
+    },
+
+    getById: async (id: string, token: string): Promise<GroupDetail> => {
+        return apiCall<GroupDetail>('GET', `/groups/${id}`, undefined, token);
+    },
+
+    activate: async (id: string, date: string, token: string): Promise<{ message: string }> => {
+        return apiCall<{ message: string }>('PATCH', `/groups/activate/${id}`, { date }, token);
+    },
+
+    addUser: async (
+        payload: { group_name: string; user_id: string },
+        token: string
+    ): Promise<{ message: string }> => {
+        return apiCall<{ message: string }>('POST', '/groups/add-user', payload, token);
+    },
+
+    removeUser: async (
+        payload: { group_id: string; user_id: string },
+        token: string
+    ): Promise<{ message: string }> => {
+        return apiCall<{ message: string }>('DELETE', '/groups/remove-user', payload, token);
+    },
+
+    getAttendance: async (date: string, token: string): Promise<GroupAttendanceResponse> => {
+        return apiCall<GroupAttendanceResponse>('GET', `/groups/attendance?date=${date}`, undefined, token);
+    },
+
+    getHistory: async (id: string, token: string): Promise<GroupHistoryItem[]> => {
+        return apiCall<GroupHistoryItem[]>('GET', `/groups/history/${id}`, undefined, token);
+    },
+
+    importUsers: async (id: string, file: File, _token: string): Promise<{ message: string }> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const response = await fetch(`${BASE_URL}/groups/import-users/${id}`, {
+            method: 'POST',
+            credentials: 'include',
+            body: formData,
+        });
+        if (!response.ok) {
+            let msg = `Import failed: ${response.statusText}`;
+            try { const e = await response.json(); msg = e.message || msg; } catch { /* noop */ }
+            throw new Error(msg);
+        }
+        return response.json();
+    },
+};
+
+// Suggestions API (separate base URL)
+const SUGGESTIONS_BASE = 'http://76.13.42.145:5000';
+
+export const suggestionsAPI = {
+    getAll: async (): Promise<SuggestionListResponse> => {
+        const res = await fetch(`${SUGGESTIONS_BASE}/api/suggestions`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        });
+        if (!res.ok) throw new Error(`Failed to fetch suggestions: ${res.statusText}`);
+        return res.json();
+    },
+
+    submit: async (payload: { message: string; category: string }): Promise<{ message: string }> => {
+        const res = await fetch(`${SUGGESTIONS_BASE}/api/suggestions/submit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error(`Failed to submit suggestion: ${res.statusText}`);
+        return res.json();
     },
 };

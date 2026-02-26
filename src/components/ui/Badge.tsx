@@ -17,6 +17,7 @@ export function Badge({ children, variant = 'primary', role, size = 'md', classN
         Admin: 'badge--admin',
         User: 'badge--user',
         Technical: 'badge--technical',
+        Leader: 'badge--leader',
     };
 
     return (

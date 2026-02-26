@@ -31,7 +31,7 @@ export function UserFormModal({
         password: '',
         dob: '',
         year_joined: new Date().getFullYear().toString(),
-        role: 'User' as 'User' | 'Admin',
+        role: 'User' as 'User' | 'Admin' | 'Leader',
         gender: '' as 'male' | 'female' | '',
         phone: '',
     });
@@ -48,7 +48,7 @@ export function UserFormModal({
                     password: '', // Always empty on edit, unless they type a new one
                     dob: user.dob ? user.dob.split('T')[0] : '',
                     year_joined: user.year_joined || new Date().getFullYear().toString(),
-                    role: (user.role === 'Admin' ? 'Admin' : 'User'),
+                    role: (user.role === 'Admin' ? 'Admin' : user.role === 'Leader' ? 'Leader' : 'User'),
                     gender: (user.gender as 'male' | 'female' | '') || '',
                     phone: user.phone || '',
                 });
@@ -225,6 +225,7 @@ export function UserFormModal({
                             >
                                 <option value="User">User</option>
                                 <option value="Admin">Admin</option>
+                                <option value="Leader">Leader</option>
                             </select>
                         </div>
                     </div>

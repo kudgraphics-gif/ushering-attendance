@@ -1,4 +1,4 @@
-export type Role = "Admin" | "User" | "Technical";
+export type Role = "Admin" | "User" | "Technical" | "Leader";
 
 export type AttendanceType =
     | "Remote"
@@ -34,6 +34,7 @@ export interface UserDto {
     state?: string;
     country?: string;
     is_active?: boolean;
+    is_cleaning_day?: boolean;
 }
 
 export interface Event {
@@ -278,4 +279,76 @@ export interface PaginatedResult<T> {
         total_items: number;
         num_pages: number;
     };
+}
+
+// Groups
+export interface Group {
+    id: string;
+    name: string;
+    description: string;
+    group_leader: string;
+    is_active: boolean;
+    created_at: string;
+}
+
+export interface GroupMember {
+    id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    reg_no: string;
+    role: Role;
+    phone?: string;
+    avatar_url?: string;
+    is_active?: boolean;
+    gender?: string;
+    username?: string;
+    year_joined?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    dob?: string;
+    device_id?: string;
+    last_seen?: string;
+    created_at?: string;
+    current_roster_allocation?: string;
+    current_roster_hall?: string;
+}
+
+export interface GroupDetail extends Group {
+    members: GroupMember[];
+}
+
+export interface GroupHistoryItem {
+    date: string;
+    group_id: string;
+    group_name: string;
+}
+
+export interface GroupAttendanceRecord {
+    time_in: string;
+    time_out: string;
+    user: GroupMember;
+}
+
+export interface GroupAttendanceResponse {
+    present: GroupAttendanceRecord[];
+    absent: GroupAttendanceRecord[];
+}
+
+// Suggestions
+export interface Suggestion {
+    id: number;
+    message: string;
+    category: string;
+    createdAt: string;
+}
+
+export interface SuggestionListResponse {
+    items: Suggestion[];
+    totalCount: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
 }

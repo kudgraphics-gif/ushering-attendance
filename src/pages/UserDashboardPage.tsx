@@ -4,11 +4,17 @@ import { analyticsAPI, eventsAPI, attendanceAPI } from '../services/api';
 import type { Event, UserDto } from '../types';
 import toast from 'react-hot-toast';
 import { MapPin, Calendar, CheckCircle2, User, Info, Crown } from 'lucide-react';
-import { getDeviceId, recordDeviceCheckIn, hasDeviceCheckedInToday } from '../utils/deviceId';
 import { getNearestVenue } from '../utils/geoCheck';
 import { SuggestionBox } from '../components/ui/SuggestionBox';
 import { LocationWarningModal } from '../components/ui/LocationWarningModal';
 import { DeviceIdWarningModal } from '../components/ui/DeviceIdWarningModal';
+import {
+    getDeviceId,
+    recordDeviceCheckIn,
+    hasDeviceCheckedInToday,
+    recordDeviceCheckOut,
+    hasDeviceCheckedOutToday
+} from '../utils/deviceId';
 import { motion, AnimatePresence } from 'framer-motion';
 import './UserDashboard.css';
 import '../pages/LoginPageValues.css'; // Import Core Values CSS
@@ -49,22 +55,45 @@ const CORE_VALUES = [
 ];
 
 // ─── Security check session counters (reset on full page reload) ──────────────
-const SESSION_KEY = 'security_check_session';
+const SESSION_KEY = 'security_check_session_v2'; // changed key so old data doesn't interfere
+const EXPIRY_HOURS = 24;
 
-function getSessionCounts(): { locationCount: number; deviceIdCount: number } {
+function getSessionCounts() {
     try {
-        const raw = sessionStorage.getItem(SESSION_KEY);
-        return raw ? JSON.parse(raw) : { locationCount: 0, deviceIdCount: 0 };
-    } catch {
-        return { locationCount: 0, deviceIdCount: 0 };
+        const raw = localStorage.getItem(SESSION_KEY);
+        if (!raw) {
+            return { locationCount: 0, deviceIdCount: 0, timestamp: Date.now() };
+        }
+
+        const data = JSON.parse(raw);
+        const hoursPassed = (Date.now() - (data.timestamp || 0)) / (1000 * 60 * 60);
+
+        // Auto-reset after 24 hours
+        if (hoursPassed > EXPIRY_HOURS) {
+            const reset = { locationCount: 0, deviceIdCount: 0, timestamp: Date.now() };
+            localStorage.setItem(SESSION_KEY, JSON.stringify(reset));
+            return reset;
+        }
+
+        return {
+            locationCount: Number(data.locationCount) || 0,
+            deviceIdCount: Number(data.deviceIdCount) || 0,
+            timestamp: Number(data.timestamp) || Date.now()
+        };
+    } catch (err) {
+        console.warn('Failed to read security counts:', err);
+        return { locationCount: 0, deviceIdCount: 0, timestamp: Date.now() };
     }
 }
 
 function saveSessionCounts(counts: { locationCount: number; deviceIdCount: number }) {
     try {
-        sessionStorage.setItem(SESSION_KEY, JSON.stringify(counts));
-    } catch {
-        // ignore
+        localStorage.setItem(SESSION_KEY, JSON.stringify({
+            ...counts,
+            timestamp: Date.now()
+        }));
+    } catch (err) {
+        console.warn('Failed to save security counts:', err);
     }
 }
 
@@ -74,6 +103,7 @@ export function UserDashboardPage() {
     const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
     const [checkingIn, setCheckingIn] = useState(false);
+    const [checkingOut, setCheckingOut] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
 
     // ── Security check state ──────────────────────────────────────────────────
@@ -308,6 +338,65 @@ export function UserDashboardPage() {
         );
     };
 
+    const handleCheckOut = async () => {
+        if (!token || !user) {
+            toast.error('You must be logged in to check out');
+            return;
+        }
+
+        if (hasDeviceCheckedOutToday()) {
+            toast.error("You've already checked out today");
+            return;
+        }
+
+        if (!navigator.geolocation) {
+            toast.error('Location not supported on your device');
+            return;
+        }
+
+        setCheckingOut(true);
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+
+                try {
+                    const deviceId = getDeviceId();
+
+                    await attendanceAPI.signOut(
+                        {
+                            location: { lat: latitude, lng: longitude },
+                            device_id: deviceId,
+                        },
+                        token
+                    );
+
+                    recordDeviceCheckOut(user.id);
+                    toast.success('Checked out successfully');
+
+                    try {
+                        const updatedData = await analyticsAPI.getUserAttendance(user.id, token);
+                        setAttendanceData(updatedData.data);
+                    } catch {
+                        // checkout succeeded
+                    }
+                } catch (error) {
+                    toast.error(
+                        error instanceof Error ? error.message : 'Check-out failed, please try again'
+                    );
+                } finally {
+                    setCheckingOut(false);
+                }
+            },
+            () => {
+                setCheckingOut(false);
+                let message = 'Unable to access your location. ';
+                toast.error(message);
+            },
+            { enableHighAccuracy: false, timeout: 30000, maximumAge: Infinity }
+        );
+    };
+
     if (loading) {
         return (
             <div className="user-dashboard">
@@ -388,16 +477,29 @@ export function UserDashboardPage() {
                 </div>
             </div>
 
-            {/* Check-in Button - Large and Prominent */}
+            {/* Check-in / Check-out Button */}
             <div className="user-dashboard__checkin">
-                <button
-                    onClick={handleCheckIn}
-                    disabled={checkingIn}
-                    className="checkin-button"
-                >
-                    <CheckCircle2 size={32} />
-                    <span>{checkingIn ? 'Checking in...' : 'Check In'}</span>
-                </button>
+                {user?.is_cleaning_day && hasDeviceCheckedInToday() ? (
+                    <button
+                        onClick={handleCheckOut}
+                        disabled={checkingOut || !!hasDeviceCheckedOutToday()}
+                        className="checkin-button checkin-button--checkout"
+                        style={{ backgroundColor: hasDeviceCheckedOutToday() ? '#555' : 'var(--color-accent-orange)' }}
+                    >
+                        <CheckCircle2 size={32} />
+                        <span>{checkingOut ? 'Checking out...' : hasDeviceCheckedOutToday() ? 'Checked Out' : 'Check Out'}</span>
+                    </button>
+                ) : (
+                    <button
+                        onClick={handleCheckIn}
+                        disabled={checkingIn || !!hasDeviceCheckedInToday()}
+                        className="checkin-button"
+                        style={{ backgroundColor: hasDeviceCheckedInToday() ? '#555' : '' }}
+                    >
+                        <CheckCircle2 size={32} />
+                        <span>{checkingIn ? 'Checking in...' : hasDeviceCheckedInToday() ? 'Checked In' : 'Check In'}</span>
+                    </button>
+                )}
                 <p className="user-dashboard__checkin-hint">
                     Tap to record your attendance
                 </p>

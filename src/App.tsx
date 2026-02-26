@@ -11,6 +11,8 @@ import { RosterManagementPage } from './pages/RosterManagementPage';
 import { RosterAssignmentsPage } from './pages/RosterAssignmentPage'; // New Import
 import { PaymentsPage } from './pages/PaymentsPage';
 import { KoinoniaPage } from './pages/KoinoniaPage';
+import { GroupsPage } from './pages/GroupsPage';
+import { SuggestionBoxPage } from './pages/SuggestionBoxPage';
 import { MainLayout } from './components/layout/MainLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { useAuthStore } from './stores/authStore';
@@ -88,6 +90,11 @@ function App() {
             path="/roster/:id"
             element={<ProtectedRoute allowedRoles={['Admin']}><RosterAssignmentsPage /></ProtectedRoute>}
           />
+          <Route
+            path="/groups"
+            element={<ProtectedRoute allowedRoles={['Admin', 'Leader']}><GroupsPage /></ProtectedRoute>}
+          />
+          <Route path="/suggestion-box" element={<SuggestionBoxPage />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/dashboard" replace />} />

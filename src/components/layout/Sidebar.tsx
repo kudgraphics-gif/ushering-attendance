@@ -9,7 +9,9 @@ import {
     DollarSign,
     Music,
     Eye,
-    List
+    List,
+    Users2,
+    MessageSquare
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import clsx from 'clsx';
@@ -24,6 +26,18 @@ const adminNavItems = [
     { icon: Music, label: 'Koinonia', path: '/koinonia' },
     { icon: Eye, label: 'Activity Logs', path: '/activity-logs' },
     { icon: List, label: 'Roster Management', path: '/roster-management' },
+    { icon: Users2, label: 'Groups', path: '/groups' },
+    { icon: MessageSquare, label: 'Suggestion Box', path: '/suggestion-box' },
+    { icon: User, label: 'Profile', path: '/profile' },
+];
+
+const leaderNavItems = [
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+    { icon: Calendar, label: 'Events', path: '/events' },
+    { icon: Users2, label: 'Groups', path: '/groups' },
+    { icon: DollarSign, label: 'Payments', path: '/payments' },
+    { icon: Music, label: 'Koinonia', path: '/koinonia' },
+    { icon: MessageSquare, label: 'Suggestion Box', path: '/suggestion-box' },
     { icon: User, label: 'Profile', path: '/profile' },
 ];
 
@@ -32,6 +46,7 @@ const userNavItems = [
     { icon: Calendar, label: 'Events', path: '/events' },
     { icon: DollarSign, label: 'Payments', path: '/payments' },
     { icon: Music, label: 'Koinonia', path: '/koinonia' },
+    { icon: MessageSquare, label: 'Suggestion Box', path: '/suggestion-box' },
     { icon: User, label: 'Profile', path: '/profile' },
 ];
 
@@ -45,7 +60,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     const logout = useAuthStore((state) => state.logout);
     const user = useAuthStore((state) => state.user);
 
-    const navItems = user?.role === 'Admin' ? adminNavItems : userNavItems;
+    const navItems = user?.role === 'Admin' ? adminNavItems : user?.role === 'Leader' ? leaderNavItems : userNavItems;
 
     const handleLogout = () => {
         logout();
