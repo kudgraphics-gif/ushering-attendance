@@ -99,8 +99,8 @@ export const authAPI = {
         return apiCall<UserDto>('POST', '/auth/login', payload);
     },
 
-    refresh: async (token: string): Promise<{ message: string; data: UserDto }> => {
-        return apiCall<{ message: string; data: UserDto }>('POST', '/auth/refresh', undefined, token);
+    refresh: async (): Promise<{ message: string; data: UserDto }> => {
+        return apiCall<{ message: string; data: UserDto }>('POST', '/auth/refresh');
     },
 };
 

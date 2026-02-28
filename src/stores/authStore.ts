@@ -161,15 +161,15 @@ export const useAuthStore = create<AuthState>()(
             },
 
             refreshToken: async () => {
-                const { token, isAuthenticated } = get();
+                const { isAuthenticated } = get();
 
-                if (!token || !isAuthenticated) {
+                if (!isAuthenticated) {
                     return;
                 }
 
                 set({ loading: true, error: null });
                 try {
-                    const response = await authAPI.refresh(token);
+                    const response = await authAPI.refresh();
                     const userData = response.data;
 
                     // Generate new token
