@@ -9,6 +9,7 @@ import { SettingsPage } from './pages/SettingsPage';
 import { ActivityLogsPage } from './pages/ActivityLogsPage';
 import { RosterManagementPage } from './pages/RosterManagementPage';
 import { RosterAssignmentsPage } from './pages/RosterAssignmentPage'; // New Import
+import { HallManagerPage } from './pages/HallManagerPage';
 import { PaymentsPage } from './pages/PaymentsPage';
 import { KoinoniaPage } from './pages/KoinoniaPage';
 import { GroupsPage } from './pages/GroupsPage';
@@ -89,6 +90,10 @@ function App() {
           <Route
             path="/roster/:id"
             element={<ProtectedRoute allowedRoles={['Admin']}><RosterAssignmentsPage /></ProtectedRoute>}
+          />
+          <Route
+            path="/hall-manager"
+            element={<ProtectedRoute allowedRoles={['Admin', 'Leader']}><HallManagerPage /></ProtectedRoute>}
           />
           <Route
             path="/groups"

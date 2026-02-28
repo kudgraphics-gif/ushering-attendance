@@ -1,0 +1,667 @@
+.hall-manager {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2rem;
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Header */
+.hall-manager__header {
+    margin-bottom: 1rem;
+}
+
+.hall-manager__title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: #FFD700;
+}
+
+.hall-manager__subtitle {
+    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+}
+
+/* Loading State */
+.hall-manager__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    min-height: 400px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.hall-manager__spinner {
+    width: 48px;
+    height: 48px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.hall-manager__unauthorized {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Halls Section */
+.hall-manager__halls {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.hall-manager__section-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.hall-manager__halls-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.hall-manager__hall-card {
+    padding: 1.5rem;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+    color: rgba(255, 255, 255, 0.8);
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+}
+
+.hall-manager__hall-card:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.hall-manager__hall-card--active {
+    border-color: currentColor;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+/* Hall card color variations */
+.hall-manager__hall-card--blue {
+    --card-color: #3b82f6;
+}
+
+.hall-manager__hall-card--blue.hall-manager__hall-card--active {
+    color: #3b82f6;
+    border-color: #3b82f6;
+}
+
+.hall-manager__hall-card--purple {
+    --card-color: #8b5cf6;
+}
+
+.hall-manager__hall-card--purple.hall-manager__hall-card--active {
+    color: #8b5cf6;
+    border-color: #8b5cf6;
+}
+
+.hall-manager__hall-card--green {
+    --card-color: #10b981;
+}
+
+.hall-manager__hall-card--green.hall-manager__hall-card--active {
+    color: #10b981;
+    border-color: #10b981;
+}
+
+.hall-manager__hall-card--orange {
+    --card-color: #f59e0b;
+}
+
+.hall-manager__hall-card--orange.hall-manager__hall-card--active {
+    color: #f59e0b;
+    border-color: #f59e0b;
+}
+
+.hall-manager__hall-card--red {
+    --card-color: #ef4444;
+}
+
+.hall-manager__hall-card--red.hall-manager__hall-card--active {
+    color: #ef4444;
+    border-color: #ef4444;
+}
+
+.hall-manager__hall-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+}
+
+.hall-manager__hall-info svg {
+    flex-shrink: 0;
+    opacity: 0.8;
+}
+
+.hall-manager__hall-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.hall-manager__hall-leader {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0.25rem 0 0 0;
+}
+
+/* Content Section */
+.hall-manager__content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* Stats Grid */
+.hall-manager__stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.hall-manager__stat-card {
+    padding: 1.5rem;
+}
+
+.hall-manager__stat-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.hall-manager__stat-icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    opacity: 0.8;
+}
+
+.hall-manager__stat-icon--present {
+    color: #10b981;
+}
+
+.hall-manager__stat-icon--absent {
+    color: #ef4444;
+}
+
+.hall-manager__stat-icon--total {
+    color: #3b82f6;
+}
+
+.hall-manager__stat-label {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+    font-weight: 500;
+}
+
+.hall-manager__stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Tabs */
+.hall-manager__tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 1rem;
+}
+
+.hall-manager__tab {
+    padding: 1rem 1.5rem;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.hall-manager__tab:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.hall-manager__tab--active {
+    color: #3b82f6;
+    border-bottom-color: #3b82f6;
+}
+
+/* Tab Content */
+.hall-manager__tab-content {
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Attendance Grid */
+.hall-manager__attendance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.hall-manager__users-card {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.hall-manager__users-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.hall-manager__users-title--present {
+    color: #10b981;
+}
+
+.hall-manager__users-title--absent {
+    color: #ef4444;
+}
+
+.hall-manager__users-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.hall-manager__users-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.hall-manager__users-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.hall-manager__users-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.hall-manager__users-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.hall-manager__user-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+}
+
+.hall-manager__user-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.hall-manager__user-info {
+    flex: 1;
+}
+
+.hall-manager__user-name {
+    font-weight: 600;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.hall-manager__user-meta {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0.25rem 0 0 0;
+}
+
+.hall-manager__badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.hall-manager__badge--present {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+
+.hall-manager__badge--absent {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.hall-manager__empty-message {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+}
+
+/* Mark Attendance Section */
+.hall-manager__mark-card {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.hall-manager__mark-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.hall-manager__mark-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.hall-manager__mark-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.hall-manager__mark-users {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.hall-manager__mark-users::-webkit-scrollbar {
+    width: 6px;
+}
+
+.hall-manager__mark-users::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.hall-manager__mark-users::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.hall-manager__mark-users::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.hall-manager__mark-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.hall-manager__mark-section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.8);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hall-manager__mark-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.hall-manager__mark-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.hall-manager__mark-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.hall-manager__checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #3b82f6;
+}
+
+.hall-manager__grip {
+    opacity: 0.4;
+    cursor: grab;
+    flex-shrink: 0;
+}
+
+.hall-manager__grip:active {
+    cursor: grabbing;
+}
+
+.hall-manager__mark-user-info {
+    flex: 1;
+}
+
+.hall-manager__mark-user-name {
+    font-weight: 600;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.95rem;
+}
+
+.hall-manager__mark-user-meta {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0.25rem 0 0 0;
+}
+
+.hall-manager__status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.hall-manager__status-badge--present {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+
+.hall-manager__status-badge--absent {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.hall-manager__no-users {
+    text-align: center;
+    padding: 1rem;
+    color: rgba(255, 255, 255, 0.5);
+    font-style: italic;
+}
+
+.hall-manager__mark-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    flex-wrap: wrap;
+}
+
+.hall-manager__selected-count {
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+    font-weight: 500;
+}
+
+.hall-manager__mark-button {
+    min-width: 180px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hall-manager {
+        padding: 1rem;
+    }
+
+    .hall-manager__title {
+        font-size: 2rem;
+    }
+
+    .hall-manager__halls-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hall-manager__attendance-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hall-manager__mark-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .hall-manager__mark-actions {
+        width: 100%;
+    }
+
+    .hall-manager__mark-actions button {
+        flex: 1;
+    }
+
+    .hall-manager__mark-footer {
+        flex-direction: column;
+    }
+
+    .hall-manager__mark-button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .hall-manager {
+        padding: 1rem 0.5rem;
+        gap: 1.5rem;
+    }
+
+    .hall-manager__title {
+        font-size: 1.5rem;
+    }
+
+    .hall-manager__tabs {
+        font-size: 0.9rem;
+    }
+
+    .hall-manager__tab {
+        padding: 0.75rem 1rem;
+    }
+
+    .hall-manager__mark-header {
+        gap: 0.75rem;
+    }
+
+    .hall-manager__mark-title {
+        font-size: 1.1rem;
+    }
+
+    .hall-manager__mark-item {
+        padding: 0.5rem 0.75rem;
+        gap: 0.75rem;
+    }
+
+    .hall-manager__grip {
+        display: none;
+    }
+
+    .hall-manager__checkbox {
+        width: 18px;
+        height: 18px;
+    }
+
+    .hall-manager__mark-user-name {
+        font-size: 0.9rem;
+    }
+}

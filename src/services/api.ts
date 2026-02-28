@@ -16,6 +16,8 @@ import type {
     GroupHistoryItem,
     GroupAttendanceResponse,
     SuggestionListResponse,
+    Hall,
+    HallAttendanceResponse,
 } from '../types';
 
 const BASE_URL = 'https://api.koinoniaushers.cloud/api/v1';
@@ -95,6 +97,10 @@ async function apiCall<T>(
 export const authAPI = {
     login: async (payload: LoginPayload): Promise<UserDto> => {
         return apiCall<UserDto>('POST', '/auth/login', payload);
+    },
+
+    refresh: async (token: string): Promise<{ message: string; data: UserDto }> => {
+        return apiCall<{ message: string; data: UserDto }>('POST', '/auth/refresh', undefined, token);
     },
 };
 
@@ -447,10 +453,24 @@ export interface ActivityLog {
 }
 
 export const activityLogsAPI = {
-    getAll: async (page: number = 1, size: number = 10, token: string): Promise<PaginatedResult<ActivityLogResponse>> => {
+    getAll: async (
+        token: string,
+        page: number = 1,
+        size: number = 10,
+        search?: string,
+        filter?: string,
+        context?: string
+    ): Promise<PaginatedResult<ActivityLogResponse>> => {
+        const params = new URLSearchParams();
+        params.append('page', page.toString());
+        params.append('size', size.toString());
+        if (search) params.append('search', search);
+        if (filter) params.append('filter', filter);
+        if (context) params.append('context', context);
+
         return apiCall<PaginatedResult<ActivityLogResponse>>(
             'GET',
-            `/logs?page=${page}&size=${size}`,
+            `/logs?${params.toString()}`,
             undefined,
             token
         );
@@ -459,7 +479,16 @@ export const activityLogsAPI = {
     getByUserId: async (userId: string, token: string): Promise<ActivityLogResponse[]> => {
         return apiCall<ActivityLogResponse[]>(
             'GET',
-            `/logs/${userId}`,
+            `/logs/user/${userId}`,
+            undefined,
+            token
+        );
+    },
+
+    getById: async (logId: string, token: string): Promise<ActivityLogResponse> => {
+        return apiCall<ActivityLogResponse>(
+            'GET',
+            `/logs/${logId}`,
             undefined,
             token
         );
@@ -713,5 +742,28 @@ export const suggestionsAPI = {
         });
         if (!res.ok) throw new Error(`Failed to submit suggestion: ${res.statusText}`);
         return res.json();
+    },
+};
+
+// Halls API
+export const hallsAPI = {
+    getAll: async (token: string): Promise<Hall[]> => {
+        return apiCall<Hall[]>('GET', '/halls', undefined, token);
+    },
+
+    getUsersInHall: async (hallName: string, token: string): Promise<UserDto[]> => {
+        return apiCall<UserDto[]>('GET', `/halls/${hallName}/users`, undefined, token);
+    },
+
+    getAttendance: async (hallName: string, token: string): Promise<HallAttendanceResponse> => {
+        return apiCall<HallAttendanceResponse>('GET', `/halls/${hallName}/attendance`, undefined, token);
+    },
+
+    markAttendance: async (
+        hallName: string,
+        payload: { location: { lat: number; lng: number }; users: string[] },
+        token: string
+    ): Promise<{ message: string }> => {
+        return apiCall<{ message: string }>('POST', `/halls/${hallName}/attendance`, payload, token);
     },
 };

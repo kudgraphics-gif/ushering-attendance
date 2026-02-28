@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { ActivityLogsTable } from '../components/ui/DataTable';
+import { ActivityLogDetailModal } from '../components/ui/ActivityLogDetailModal';
 import { activityLogsAPI } from '../services/api';
 import type { ActivityLogResponse } from '../types';
 import { useAuthStore } from '../stores/authStore';
@@ -24,18 +25,30 @@ export function ActivityLogsPage() {
     const [pageSize] = useState(10);
     const [totalPages, setTotalPages] = useState(1);
 
+    // Log Detail Modal State
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+    const [selectedLog, setSelectedLog] = useState<ActivityLogResponse | null>(null);
+    const [loadingLogDetail, setLoadingLogDetail] = useState(false);
+
     // Fetch main logs only when NOT filtered by user
     useEffect(() => {
         if (token && currentUser?.role === 'Admin' && !filteredByUser) {
             fetchLogs();
         }
-    }, [token, currentPage, filteredByUser]);
+    }, [token, currentPage, filteredByUser, searchQuery]);
+
+    // Reset to page 1 when search query changes
+    useEffect(() => {
+        if (searchQuery !== '') {
+            setCurrentPage(1);
+        }
+    }, [searchQuery]);
 
     const fetchLogs = async () => {
         if (!token) return;
         setLoading(true);
         try {
-            const response = await activityLogsAPI.getAll(currentPage, pageSize, token);
+            const response = await activityLogsAPI.getAll(token, currentPage, pageSize, searchQuery);
             setLogs(response.items);
             setTotalPages(response.metadata.num_pages);
         } catch (error) {
@@ -93,6 +106,27 @@ export function ActivityLogsPage() {
         // Effect will trigger fetchLogs automatically since filteredByUser becomes false
     };
 
+    const handleViewLogDetails = async (logId: string) => {
+        if (!token) return;
+
+        setLoadingLogDetail(true);
+        try {
+            const logDetail = await activityLogsAPI.getById(logId, token);
+            setSelectedLog(logDetail);
+            setIsDetailModalOpen(true);
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Failed to fetch log details');
+            console.error(error);
+        } finally {
+            setLoadingLogDetail(false);
+        }
+    };
+
+    const handleCloseDetailModal = () => {
+        setIsDetailModalOpen(false);
+        setSelectedLog(null);
+    };
+
     // Determine which logs to show
     let displayLogs = [];
     if (filteredByUser) {
@@ -101,15 +135,11 @@ export function ActivityLogsPage() {
         const endIndex = startIndex + pageSize;
         displayLogs = userLogs.slice(startIndex, endIndex);
     } else {
-        // Server-Side Pagination is already handled by fetchLogs
+        // Server-Side Search is already handled by fetchLogs
         displayLogs = logs;
     }
 
-    // Apply local search filter (works on the current page view)
-    const filteredLogs = displayLogs.filter(log =>
-        (log.user_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (log.activity_type || '').toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    // Use displayLogs directly (no client-side filtering needed - search is handled server-side)
 
     return (
         <motion.div
@@ -156,7 +186,7 @@ export function ActivityLogsPage() {
                     <div className="activity-logs-page__loading">
                         <p>Loading activity logs...</p>
                     </div>
-                ) : filteredLogs.length === 0 ? (
+                ) : displayLogs.length === 0 ? (
                     <div className="activity-logs-page__empty">
                         <AlertCircle size={48} />
                         <p>{filteredByUser ? 'No activities found for this user' : 'No activity logs found'}</p>
@@ -164,8 +194,9 @@ export function ActivityLogsPage() {
                 ) : (
                     <>
                         <ActivityLogsTable
-                            logs={filteredLogs}
+                            logs={displayLogs}
                             onViewUserLogs={handleUserSearch}
+                            onViewLogDetails={handleViewLogDetails}
                         />
 
                         {/* Pagination Controls - Works for both Server & Client side */}
@@ -193,6 +224,14 @@ export function ActivityLogsPage() {
                     </>
                 )}
             </div>
+
+            {/* Log Detail Modal */}
+            <ActivityLogDetailModal
+                isOpen={isDetailModalOpen}
+                log={selectedLog}
+                loading={loadingLogDetail}
+                onClose={handleCloseDetailModal}
+            />
         </motion.div>
     );
 }

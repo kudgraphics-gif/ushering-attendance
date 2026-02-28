@@ -194,7 +194,18 @@ export type ActivityType =
     | "RosterCreated"
     | "RosterUpdated"
     | "RosterDeleted"
-    | "AttendanceRevoked";
+    | "RosterActivated"
+    | "AttendanceRevoked"
+    | "RosterImported"
+    | "UserHallUpdated"
+    | "RosterShared"
+    | "GroupCreated"
+    | "GroupActivated"
+    | "GroupUserAdded"
+    | "GroupUserRemoved"
+    | "GroupUsersImported"
+    | "FailedAttendanceCheckIn"
+    | "FailedAttempt";
 
 export interface ActivityLog {
     id: string;
@@ -209,13 +220,17 @@ export interface ActivityLog {
 export interface ActivityLogResponse {
     id: string;
     user_id: string;
-    user_name: string;
-    user_email: string | null;
-    user_role: string;
-    first_name: string | null;
-    last_name: string | null;
+    user_name?: string;
+    user_email?: string | null;
+    user_role?: string;
+    first_name?: string | null;
+    last_name?: string | null;
     activity_type: ActivityType;
     created_at: string;
+    details?: string;
+    target_id?: string;
+    target?: string;
+    target_type?: string;
 }
 
 export interface NewRoster {
@@ -351,4 +366,15 @@ export interface SuggestionListResponse {
     page: number;
     pageSize: number;
     totalPages: number;
+}
+
+// Halls
+export interface Hall {
+    leader: string;
+    name: string;
+}
+
+export interface HallAttendanceResponse {
+    absents: UserDto[];
+    presents: UserDto[];
 }

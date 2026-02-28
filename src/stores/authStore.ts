@@ -13,6 +13,7 @@ interface AuthState {
     logout: () => void;
     setUser: (user: UserDto) => void;
     refresh: () => Promise<void>;
+    refreshToken: () => Promise<void>;
     lastActivity: number; // Timestamp of last user activity
     updateActivity: () => void;
     checkInactivity: () => void;
@@ -33,15 +34,19 @@ export const useAuthStore = create<AuthState>()(
             },
 
             checkInactivity: () => {
-                const { lastActivity, isAuthenticated, logout } = get();
+                const { lastActivity, isAuthenticated, logout, refreshToken } = get();
                 if (!isAuthenticated) return;
 
-                const EIGHT_HOURS = 8 * 60 * 60 * 1000;
+                const TEN_MINUTES = 10 * 60 * 1000;
                 const timeSinceLastActivity = Date.now() - lastActivity;
 
-                if (timeSinceLastActivity > EIGHT_HOURS) {
-                    logout();
-                    // Optionally triggers a toast or redirect logic in the component observing this
+                // If 10 minutes of inactivity, attempt to refresh token
+                if (timeSinceLastActivity > TEN_MINUTES) {
+                    // Try to refresh the token
+                    refreshToken().catch(() => {
+                        // If refresh fails, log the user out
+                        logout();
+                    });
                 }
             },
 
@@ -152,6 +157,40 @@ export const useAuthStore = create<AuthState>()(
                     });
                     // Optional: If refresh fails (e.g. token expired), you might want to logout
                     // set({ user: null, isAuthenticated: false, token: null });
+                }
+            },
+
+            refreshToken: async () => {
+                const { token, isAuthenticated } = get();
+
+                if (!token || !isAuthenticated) {
+                    return;
+                }
+
+                set({ loading: true, error: null });
+                try {
+                    const response = await authAPI.refresh(token);
+                    const userData = response.data;
+
+                    // Generate new token
+                    const newToken = `token_${userData.id}`;
+
+                    set({
+                        user: userData,
+                        token: newToken,
+                        isAuthenticated: true,
+                        lastActivity: Date.now(),
+                        loading: false,
+                    });
+                } catch (error) {
+                    const errorMessage = error instanceof Error ? error.message : 'Token refresh failed';
+                    set({
+                        error: errorMessage,
+                        loading: false,
+                    });
+                    // On refresh failure, log out the user
+                    get().logout();
+                    throw error;
                 }
             },
         }),

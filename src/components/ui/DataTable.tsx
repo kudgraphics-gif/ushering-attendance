@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Avatar } from './Avatar';
 import { Badge } from './Badge';
-import { LogIn, Trash2, Eye, RotateCcw, Edit, UserCheck, UserX } from 'lucide-react';
+import { LogIn, Trash2, Eye, RotateCcw, Edit, UserCheck, UserX, FileText } from 'lucide-react';
 import type { UserDto, ActivityLogResponse } from '../../types';
 import './DataTable.css';
 
@@ -198,9 +198,10 @@ export function UsersTable({
 interface ActivityLogsTableProps {
     logs: ActivityLogResponse[];
     onViewUserLogs?: (userId: string) => void;
+    onViewLogDetails?: (logId: string) => void;
 }
 
-export function ActivityLogsTable({ logs, onViewUserLogs }: ActivityLogsTableProps) {
+export function ActivityLogsTable({ logs, onViewUserLogs, onViewLogDetails }: ActivityLogsTableProps) {
     const getActivityColor = (activityType: string) => {
         const colorMap: { [key: string]: string } = {
             'UserLogin': '#10B981',
@@ -269,6 +270,13 @@ export function ActivityLogsTable({ logs, onViewUserLogs }: ActivityLogsTablePro
             rowKey="id"
             actions={(log) => (
                 <div className="activity-logs-table__actions">
+                    <button
+                        className="activity-logs-table__action-btn"
+                        title="View log details"
+                        onClick={() => onViewLogDetails?.(log.id)}
+                    >
+                        <FileText size={18} />
+                    </button>
                     <button
                         className="activity-logs-table__action-btn"
                         title="View this user's activity logs"

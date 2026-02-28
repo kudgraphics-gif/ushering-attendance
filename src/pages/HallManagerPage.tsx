@@ -1,0 +1,471 @@
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MapPin, Users, UserCheck, UserX, Loader, GripVertical } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/Button';
+import { Avatar } from '../components/ui/Avatar';
+import { hallsAPI } from '../services/api';
+import type { Hall, HallAttendanceResponse, UserDto } from '../types';
+import { useAuthStore } from '../stores/authStore';
+import './HallManagerPage.css';
+
+const HALL_COLORS: { [key: string]: string } = {
+    'MainHall': 'blue',
+    'HallOne': 'purple',
+    'Gallery': 'green',
+    'Basement': 'orange',
+    'Outside': 'red',
+};
+
+const getInitials = (user: UserDto): string => {
+    const firstName = user.first_name?.charAt(0).toUpperCase() || '';
+    const lastName = user.last_name?.charAt(0).toUpperCase() || '';
+    return (firstName + lastName) || '?';
+};
+
+export function HallManagerPage() {
+    const { token, user: currentUser } = useAuthStore();
+
+    const [halls, setHalls] = useState<Hall[]>([]);
+    const [selectedHall, setSelectedHall] = useState<string | null>(null);
+    const [attendanceData, setAttendanceData] = useState<HallAttendanceResponse | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [marking, setMarking] = useState(false);
+    const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
+    const [tabView, setTabView] = useState<'attendance' | 'users'>('attendance');
+
+    useEffect(() => {
+        if (token) {
+            fetchHalls();
+        }
+    }, [token]);
+
+    useEffect(() => {
+        if (selectedHall && token) {
+            fetchAttendance();
+        }
+    }, [selectedHall, token]);
+
+    const fetchHalls = async () => {
+        if (!token) return;
+        setLoading(true);
+        try {
+            const hallsData = await hallsAPI.getAll(token);
+            setHalls(hallsData);
+            if (hallsData.length > 0 && !selectedHall) {
+                setSelectedHall(hallsData[0].name);
+            }
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Failed to fetch halls');
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchAttendance = async () => {
+        if (!token || !selectedHall) return;
+        setLoading(true);
+        try {
+            const data = await hallsAPI.getAttendance(selectedHall, token);
+            setAttendanceData(data);
+            setSelectedUsers(new Set());
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Failed to fetch attendance');
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleUserToggle = (userId: string) => {
+        const newSelected = new Set(selectedUsers);
+        if (newSelected.has(userId)) {
+            newSelected.delete(userId);
+        } else {
+            newSelected.add(userId);
+        }
+        setSelectedUsers(newSelected);
+    };
+
+    const handleMarkAttendance = async () => {
+        if (!token || !selectedHall) {
+            toast.error('Hall is required to mark attendance');
+            return;
+        }
+
+        if (selectedUsers.size === 0) {
+            toast.error('Please select at least one user');
+            return;
+        }
+
+        // Get location
+        if (!navigator.geolocation) {
+            toast.error('Location services not supported on your device');
+            return;
+        }
+
+        setMarking(true);
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                try {
+                    const { latitude, longitude } = position.coords;
+                    await hallsAPI.markAttendance(
+                        selectedHall,
+                        {
+                            location: { lat: latitude, lng: longitude },
+                            users: Array.from(selectedUsers),
+                        },
+                        token
+                    );
+                    toast.success('Attendance marked successfully');
+                    setSelectedUsers(new Set());
+                    await fetchAttendance();
+                } catch (error) {
+                    toast.error(error instanceof Error ? error.message : 'Failed to mark attendance');
+                    console.error(error);
+                } finally {
+                    setMarking(false);
+                }
+            },
+            (error) => {
+                setMarking(false);
+                let message = 'Unable to retrieve location. ';
+                if (error.code === error.PERMISSION_DENIED) {
+                    message += 'Please enable location permissions.';
+                } else if (error.code === error.POSITION_UNAVAILABLE) {
+                    message += 'Location unavailable.';
+                } else if (error.code === error.TIMEOUT) {
+                    message += 'Location request timed out.';
+                } else {
+                    message += 'Ensure location services are enabled.';
+                }
+                toast.error(message);
+                console.error('Geolocation error:', error);
+            }
+        );
+    };
+
+    const handleSelectAll = () => {
+        if (!attendanceData) return;
+
+        const allUserIds = [
+            ...attendanceData.absents.map(u => u.id),
+            ...attendanceData.presents.map(u => u.id),
+        ];
+        setSelectedUsers(new Set(allUserIds));
+    };
+
+    const handleDeselectAll = () => {
+        setSelectedUsers(new Set());
+    };
+
+    if (loading && halls.length === 0) {
+        return (
+            <div className="hall-manager__loading">
+                <Loader className="hall-manager__spinner" />
+                <p>Loading Hall Manager...</p>
+            </div>
+        );
+    }
+
+    if (!currentUser || (currentUser.role !== 'Admin' && currentUser.role !== 'Leader')) {
+        return <div className="hall-manager__unauthorized">Access denied</div>;
+    }
+
+    return (
+        <div className="hall-manager">
+            <div className="hall-manager__header">
+                <h1 className="hall-manager__title">Hall Manager</h1>
+                <p className="hall-manager__subtitle">Manage hall attendance and track attendees</p>
+            </div>
+
+            {/* Hall Selection */}
+            <div className="hall-manager__halls">
+                <h2 className="hall-manager__section-title">Select Hall</h2>
+                <div className="hall-manager__halls-grid">
+                    {halls.map((hall) => (
+                        <motion.button
+                            key={hall.name}
+                            className={`hall-manager__hall-card hall-manager__hall-card--${HALL_COLORS[hall.name] || 'gray'} ${selectedHall === hall.name ? 'hall-manager__hall-card--active' : ''}`}
+                            onClick={() => setSelectedHall(hall.name)}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                        >
+                            <div className="hall-manager__hall-info">
+                                <MapPin size={24} />
+                                <div>
+                                    <h3 className="hall-manager__hall-name">{hall.name}</h3>
+                                    <p className="hall-manager__hall-leader">{hall.leader || 'No leader assigned'}</p>
+                                </div>
+                            </div>
+                        </motion.button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Attendance Details */}
+            {selectedHall && attendanceData && (
+                <motion.div
+                    className="hall-manager__content"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                >
+                    <div className="hall-manager__stats">
+                        <Card glass padding="md" className="hall-manager__stat-card">
+                            <div className="hall-manager__stat-content">
+                                <UserCheck size={24} className="hall-manager__stat-icon hall-manager__stat-icon--present" />
+                                <div>
+                                    <p className="hall-manager__stat-label">Present</p>
+                                    <h3 className="hall-manager__stat-value">{attendanceData.presents.length}</h3>
+                                </div>
+                            </div>
+                        </Card>
+                        <Card glass padding="md" className="hall-manager__stat-card">
+                            <div className="hall-manager__stat-content">
+                                <UserX size={24} className="hall-manager__stat-icon hall-manager__stat-icon--absent" />
+                                <div>
+                                    <p className="hall-manager__stat-label">Absent</p>
+                                    <h3 className="hall-manager__stat-value">{attendanceData.absents.length}</h3>
+                                </div>
+                            </div>
+                        </Card>
+                        <Card glass padding="md" className="hall-manager__stat-card">
+                            <div className="hall-manager__stat-content">
+                                <Users size={24} className="hall-manager__stat-icon hall-manager__stat-icon--total" />
+                                <div>
+                                    <p className="hall-manager__stat-label">Total</p>
+                                    <h3 className="hall-manager__stat-value">{attendanceData.presents.length + attendanceData.absents.length}</h3>
+                                </div>
+                            </div>
+                        </Card>
+                    </div>
+
+                    {/* Tabs */}
+                    <div className="hall-manager__tabs">
+                        <button
+                            className={`hall-manager__tab ${tabView === 'attendance' ? 'hall-manager__tab--active' : ''}`}
+                            onClick={() => setTabView('attendance')}
+                        >
+                            Attendance Overview
+                        </button>
+                        <button
+                            className={`hall-manager__tab ${tabView === 'users' ? 'hall-manager__tab--active' : ''}`}
+                            onClick={() => setTabView('users')}
+                        >
+                            Mark Attendance
+                        </button>
+                    </div>
+
+                    {/* Attendance View */}
+                    <AnimatePresence mode="wait">
+                        {tabView === 'attendance' && (
+                            <motion.div
+                                key="attendance-view"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="hall-manager__tab-content"
+                            >
+                                <div className="hall-manager__attendance-grid">
+                                    {/* Present Users */}
+                                    <Card glass padding="lg" className="hall-manager__users-card">
+                                        <h3 className="hall-manager__users-title hall-manager__users-title--present">
+                                            <UserCheck size={20} />
+                                            Present ({attendanceData.presents.length})
+                                        </h3>
+                                        <div className="hall-manager__users-list">
+                                            {attendanceData.presents.length === 0 ? (
+                                                <p className="hall-manager__empty-message">No users marked present</p>
+                                            ) : (
+                                                attendanceData.presents.map((user) => (
+                                                    <motion.div
+                                                        key={user.id}
+                                                        className="hall-manager__user-item"
+                                                        initial={{ opacity: 0, x: -20 }}
+                                                        animate={{ opacity: 1, x: 0 }}
+                                                    >
+                                                        <Avatar src={user.avatar_url} alt={`${user.first_name} ${user.last_name}`} size="sm" fallback={getInitials(user)} />
+                                                        <div className="hall-manager__user-info">
+                                                            <p className="hall-manager__user-name">
+                                                                {user.first_name} {user.last_name}
+                                                            </p>
+                                                            <p className="hall-manager__user-meta">
+                                                                {user.email || 'No email'}
+                                                            </p>
+                                                        </div>
+                                                        <span className="hall-manager__badge hall-manager__badge--present">Present</span>
+                                                    </motion.div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </Card>
+
+                                    {/* Absent Users */}
+                                    <Card glass padding="lg" className="hall-manager__users-card">
+                                        <h3 className="hall-manager__users-title hall-manager__users-title--absent">
+                                            <UserX size={20} />
+                                            Absent ({attendanceData.absents.length})
+                                        </h3>
+                                        <div className="hall-manager__users-list">
+                                            {attendanceData.absents.length === 0 ? (
+                                                <p className="hall-manager__empty-message">No absent users</p>
+                                            ) : (
+                                                attendanceData.absents.map((user) => (
+                                                    <motion.div
+                                                        key={user.id}
+                                                        className="hall-manager__user-item"
+                                                        initial={{ opacity: 0, x: -20 }}
+                                                        animate={{ opacity: 1, x: 0 }}
+                                                    >
+                                                        <Avatar src={user.avatar_url} alt={`${user.first_name} ${user.last_name}`} size="sm" fallback={getInitials(user)} />
+                                                        <div className="hall-manager__user-info">
+                                                            <p className="hall-manager__user-name">
+                                                                {user.first_name} {user.last_name}
+                                                            </p>
+                                                            <p className="hall-manager__user-meta">
+                                                                {user.email || 'No email'}
+                                                            </p>
+                                                        </div>
+                                                        <span className="hall-manager__badge hall-manager__badge--absent">Absent</span>
+                                                    </motion.div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </Card>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {/* Mark Attendance View */}
+                        {tabView === 'users' && (
+                            <motion.div
+                                key="mark-view"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="hall-manager__tab-content"
+                            >
+                                <Card glass padding="lg" className="hall-manager__mark-card">
+                                    <div className="hall-manager__mark-header">
+                                        <h3 className="hall-manager__mark-title">Select Users to Mark Present</h3>
+                                        <div className="hall-manager__mark-actions">
+                                            <Button
+                                                size="sm"
+                                                variant="secondary"
+                                                onClick={handleSelectAll}
+                                            >
+                                                Select All
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="secondary"
+                                                onClick={handleDeselectAll}
+                                            >
+                                                Deselect All
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    <div className="hall-manager__mark-users">
+                                        {/* Present Users */}
+                                        <div className="hall-manager__mark-section">
+                                            <h4 className="hall-manager__mark-section-title">
+                                                Already Present ({attendanceData.presents.length})
+                                            </h4>
+                                            <div className="hall-manager__mark-list">
+                                                {attendanceData.presents.map((user) => (
+                                                    <motion.label
+                                                        key={user.id}
+                                                        className="hall-manager__mark-item"
+                                                        whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedUsers.has(user.id)}
+                                                            onChange={() => handleUserToggle(user.id)}
+                                                            className="hall-manager__checkbox"
+                                                        />
+                                                        <GripVertical size={18} className="hall-manager__grip" />
+                                                        <Avatar src={user.avatar_url} alt={`${user.first_name} ${user.last_name}`} size="sm" fallback={getInitials(user)} />
+                                                        <div className="hall-manager__mark-user-info">
+                                                            <p className="hall-manager__mark-user-name">
+                                                                {user.first_name} {user.last_name}
+                                                            </p>
+                                                            <p className="hall-manager__mark-user-meta">
+                                                                {user.reg_no || user.email || 'No ID'}
+                                                            </p>
+                                                        </div>
+                                                        <span className="hall-manager__status-badge hall-manager__status-badge--present">
+                                                            Present
+                                                        </span>
+                                                    </motion.label>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Absent Users */}
+                                        <div className="hall-manager__mark-section">
+                                            <h4 className="hall-manager__mark-section-title">
+                                                Absent ({attendanceData.absents.length})
+                                            </h4>
+                                            <div className="hall-manager__mark-list">
+                                                {attendanceData.absents.length === 0 ? (
+                                                    <p className="hall-manager__no-users">No absent users</p>
+                                                ) : (
+                                                    attendanceData.absents.map((user) => (
+                                                        <motion.label
+                                                            key={user.id}
+                                                            className="hall-manager__mark-item"
+                                                            whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
+                                                        >
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={selectedUsers.has(user.id)}
+                                                                onChange={() => handleUserToggle(user.id)}
+                                                                className="hall-manager__checkbox"
+                                                            />
+                                                            <GripVertical size={18} className="hall-manager__grip" />
+                                                            <Avatar src={user.avatar_url} alt={`${user.first_name} ${user.last_name}`} size="sm" fallback={getInitials(user)} />
+                                                            <div className="hall-manager__mark-user-info">
+                                                                <p className="hall-manager__mark-user-name">
+                                                                    {user.first_name} {user.last_name}
+                                                                </p>
+                                                                <p className="hall-manager__mark-user-meta">
+                                                                    {user.reg_no || user.email || 'No ID'}
+                                                                </p>
+                                                            </div>
+                                                            <span className="hall-manager__status-badge hall-manager__status-badge--absent">
+                                                                Absent
+                                                            </span>
+                                                        </motion.label>
+                                                    ))
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="hall-manager__mark-footer">
+                                        <p className="hall-manager__selected-count">
+                                            {selectedUsers.size} user{selectedUsers.size !== 1 ? 's' : ''} selected
+                                        </p>
+                                        <Button
+                                            onClick={handleMarkAttendance}
+                                            loading={marking}
+                                            disabled={selectedUsers.size === 0}
+                                            className="hall-manager__mark-button"
+                                        >
+                                            Mark Attendance
+                                        </Button>
+                                    </div>
+                                </Card>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </motion.div>
+            )}
+        </div>
+    );
+}
