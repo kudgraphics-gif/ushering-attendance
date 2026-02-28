@@ -14,11 +14,11 @@
 }
 
 .activity-log-detail-modal__content {
-    background: rgba(15, 23, 42, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--color-bg-primary);
+    border: 1px solid var(--border-color);
     border-radius: 16px;
     backdrop-filter: blur(20px);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     z-index: 1000;
     max-width: 700px;
     max-height: 90vh;
@@ -41,7 +41,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--border-color);
     gap: 1rem;
 }
 
@@ -49,13 +49,13 @@
     font-size: 1.5rem;
     font-weight: 700;
     margin: 0;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-primary);
 }
 
 .activity-log-detail-modal__close-btn {
     background: transparent;
     border: none;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--text-secondary);
     cursor: pointer;
     padding: 0.5rem;
     display: flex;
@@ -66,8 +66,8 @@
 }
 
 .activity-log-detail-modal__close-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.9);
+    background: var(--surface-hover);
+    color: var(--text-primary);
 }
 
 .activity-log-detail-modal__body {
@@ -88,12 +88,12 @@
 }
 
 .activity-log-detail-modal__body::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--border-color);
     border-radius: 3px;
 }
 
 .activity-log-detail-modal__body::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--text-secondary);
 }
 
 .activity-log-detail-modal__activity-badge {
@@ -101,8 +101,8 @@
     align-items: center;
     gap: 0.75rem;
     padding: 1rem;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--surface-hover);
+    border: 1px solid var(--border-color);
     border-radius: 12px;
     width: fit-content;
 }
@@ -116,7 +116,7 @@
 
 .activity-log-detail-modal__activity-type {
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--text-primary);
     font-size: 1rem;
 }
 
@@ -130,9 +130,9 @@
     font-size: 1rem;
     font-weight: 600;
     margin: 0;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--text-primary);
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .activity-log-detail-modal__fields-grid {
@@ -149,7 +149,7 @@
 
 .activity-log-detail__label {
     font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--text-secondary);
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -159,8 +159,8 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--surface-hover);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 0.75rem;
     word-break: break-all;
@@ -168,7 +168,7 @@
 
 .activity-log-detail__value {
     flex: 1;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--text-primary);
     font-size: 0.95rem;
     font-family: 'Courier New', monospace;
 }
@@ -176,7 +176,7 @@
 .activity-log-detail__copy-btn {
     background: transparent;
     border: none;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-secondary);
     cursor: pointer;
     padding: 0.25rem;
     display: flex;
@@ -187,7 +187,7 @@
 }
 
 .activity-log-detail__copy-btn:hover {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--color-primary);
 }
 
 .activity-log-detail__copied {
@@ -195,11 +195,11 @@
 }
 
 .activity-log-detail-modal__json {
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--surface-hover);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 1rem;
-    color: rgba(212, 175, 55, 0.8);
+    color: var(--text-primary);
     font-size: 0.8rem;
     overflow-x: auto;
     margin: 0;
@@ -216,7 +216,7 @@
 }
 
 .activity-log-detail-modal__json::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--border-color);
     border-radius: 3px;
 }
 
@@ -227,14 +227,14 @@
     align-items: center;
     justify-content: center;
     min-height: 300px;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--text-secondary);
     gap: 1rem;
 }
 
 .activity-log-detail-modal__spinner {
     width: 40px;
     height: 40px;
-    border: 3px solid rgba(255, 255, 255, 0.2);
+    border: 3px solid var(--border-color);
     border-top-color: #3b82f6;
     border-radius: 50%;
     animation: spin 1s linear infinite;

@@ -10,7 +10,8 @@ import {
     Upload,
     Clock,
     Calendar,
-    Activity
+    Activity,
+    LogOut
 } from 'lucide-react';
 import { format, isValid } from 'date-fns';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
@@ -117,6 +118,15 @@ export function AttendancePage() {
             return;
         }
 
+        // Wednesday restriction: Regular users cannot checkin after 6PM  
+        const now = new Date();
+        if (now.getDay() === 3 && user.role !== 'Leader') { // Wednesday is day 3
+            if (now.getHours() >= 18) { // After or at 6PM
+                toast.error('Attendance has ended');
+                return;
+            }
+        }
+
         if (!navigator.geolocation) {
             toast.error('Location not supported on your device');
             return;
@@ -174,6 +184,64 @@ export function AttendancePage() {
                         message += 'Ensure location services are enabled.';
                 }
                 toast.error(message);
+            },
+            {
+                enableHighAccuracy: false,
+                timeout: 30000,
+                maximumAge: Infinity
+            }
+        );
+    };
+
+    const isCheckoutAvailable = () => {
+        const now = new Date();
+        const minutes = now.getHours() * 60 + now.getMinutes();
+        return minutes >= 690 && minutes < 720; // 11:30 AM to 12:00 PM
+    };
+
+    const handleCheckOut = async () => {
+        if (!token || !user) {
+            toast.error('You must be logged in to check out');
+            return;
+        }
+
+        if (!isCheckoutAvailable()) {
+            toast.error('Check out is only available between 11:30 AM - 12:00 PM');
+            return;
+        }
+
+        if (!navigator.geolocation) {
+            toast.error('Location not supported on your device');
+            return;
+        }
+
+        setCheckInLoading(true);
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                try {
+                    const deviceId = getDeviceId();
+                    await attendanceAPI.signOut(
+                        {
+                            location: { lat: latitude, lng: longitude },
+                            device_id: deviceId,
+                        },
+                        token
+                    );
+                    toast.success('Check-out successful');
+                    fetchAttendanceData();
+                } catch (error) {
+                    toast.error(
+                        error instanceof Error ? error.message : 'Check-out failed, please try again'
+                    );
+                } finally {
+                    setCheckInLoading(false);
+                }
+            },
+            () => {
+                setCheckInLoading(false);
+                toast.error('Unable to retrieve location');
             },
             {
                 enableHighAccuracy: false,
@@ -349,6 +417,16 @@ export function AttendancePage() {
                     <Button variant="secondary" icon={<Upload size={20} />} onClick={handleExport}>
                         Export
                     </Button>
+                    {user?.is_cleaning_day && isCheckoutAvailable() && (
+                        <Button
+                            variant="secondary"
+                            icon={<LogOut size={20} />}
+                            onClick={handleCheckOut}
+                            loading={checkInLoading}
+                        >
+                            Check Out
+                        </Button>
+                    )}
                     <Button
                         variant="primary"
                         icon={<MapPin size={20} />}

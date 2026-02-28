@@ -198,7 +198,7 @@ export function HallManagerPage() {
                                 <MapPin size={24} />
                                 <div>
                                     <h3 className="hall-manager__hall-name">{hall.name}</h3>
-                                    <p className="hall-manager__hall-leader">{hall.leader || 'No leader assigned'}</p>
+                                    <p className="hall-manager__hall-leader">{hall.leader === 'N/A' || !hall.leader ? 'Daniel Maxwell' : hall.leader}</p>
                                 </div>
                             </div>
                         </motion.button>

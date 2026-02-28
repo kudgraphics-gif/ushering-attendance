@@ -13,6 +13,13 @@
   --color-text-secondary: rgba(255, 255, 255, 0.7);
   --color-text-tertiary: rgba(255, 255, 255, 0.4);
   
+  /* Unified theme variables - Dark Mode */
+  --text-primary: #FFFFFF;
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --surface-glass: rgba(20, 20, 20, 0.6);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --surface-hover: rgba(255, 255, 255, 0.05);
+  
   /* Glass effect backgrounds */
   --color-glass-light: rgba(255, 255, 255, 0.05);
   --color-glass-medium: rgba(20, 20, 20, 0.6);
@@ -128,6 +135,13 @@ html.light {
   --color-text-primary: #000000;
   --color-text-secondary: rgba(60, 60, 67, 0.6);
   --color-text-tertiary: rgba(60, 60, 67, 0.3);
+
+  /* Unified theme variables - Light Mode */
+  --text-primary: #000000;
+  --text-secondary: rgba(60, 60, 67, 0.6);
+  --surface-glass: rgba(255, 255, 255, 0.7);
+  --border-color: rgba(0, 0, 0, 0.1);
+  --surface-hover: rgba(0, 0, 0, 0.05);
 
   /* Glass effect backgrounds - Light Mode */
   --color-glass-light: rgba(255, 255, 255, 0.5);

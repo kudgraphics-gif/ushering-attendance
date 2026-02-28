@@ -5,6 +5,9 @@ import { Avatar } from '../ui/Avatar';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import toast from 'react-hot-toast';
+import { attendanceAPI } from '../../services/api';
+import { getDeviceId } from '../../utils/deviceId';
 import './Header.css';
 import './HeaderProfile.css';
 
@@ -15,8 +18,10 @@ interface HeaderProps {
 export function Header({ onMenuClick }: HeaderProps) {
     const user = useAuthStore((state) => state.user);
     const logout = useAuthStore((state) => state.logout);
+    const token = useAuthStore((state) => state.token);
     const [searchQuery, setSearchQuery] = useState('');
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [checkInLoading, setCheckInLoading] = useState(false);
     const profileRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
 
@@ -56,22 +61,84 @@ export function Header({ onMenuClick }: HeaderProps) {
         navigate('/login');
     };
 
+    const handleAdminCheckIn = async () => {
+        if (!token || !user) {
+            toast.error('You must be logged in to check in');
+            return;
+        }
+
+        if (user.role !== 'Admin') {
+            toast.error('Only admins can check in from header');
+            return;
+        }
+
+        if (!navigator.geolocation) {
+            toast.error('Location not supported on your device');
+            return;
+        }
+
+        setCheckInLoading(true);
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                try {
+                    const deviceId = getDeviceId();
+                    await attendanceAPI.checkIn(
+                        {
+                            location: { lat: latitude, lng: longitude },
+                            device_id: deviceId,
+                        },
+                        token
+                    );
+                    toast.success('Check-in successful');
+                } catch (error) {
+                    toast.error(
+                        error instanceof Error ? error.message : 'Check-in failed, please try again'
+                    );
+                } finally {
+                    setCheckInLoading(false);
+                }
+            },
+            () => {
+                setCheckInLoading(false);
+                toast.error('Unable to retrieve location');
+            },
+            {
+                enableHighAccuracy: false,
+                timeout: 30000,
+                maximumAge: Infinity
+            }
+        );
+    };
+
     return (
         <header className="header glass-md">
             <button className="header__menu-btn" onClick={onMenuClick}>
                 <Menu size={24} />
             </button>
 
-            <div className="header__search">
-                <Search size={20} className="header__search-icon" />
-                <input
-                    type="text"
-                    placeholder="Search..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="header__search-input"
-                />
-            </div>
+            {user?.role === 'Admin' ? (
+                <button
+                    className="header__checkin-btn"
+                    onClick={handleAdminCheckIn}
+                    disabled={checkInLoading}
+                >
+                    <MapPin size={18} />
+                    <span>{checkInLoading ? 'Checking in...' : 'Check In'}</span>
+                </button>
+            ) : (
+                <div className="header__search">
+                    <Search size={20} className="header__search-icon" />
+                    <input
+                        type="text"
+                        placeholder="Search..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="header__search-input"
+                    />
+                </div>
+            )}
 
             <div className="header__actions">
                 <ThemeToggle />

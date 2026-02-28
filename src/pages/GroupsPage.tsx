@@ -335,26 +335,70 @@ function AttendanceView({ token, initialDate, onBack }: AttendanceViewProps) {
         }
     };
 
+    const handleRevokeAttendance = async (record: GroupAttendanceResponse['present'][0]) => {
+        if (!token) {
+            toast.error('Authentication required');
+            return;
+        }
+
+        try {
+            await groupsAPI.removeAttendance(record.user.id, date, token);
+            toast.success(`Attendance revoked for ${record.user.first_name} ${record.user.last_name}`);
+            fetchAttendance();
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Failed to revoke attendance');
+        }
+    };
+
     const pieData = attendance ? [
         { name: 'Present', value: attendance.present.length, color: '#10B981' },
         { name: 'Absent', value: attendance.absent.length, color: '#EF4444' },
     ] : [];
 
 
-    const renderRows = (records: GroupAttendanceResponse['present'] | GroupAttendanceResponse['absent']) => (
+    const renderRows = (records: GroupAttendanceResponse['present'] | GroupAttendanceResponse['absent'], isPresent: boolean = false) => (
         <div>
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', padding: '10px 16px', borderBottom: '1px solid var(--border-color)', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                <span>Name</span><span>Time In</span><span>Time Out</span>
+            <div style={{ display: 'grid', gridTemplateColumns: isPresent ? '2fr 1fr 1fr 80px' : '2fr 1fr 1fr', padding: '10px 16px', borderBottom: '1px solid var(--border-color)', fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                <span>Name</span><span>Time In</span><span>Time Out</span>{isPresent && <span>Action</span>}
             </div>
             {records.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '32px', color: 'var(--text-secondary)' }}>No records found</div>
             ) : records.map((r, i) => (
-                <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', padding: '12px 16px', borderBottom: i < records.length - 1 ? '1px solid var(--border-color)' : 'none', alignItems: 'center' }}>
+                <div key={i} style={{ display: 'grid', gridTemplateColumns: isPresent ? '2fr 1fr 1fr 80px' : '2fr 1fr 1fr', padding: '12px 16px', borderBottom: i < records.length - 1 ? '1px solid var(--border-color)' : 'none', alignItems: 'center' }}>
                     <div>
                         <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{r.user.first_name} {r.user.last_name}</div>
                     </div>
                     <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{fmtTime(r.time_in)}</div>
                     <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{fmtTime(r.time_out)}</div>
+                    {isPresent && (
+                        <button
+                            onClick={() => handleRevokeAttendance(r)}
+                            style={{
+                                background: 'rgba(239, 68, 68, 0.1)',
+                                border: '1px solid rgba(239, 68, 68, 0.2)',
+                                borderRadius: '6px',
+                                color: '#EF4444',
+                                cursor: 'pointer',
+                                padding: '6px 12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '0.85rem',
+                                fontWeight: 500,
+                                transition: 'all 0.2s',
+                            }}
+                            onMouseEnter={(e) => {
+                                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(239, 68, 68, 0.15)';
+                                (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                            }}
+                            onMouseLeave={(e) => {
+                                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(239, 68, 68, 0.1)';
+                                (e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(239, 68, 68, 0.2)';
+                            }}
+                        >
+                            <Trash2 size={14} />
+                        </button>
+                    )}
                 </div>
             ))}
         </div>
@@ -417,7 +461,7 @@ function AttendanceView({ token, initialDate, onBack }: AttendanceViewProps) {
                                 </button>
                             </div>
                         </div>
-                        {renderRows(tab === 'present' ? attendance.present : attendance.absent)}
+                        {renderRows(tab === 'present' ? attendance.present : attendance.absent, tab === 'present')}
                     </Card>
                 </>
             ) : null}

@@ -704,6 +704,10 @@ export const groupsAPI = {
         return apiCall<GroupHistoryItem[]>('GET', `/groups/history/${id}`, undefined, token);
     },
 
+    removeAttendance: async (userId: string, date: string, token: string): Promise<{ message: string }> => {
+        return apiCall<{ message: string }>('DELETE', `/groups/attendance/remove/${userId}/${date}`, undefined, token);
+    },
+
     importUsers: async (id: string, file: File, _token: string): Promise<{ message: string }> => {
         const formData = new FormData();
         formData.append('file', file);
