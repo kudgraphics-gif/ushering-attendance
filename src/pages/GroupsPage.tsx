@@ -767,11 +767,11 @@ export function GroupsPage() {
                                 <div className="group-card__actions" onClick={e => e.stopPropagation()}>
                                     {!group.is_active && (
                                         <button className="group-card__btn group-card__btn--primary" onClick={() => setActivateGroup(group)}>
-                                            <Zap size={13} /> Activate
+                                            <Zap size={18} /> Activate
                                         </button>
                                     )}
                                     <button className="group-card__btn" onClick={() => setAddUserGroup(group)}>
-                                        <UserPlus size={13} /> Add User
+                                        <UserPlus size={18} /> Add User
                                     </button>
                                     <>
                                         <input
