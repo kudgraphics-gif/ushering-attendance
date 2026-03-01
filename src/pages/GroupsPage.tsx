@@ -404,6 +404,76 @@ function AttendanceView({ token, initialDate, onBack }: AttendanceViewProps) {
         </div>
     );
 
+    const handleExportAttendanceCSV = () => {
+        if (!attendance) {
+            toast.error('No attendance data to export');
+            return;
+        }
+
+        const csvEscape = (v?: string | null) => {
+            if (v === undefined || v === null) return '';
+            const s = String(v);
+            if (s.includes('"') || s.includes(',') || s.includes('\n')) {
+                return '"' + s.replace(/"/g, '""') + '"';
+            }
+            return s;
+        };
+
+        const rows: string[] = [];
+        const headers = [
+            'Group', 'Category', 'First Name', 'Last Name', 'Reg No', 'Email', 'Time In', 'Time Out', 'Role'
+        ];
+        rows.push(headers.join(','));
+
+        const groupName = (attendance as any).group_name || attendance.present[0]?.user?.current_roster_allocation || '';
+
+        // Present
+        attendance.present.forEach(p => {
+            const r = [
+                csvEscape(groupName),
+                'Present',
+                csvEscape(p.user.first_name),
+                csvEscape(p.user.last_name),
+                csvEscape(p.user.reg_no),
+                csvEscape(p.user.email),
+                csvEscape(fmtTime(p.time_in)),
+                csvEscape(fmtTime(p.time_out)),
+                csvEscape(p.user.role),
+            ];
+            rows.push(r.join(','));
+        });
+
+        // Absent (include any time_in/time_out if present)
+        attendance.absent.forEach(a => {
+            const r = [
+                csvEscape(groupName),
+                'Absent',
+                csvEscape(a.user.first_name),
+                csvEscape(a.user.last_name),
+                csvEscape(a.user.reg_no),
+                csvEscape(a.user.email),
+                csvEscape(fmtTime(a.time_in)),
+                csvEscape(fmtTime(a.time_out)),
+                csvEscape(a.user.role),
+            ];
+            rows.push(r.join(','));
+        });
+
+        const csvContent = rows.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const safeGroup = groupName ? groupName.replace(/[^a-z0-9_-]/gi, '_') : 'all_groups';
+        const fileName = `group_attendance_${safeGroup}_${date}.csv`;
+        a.href = url;
+        a.setAttribute('download', fileName);
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast.success('CSV downloaded');
+    };
+
     return (
         <div className="group-detail">
             <button className="group-detail__back" onClick={onBack}>
@@ -414,7 +484,10 @@ function AttendanceView({ token, initialDate, onBack }: AttendanceViewProps) {
                     <h1 className="group-detail__title">Group Attendance</h1>
                     <p className="group-detail__desc">Showing attendance for {fmtDate(date)}</p>
                 </div>
-                <input type="date" className="groups-modal__input" style={{ width: 'auto' }} value={date} onChange={e => setDate(e.target.value)} />
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <input type="date" className="groups-modal__input" style={{ width: 'auto' }} value={date} onChange={e => setDate(e.target.value)} />
+                    <Button variant="secondary" icon={<Upload size={14} />} onClick={() => handleExportAttendanceCSV()} title="Export CSV">Export</Button>
+                </div>
             </div>
 
             {loading ? (
@@ -469,6 +542,7 @@ function AttendanceView({ token, initialDate, onBack }: AttendanceViewProps) {
     );
 }
 
+    
 // ─── Group Detail View ──────────────────────────────────────────────────────
 
 interface GroupDetailViewProps {
