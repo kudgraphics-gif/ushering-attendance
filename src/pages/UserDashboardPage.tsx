@@ -484,7 +484,7 @@ export function UserDashboardPage() {
                         onClick={handleCheckOut}
                         disabled={checkingOut || !!hasDeviceCheckedOutToday()}
                         className="checkin-button checkin-button--checkout"
-                        style={{ backgroundColor: hasDeviceCheckedOutToday() ? '#555' : 'var(--color-accent-orange)' }}
+                        style={{ backgroundColor: hasDeviceCheckedOutToday() ? '#555' : 'var(--color-primary)' }}
                     >
                         <CheckCircle2 size={32} />
                         <span>{checkingOut ? 'Checking out...' : hasDeviceCheckedOutToday() ? 'Checked Out' : 'Check Out'}</span>
