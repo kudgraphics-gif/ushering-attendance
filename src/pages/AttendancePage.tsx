@@ -419,7 +419,7 @@ export function AttendancePage() {
                     </Button>
                     {user?.is_cleaning_day && isCheckoutAvailable() && (
                         <Button
-                            variant="secondary"
+                            variant="primary"
                             icon={<LogOut size={20} />}
                             onClick={handleCheckOut}
                             loading={checkInLoading}
