@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Users, UserCheck, UserX, Loader, GripVertical } from 'lucide-react';
+import { MapPin, Users, UserCheck, UserX, Loader, GripVertical, Search, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -30,6 +30,8 @@ export function HallManagerPage() {
     const [halls, setHalls] = useState<Hall[]>([]);
     const [selectedHall, setSelectedHall] = useState<string | null>(null);
     const [attendanceData, setAttendanceData] = useState<HallAttendanceResponse | null>(null);
+    const [exportHall, setExportHall] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState<string>('');
     const [loading, setLoading] = useState(false);
     const [marking, setMarking] = useState(false);
     const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
@@ -71,6 +73,8 @@ export function HallManagerPage() {
             const data = await hallsAPI.getAttendance(selectedHall, token);
             setAttendanceData(data);
             setSelectedUsers(new Set());
+            // default exportHall to currently selected
+            setExportHall(selectedHall);
         } catch (error) {
             toast.error(error instanceof Error ? error.message : 'Failed to fetch attendance');
             console.error(error);
@@ -78,6 +82,16 @@ export function HallManagerPage() {
             setLoading(false);
         }
     };
+
+    function fmtTimeShort(d?: string | null) {
+        if (!d) return '';
+        try {
+            const dt = new Date(d);
+            return dt.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+        } catch {
+            return d;
+        }
+    }
 
     const handleUserToggle = (userId: string) => {
         const newSelected = new Set(selectedUsers);
@@ -162,6 +176,75 @@ export function HallManagerPage() {
         setSelectedUsers(new Set());
     };
 
+    const handleExportHallCSV = async (hallName?: string | null) => {
+        if (!token) { toast.error('Authentication required'); return; }
+        const name = hallName || selectedHall;
+        if (!name) { toast.error('Select a hall to export'); return; }
+
+        try {
+            let data: HallAttendanceResponse | null = null;
+            if (name === selectedHall && attendanceData) {
+                data = attendanceData;
+            } else {
+                data = await hallsAPI.getAttendance(name, token);
+            }
+
+            const csvEscape = (v?: string | null) => {
+                if (v === undefined || v === null) return '';
+                const s = String(v);
+                if (s.includes('"') || s.includes(',') || s.includes('\n')) {
+                    return '"' + s.replace(/"/g, '""') + '"';
+                }
+                return s;
+            };
+
+            const headers = ['Hall', 'Category', 'First Name', 'Last Name', 'Reg No', 'Email', 'Last Seen', 'Role'];
+            const rows = [headers.join(',')];
+
+            data.presents.forEach(p => {
+                const r = [
+                    csvEscape(name),
+                    'Present',
+                    csvEscape(p.first_name),
+                    csvEscape(p.last_name),
+                    csvEscape(p.reg_no),
+                    csvEscape(p.email),
+                    csvEscape(fmtTimeShort(p.last_seen ?? p.created_at ?? '')),
+                    csvEscape(p.role),
+                ];
+                rows.push(r.join(','));
+            });
+
+            data.absents.forEach(a => {
+                const r = [
+                    csvEscape(name),
+                    'Absent',
+                    csvEscape(a.first_name),
+                    csvEscape(a.last_name),
+                    csvEscape(a.reg_no),
+                    csvEscape(a.email),
+                    csvEscape(fmtTimeShort(a.last_seen ?? a.created_at ?? '')),
+                    csvEscape(a.role),
+                ];
+                rows.push(r.join(','));
+            });
+
+            const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const safe = name.replace(/[^a-z0-9_-]/gi, '_');
+            a.href = url;
+            a.setAttribute('download', `${safe}.csv`);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            toast.success('CSV downloaded');
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : 'Failed to export');
+        }
+    };
+
     if (loading && halls.length === 0) {
         return (
             <div className="hall-manager__loading">
@@ -243,6 +326,35 @@ export function HallManagerPage() {
                         </Card>
                     </div>
 
+                    <div className="hall-manager__controls" style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <Search size={16} />
+                            <input
+                                placeholder="Search attendees..."
+                                value={searchQuery}
+                                onChange={e => setSearchQuery(e.target.value)}
+                                style={{
+                                    padding: '0 12px',
+                                    borderRadius: 8,
+                                    border: '1px solid var(--border-color)',
+                                    background: 'var(--surface-glass)',
+                                    color: 'var(--text-primary)',
+                                    height: '44px',
+                                    fontSize: 'var(--text-base)'
+                                }}
+                            />
+                        </div>
+
+                        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
+                            <select value={exportHall ?? ''} onChange={e => setExportHall(e.target.value)} style={{ padding: '0 12px', borderRadius: 6, border: '1px solid var(--border-color)', background: 'var(--surface-glass)', color: 'var(--text-primary)', height: '44px', fontSize: 'var(--text-base)' }}>
+                                {halls.map(h => <option key={h.name} value={h.name}>{h.name}</option>)}
+                            </select>
+                            <Button variant="secondary" icon={<Download size={14} />} onClick={() => handleExportHallCSV(exportHall ?? selectedHall)}>
+                                Export CSV
+                            </Button>
+                        </div>
+                    </div>
+
                     {/* Tabs */}
                     <div className="hall-manager__tabs">
                         <button
@@ -277,10 +389,12 @@ export function HallManagerPage() {
                                             Present ({attendanceData.presents.length})
                                         </h3>
                                         <div className="hall-manager__users-list">
-                                            {attendanceData.presents.length === 0 ? (
+                                            {attendanceData.presents.filter(u => `${u.first_name} ${u.last_name} ${u.email} ${u.reg_no}`.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 ? (
                                                 <p className="hall-manager__empty-message">No users marked present</p>
                                             ) : (
-                                                attendanceData.presents.map((user) => (
+                                                attendanceData.presents
+                                                    .filter(u => `${u.first_name} ${u.last_name} ${u.email} ${u.reg_no}`.toLowerCase().includes(searchQuery.toLowerCase()))
+                                                    .map((user) => (
                                                     <motion.div
                                                         key={user.id}
                                                         className="hall-manager__user-item"
@@ -310,10 +424,12 @@ export function HallManagerPage() {
                                             Absent ({attendanceData.absents.length})
                                         </h3>
                                         <div className="hall-manager__users-list">
-                                            {attendanceData.absents.length === 0 ? (
-                                                <p className="hall-manager__empty-message">No absent users</p>
-                                            ) : (
-                                                attendanceData.absents.map((user) => (
+                                            {attendanceData.absents.filter(u => `${u.first_name} ${u.last_name} ${u.email} ${u.reg_no}`.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 ? (
+                                                    <p className="hall-manager__empty-message">No absent users</p>
+                                                ) : (
+                                                    attendanceData.absents
+                                                        .filter(u => `${u.first_name} ${u.last_name} ${u.email} ${u.reg_no}`.toLowerCase().includes(searchQuery.toLowerCase()))
+                                                        .map((user) => (
                                                     <motion.div
                                                         key={user.id}
                                                         className="hall-manager__user-item"

@@ -726,7 +726,7 @@ export const groupsAPI = {
 };
 
 // Suggestions API (separate base URL)
-const SUGGESTIONS_BASE = 'http://76.13.42.145:5000';
+const SUGGESTIONS_BASE = 'https://kud-server.duckdns.org';
 
 export const suggestionsAPI = {
     getAll: async (): Promise<SuggestionListResponse> => {
