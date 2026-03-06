@@ -12,6 +12,7 @@ import { format, isValid, parseISO } from 'date-fns';
 import toast from 'react-hot-toast';
 
 import { suggestionsAPI } from '../services/api';
+import { Modal } from '../components/ui/Modal';
 import { useAuthStore } from '../stores/authStore';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -32,6 +33,11 @@ function AdminSuggestions() {
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
     const [loading, setLoading] = useState(true);
     const [totalCount, setTotalCount] = useState(0);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState<string>('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [selectedSuggestion, setSelectedSuggestion] = useState<Suggestion | null>(null);
+    const itemsPerPage = 10;
 
     useEffect(() => { fetchSuggestions(); }, []);
 
@@ -39,12 +45,31 @@ function AdminSuggestions() {
         setLoading(true);
         try {
             const data = await suggestionsAPI.getAll();
-            setSuggestions(data.items);
-            setTotalCount(data.totalCount);
+            const items = data.items || [];
+            // sort recent first
+            items.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            setSuggestions(items);
+            setTotalCount(data.totalCount || items.length);
         } catch (err) {
             toast.error('Failed to load suggestions');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const openSuggestionDetail = async (id: number | string) => {
+        try {
+            const data = await suggestionsAPI.getById(id);
+            // normalize to Suggestion type shape
+            const s: Suggestion = {
+                id: String(data.id),
+                message: data.message,
+                category: data.category,
+                createdAt: data.createdAt,
+            } as any;
+            setSelectedSuggestion(s);
+        } catch (err) {
+            toast.error('Failed to load suggestion');
         }
     };
 
@@ -56,21 +81,29 @@ function AdminSuggestions() {
             transition={{ duration: 0.3 }}
         >
             <div className="suggestion-page__header">
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
                     <div>
                         <h1 className="suggestion-page__title">Suggestion Box</h1>
                         <p className="suggestion-page__subtitle">
                             {totalCount} anonymous suggestion{totalCount !== 1 ? 's' : ''} received
                         </p>
                     </div>
-                    <Button
-                        variant="secondary"
-                        icon={<RefreshCw size={16} />}
-                        onClick={fetchSuggestions}
-                        loading={loading}
-                    >
-                        Refresh
-                    </Button>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <input
+                            placeholder="Search suggestions..."
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                            style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--surface-glass)', color: 'var(--text-primary)' }}
+                        />
+                        <Button
+                            variant="secondary"
+                            icon={<RefreshCw size={16} />}
+                            onClick={fetchSuggestions}
+                            loading={loading}
+                        >
+                            Refresh
+                        </Button>
+                    </div>
                 </div>
             </div>
 
@@ -93,15 +126,31 @@ function AdminSuggestions() {
                         <p>Suggestions submitted by members will appear here.</p>
                     </div>
                 </Card>
-            ) : (
-                <div className="suggestion-list">
-                    {suggestions.map((s, i) => (
+                ) : (
+                <div>
+                    <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+                        <select
+                            value={selectedCategory}
+                            onChange={e => { setSelectedCategory(e.target.value); setCurrentPage(1); }}
+                            style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--surface-glass)', color: 'var(--text-primary)' }}
+                        >
+                            <option value="">All Categories</option>
+                            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                    </div>
+                    <div className="suggestion-list">
+                    {suggestions
+                        .filter(s => `${s.message} ${s.category}`.toLowerCase().includes(searchTerm.toLowerCase()) && (!selectedCategory || s.category === selectedCategory))
+                        .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                        .map((s, i) => (
                         <motion.div
                             key={s.id}
                             className="suggestion-item"
                             initial={{ opacity: 0, y: 12 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: i * 0.03 }}
+                            onClick={() => openSuggestionDetail(s.id)}
+                            style={{ cursor: 'pointer' }}
                         >
                             <div className="suggestion-item__header">
                                 <span className="suggestion-item__category">{s.category}</span>
@@ -115,9 +164,42 @@ function AdminSuggestions() {
                                 <EyeOff size={11} /> Anonymous submission
                             </div>
                         </motion.div>
-                    ))}
+                    ))}</div>
+                    {suggestions.filter(s => `${s.message} ${s.category}`.toLowerCase().includes(searchTerm.toLowerCase()) && (!selectedCategory || s.category === selectedCategory)).length > itemsPerPage && (
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 16 }}>
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                disabled={currentPage === 1}
+                                onClick={() => setCurrentPage(p => p - 1)}
+                            >
+                                Previous
+                            </Button>
+                            <span style={{ padding: '8px 12px', borderRadius: 6, background: 'var(--surface-glass)', display: 'flex', alignItems: 'center' }}>
+                                Page {currentPage}
+                            </span>
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                disabled={currentPage * itemsPerPage >= suggestions.filter(s => `${s.message} ${s.category}`.toLowerCase().includes(searchTerm.toLowerCase()) && (!selectedCategory || s.category === selectedCategory)).length}
+                                onClick={() => setCurrentPage(p => p + 1)}
+                            >
+                                Next
+                            </Button>
+                        </div>
+                    )}
                 </div>
             )}
+
+            <Modal isOpen={!!selectedSuggestion} onClose={() => setSelectedSuggestion(null)} title={selectedSuggestion ? `Suggestion #${selectedSuggestion.id}` : 'Suggestion'} size="lg">
+                {selectedSuggestion ? (
+                    <div style={{ padding: 8 }}>
+                        <div style={{ display: 'inline-block', padding: '4px 8px', borderRadius: 6, background: 'var(--surface-glass)', fontSize: '0.85rem', color: 'var(--color-primary)', fontWeight: 600, marginBottom: 12 }}>{selectedSuggestion.category}</div>
+                        <h3 style={{ marginTop: 8, fontSize: '1.1rem' }}>{selectedSuggestion.message}</h3>
+                        <div style={{ marginTop: 12, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{fmtTimestamp(selectedSuggestion.createdAt)}</div>
+                    </div>
+                ) : null}
+            </Modal>
         </motion.div>
     );
 }

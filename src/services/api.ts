@@ -181,6 +181,15 @@ export const usersAPI = {
         );
     },
 
+    changePassword: async (email: string, password: string, token: string): Promise<{ message: string }> => {
+        return apiCall<{ message: string }>(
+            'POST',
+            '/users/change-password',
+            { email, password },
+            token
+        );
+    },
+
     uploadAvatar: async (file: File, _token: string): Promise<{ message: string; data: { avatar_url: string } }> => {
         const formData = new FormData();
         formData.append('file', file);
@@ -738,6 +747,15 @@ export const suggestionsAPI = {
         return res.json();
     },
 
+    getById: async (id: number | string): Promise<{ id: number; message: string; category: string; createdAt: string }> => {
+        const res = await fetch(`${SUGGESTIONS_BASE}/api/suggestions/${id}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        });
+        if (!res.ok) throw new Error(`Failed to fetch suggestion: ${res.statusText}`);
+        return res.json();
+    },
+
     submit: async (payload: { message: string; category: string }): Promise<{ message: string }> => {
         const res = await fetch(`${SUGGESTIONS_BASE}/api/suggestions/submit`, {
             method: 'POST',
@@ -761,6 +779,11 @@ export const hallsAPI = {
 
     getAttendance: async (hallName: string, token: string): Promise<HallAttendanceResponse> => {
         return apiCall<HallAttendanceResponse>('GET', `/halls/${hallName}/attendance`, undefined, token);
+    },
+
+    // Support querying attendance by date: /halls/{hallName}/attendance?date=YYYY-MM-DD
+    getAttendanceByDate: async (hallName: string, date: string, token: string): Promise<HallAttendanceResponse> => {
+        return apiCall<HallAttendanceResponse>('GET', `/halls/${hallName}/attendance?date=${date}`, undefined, token);
     },
 
     markAttendance: async (

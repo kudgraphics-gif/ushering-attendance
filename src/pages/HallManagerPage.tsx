@@ -32,6 +32,7 @@ export function HallManagerPage() {
     const [attendanceData, setAttendanceData] = useState<HallAttendanceResponse | null>(null);
     const [exportHall, setExportHall] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState<string>('');
+    const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [loading, setLoading] = useState(false);
     const [marking, setMarking] = useState(false);
     const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
@@ -47,7 +48,7 @@ export function HallManagerPage() {
         if (selectedHall && token) {
             fetchAttendance();
         }
-    }, [selectedHall, token]);
+    }, [selectedHall, token, selectedDate]);
 
     const fetchHalls = async () => {
         if (!token) return;
@@ -70,7 +71,7 @@ export function HallManagerPage() {
         if (!token || !selectedHall) return;
         setLoading(true);
         try {
-            const data = await hallsAPI.getAttendance(selectedHall, token);
+            const data = await hallsAPI.getAttendanceByDate(selectedHall, selectedDate, token);
             setAttendanceData(data);
             setSelectedUsers(new Set());
             // default exportHall to currently selected
@@ -183,11 +184,8 @@ export function HallManagerPage() {
 
         try {
             let data: HallAttendanceResponse | null = null;
-            if (name === selectedHall && attendanceData) {
-                data = attendanceData;
-            } else {
-                data = await hallsAPI.getAttendance(name, token);
-            }
+            // Always fetch attendance for the requested date to ensure history view
+            data = await hallsAPI.getAttendanceByDate(name, selectedDate, token);
 
             const csvEscape = (v?: string | null) => {
                 if (v === undefined || v === null) return '';
@@ -334,6 +332,21 @@ export function HallManagerPage() {
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
                                 style={{
+                                    padding: '0 12px',
+                                    borderRadius: 8,
+                                    border: '1px solid var(--border-color)',
+                                    background: 'var(--surface-glass)',
+                                    color: 'var(--text-primary)',
+                                    height: '44px',
+                                    fontSize: 'var(--text-base)'
+                                }}
+                            />
+                            <input
+                                type="date"
+                                value={selectedDate}
+                                onChange={e => setSelectedDate(e.target.value)}
+                                style={{
+                                    marginLeft: 8,
                                     padding: '0 12px',
                                     borderRadius: 8,
                                     border: '1px solid var(--border-color)',

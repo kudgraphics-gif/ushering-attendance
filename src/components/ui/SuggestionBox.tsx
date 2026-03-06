@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquarePlus, X, Send, MessageCircle } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
+import { suggestionsAPI } from '../../services/api';
 import { Button } from './Button';
 import toast from 'react-hot-toast';
 import './SuggestionBox.css';
@@ -14,29 +15,7 @@ interface Suggestion {
     avatar?: string;
 }
 
-const MOCK_SUGGESTIONS: Suggestion[] = [
-    {
-        id: '1',
-        user: 'Sarah Johnson',
-        message: 'We need more ushered seating in the overflow section during second service.',
-        date: '2 min ago',
-        avatar: 'https://i.pravatar.cc/150?u=1'
-    },
-    {
-        id: '2',
-        user: 'Michael Chen',
-        message: 'The new digital check-in system is working great! elaborate on better optimized routes though.',
-        date: '1 hour ago',
-        avatar: 'https://i.pravatar.cc/150?u=2'
-    },
-    {
-        id: '3',
-        user: 'David Okon',
-        message: 'Can we have a debrief meeting after the special service next Sunday?',
-        date: 'Yesterday',
-        avatar: 'https://i.pravatar.cc/150?u=3'
-    }
-];
+// suggestion list loaded from API for admin
 
 export function SuggestionBox() {
     const [isOpen, setIsOpen] = useState(false);
@@ -44,6 +23,10 @@ export function SuggestionBox() {
     const isAdmin = user?.role === 'Admin';
     const [message, setMessage] = useState('');
     const [sending, setSending] = useState(false);
+    const [suggestions, setSuggestions] = useState<any[]>([]);
+    const [selectedSuggestion, setSelectedSuggestion] = useState<any | null>(null);
+    const [loadingList, setLoadingList] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
 
     const toggleOpen = () => setIsOpen(!isOpen);
 
@@ -67,6 +50,38 @@ export function SuggestionBox() {
         setMessage('');
         setSending(false);
         setIsOpen(false);
+    };
+
+    useEffect(() => {
+        if (isAdmin) {
+            fetchSuggestions();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isAdmin]);
+
+    const fetchSuggestions = async () => {
+        setLoadingList(true);
+        try {
+            const resp = await suggestionsAPI.getAll();
+            const list = resp.items || [];
+            const sorted = list.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+            setSuggestions(sorted);
+        } catch (err) {
+            console.error(err);
+            toast.error('Failed to load suggestions');
+        } finally {
+            setLoadingList(false);
+        }
+    };
+
+    const openSuggestion = async (id: number | string) => {
+        try {
+            const data = await suggestionsAPI.getById(id);
+            setSelectedSuggestion(data);
+        } catch (err) {
+            console.error(err);
+            toast.error('Failed to load suggestion');
+        }
     };
 
     return (
@@ -110,22 +125,33 @@ export function SuggestionBox() {
                             {isAdmin ? (
                                 // Admin View (Read Only)
                                 <div className="suggestion-list">
-                                    {MOCK_SUGGESTIONS.map((suggestion) => (
-                                        <div key={suggestion.id} className="suggestion-item">
-                                            <div className="suggestion-item__header">
-                                                <img
-                                                    src={suggestion.avatar}
-                                                    alt={suggestion.user}
-                                                    className="suggestion-item__avatar"
+                                            <div className="suggestion-list__controls" style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+                                                <input
+                                                    placeholder="Search suggestions..."
+                                                    value={searchTerm}
+                                                    onChange={e => setSearchTerm(e.target.value)}
+                                                    style={{ flex: 1, padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--surface-glass)', color: 'var(--text-primary)' }}
                                                 />
-                                                <div className="suggestion-item__info">
-                                                    <div className="suggestion-item__name">{suggestion.user}</div>
-                                                    <div className="suggestion-item__date">{suggestion.date}</div>
-                                                    <p className="suggestion-item__message">{suggestion.message}</p>
-                                                </div>
+                                                <Button variant="secondary" size="sm" onClick={fetchSuggestions}>Refresh</Button>
                                             </div>
-                                        </div>
-                                    ))}
+                                            {loadingList ? (
+                                                <div style={{ textAlign: 'center', padding: 16 }}>Loading...</div>
+                                            ) : (
+                                                suggestions
+                                                    .filter(s => `${s.message} ${s.category}`.toLowerCase().includes(searchTerm.toLowerCase()))
+                                                    .map((suggestion) => (
+                                                        <div key={suggestion.id} className="suggestion-item" onClick={() => openSuggestion(suggestion.id)} style={{ cursor: 'pointer' }}>
+                                                            <div className="suggestion-item__header">
+                                                                <div className="suggestion-item__avatar" />
+                                                                <div className="suggestion-item__info">
+                                                                    <div className="suggestion-item__name">Suggestion #{suggestion.id}</div>
+                                                                    <div className="suggestion-item__date">{new Date(suggestion.createdAt).toLocaleString()}</div>
+                                                                    <p className="suggestion-item__message">{suggestion.message}</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))
+                                            )}
                                     <div className="suggestion-item--empty" style={{ textAlign: 'center', opacity: 0.5, fontSize: '12px' }}>
                                         End of suggestions
                                     </div>
@@ -157,6 +183,19 @@ export function SuggestionBox() {
                                     </div>
                                 </form>
                             )}
+                        {selectedSuggestion && (
+                            <div style={{ marginTop: 12 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <h4 style={{ margin: 0 }}>Suggestion Details</h4>
+                                    <Button variant="ghost" size="sm" onClick={() => setSelectedSuggestion(null)}>Close</Button>
+                                </div>
+                                <div style={{ marginTop: 8, padding: 12, borderRadius: 8, background: 'var(--surface-glass)' }}>
+                                    <p style={{ margin: 0, fontWeight: 700 }}>{selectedSuggestion.category}</p>
+                                    <p style={{ marginTop: 8 }}>{selectedSuggestion.message}</p>
+                                    <p style={{ marginTop: 8, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{new Date(selectedSuggestion.createdAt).toLocaleString()}</p>
+                                </div>
+                            </div>
+                        )}
                         </div>
                     </motion.div>
                 )}

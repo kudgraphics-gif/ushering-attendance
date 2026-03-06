@@ -13,15 +13,13 @@ interface PasswordChangeFormProps {
 }
 
 export function PasswordChangeForm({ onSuccess }: PasswordChangeFormProps) {
-    const { token } = useAuthStore();
+    const { token, user } = useAuthStore();
     const [loading, setLoading] = useState(false);
     const [showPasswords, setShowPasswords] = useState({
-        current: false,
         new: false,
         confirm: false,
     });
     const [formData, setFormData] = useState({
-        current_password: '',
         new_password: '',
         confirm_password: '',
     });
@@ -34,7 +32,7 @@ export function PasswordChangeForm({ onSuccess }: PasswordChangeFormProps) {
         }));
     };
 
-    const togglePasswordVisibility = (field: 'current' | 'new' | 'confirm') => {
+    const togglePasswordVisibility = (field: 'new' | 'confirm') => {
         setShowPasswords(prev => ({
             ...prev,
             [field]: !prev[field],
@@ -45,11 +43,6 @@ export function PasswordChangeForm({ onSuccess }: PasswordChangeFormProps) {
         e.preventDefault();
 
         // Validate inputs
-        if (!formData.current_password) {
-            toast.error('Please enter your current password');
-            return;
-        }
-
         if (!formData.new_password) {
             toast.error('Please enter a new password');
             return;
@@ -65,27 +58,19 @@ export function PasswordChangeForm({ onSuccess }: PasswordChangeFormProps) {
             return;
         }
 
-        if (formData.current_password === formData.new_password) {
-            toast.error('New password must be different from current password');
-            return;
-        }
-
-        if (!token) {
+        if (!token || !user?.email) {
             toast.error('Not authenticated');
             return;
         }
 
         setLoading(true);
         try {
-            await usersAPI.update({
-                password: formData.new_password,
-            }, token);
+            await usersAPI.changePassword(user.email, formData.new_password, token);
             
             toast.success('Password changed successfully');
             
             // Clear form
             setFormData({
-                current_password: '',
                 new_password: '',
                 confirm_password: '',
             });
@@ -115,27 +100,15 @@ export function PasswordChangeForm({ onSuccess }: PasswordChangeFormProps) {
 
                     <div className="password-change-form__section">
                         <div className="password-change-form__field">
-                            <label className="password-change-form__label">Current Password</label>
+                            <label className="password-change-form__label">Email</label>
                             <div className="password-change-form__input-wrapper">
                                 <input
-                                    type={showPasswords.current ? 'text' : 'password'}
-                                    name="current_password"
-                                    value={formData.current_password}
-                                    onChange={handleChange}
-                                    placeholder="Enter current password"
+                                    type="email"
+                                    value={user?.email || ''}
+                                    disabled
                                     className="password-change-form__input"
+                                    style={{ opacity: 0.6 }}
                                 />
-                                <button
-                                    type="button"
-                                    className="password-change-form__toggle"
-                                    onClick={() => togglePasswordVisibility('current')}
-                                >
-                                    {showPasswords.current ? (
-                                        <EyeOff size={18} />
-                                    ) : (
-                                        <Eye size={18} />
-                                    )}
-                                </button>
                             </div>
                         </div>
 
