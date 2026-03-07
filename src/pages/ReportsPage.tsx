@@ -659,9 +659,8 @@ function ReportsPageContent() {
                                 </div>
                                 <Activity size={18} className="rp-chart-card__icon" />
                             </div>
-                            <ResponsiveContainer width="100%" height={260}>
-                                <BarChart data={categoryData} barCategoryGap="30%">
-                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                            <ResponsiveContainer width="100%" height={320}>
+                                <BarChart data={categoryData} margin={{ top: 20, right: 20, left: 0, bottom: 20 }}>                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
                                     <XAxis dataKey="name" stroke="var(--text-secondary)" tick={{ fontSize: 13 }} />
                                     <YAxis stroke="var(--text-secondary)" tick={{ fontSize: 12 }} />
                                     <Tooltip content={<CustomTooltip />} />
@@ -686,7 +685,7 @@ function ReportsPageContent() {
                                 </div>
                                 <Target size={18} className="rp-chart-card__icon" />
                             </div>
-                            <ResponsiveContainer width="100%" height={260}>
+                            <ResponsiveContainer width="100%" height={380}>
                                 <PieChart>
                                     <Pie
                                         data={pieData}
@@ -730,9 +729,8 @@ function ReportsPageContent() {
                                 </div>
                                 <BarChart2 size={18} className="rp-chart-card__icon" />
                             </div>
-                            <ResponsiveContainer width="100%" height={240}>
-                                <BarChart data={distributionData} layout="vertical" barCategoryGap="20%">
-                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" horizontal={false} />
+                            <ResponsiveContainer width="100%" height={320}>
+                                <BarChart data={distributionData} layout="vertical" margin={{ top: 20, right: 30, left: 10, bottom: 20 }}>                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" horizontal={false} />
                                     <XAxis type="number" stroke="var(--text-secondary)" tick={{ fontSize: 12 }} />
                                     <YAxis dataKey="name" type="category" stroke="var(--text-secondary)" tick={{ fontSize: 12 }} width={60} />
                                     <Tooltip content={<CustomTooltip />} />

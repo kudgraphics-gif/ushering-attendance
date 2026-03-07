@@ -1299,6 +1299,22 @@
     .rp-filter-group--range {
         grid-column: 1;
     }
+
+    /* Stack charts on mobile for better breathing space */
+    .rp__charts-row {
+        flex-direction: column;
+        overflow-x: visible; /* no longer need horizontal scroll if stacked */
+        gap: 24px;
+        padding-bottom: 0;
+    }
+
+    .rp-chart-card,
+    .rp-chart-card--wide {
+        min-width: 100%;
+        max-width: 100%;
+        width: 100%;
+        box-sizing: border-box;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1327,6 +1343,15 @@
 
     .rp-metric-card {
         padding: 16px;
+    }
+
+    /* Further adjust charts spacing on smaller screens */
+    .rp-chart-card {
+        padding: 16px;
+    }
+
+    .rp-chart-card__title {
+        font-size: 14px;
     }
 
     .rp-period-picker__btn {

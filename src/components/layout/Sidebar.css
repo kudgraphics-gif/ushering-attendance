@@ -38,7 +38,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
-  margin-bottom: var(--space-xl);
+  margin-bottom: 48px; /* Increased from var(--space-xl) to give Dashboard menu item more breathing room */
 }
 
 .sidebar__logo {
