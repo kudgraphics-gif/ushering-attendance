@@ -394,6 +394,23 @@ export const analyticsAPI = {
         );
     },
 
+    getAttendanceReport: async (token: string, queryString: string): Promise<{
+        message: string;
+        data: {
+            period_label: string;
+            start_date: string;
+            end_date: string;
+            rows: any[];
+        };
+    }> => {
+        return apiCall(
+            'GET',
+            `/analytics/attendance-report${queryString ? `?${queryString}` : ''}`,
+            undefined,
+            token
+        );
+    },
+
     getEventReport: async (eventId: string, token: string): Promise<{
         message: string;
         data: {

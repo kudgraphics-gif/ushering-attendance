@@ -12,9 +12,11 @@ import {
     List,
     Users2,
     MessageSquare,
-    MapPin
+    MapPin,
+    BarChart2,
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
+import { useSidebarStore } from '../../stores/sidebarStore';
 import clsx from 'clsx';
 import './Sidebar.css';
 
@@ -30,6 +32,7 @@ const adminNavItems = [
     { icon: MapPin, label: 'Hall Manager', path: '/hall-manager' },
     { icon: Users2, label: 'Groups', path: '/groups' },
     { icon: MessageSquare, label: 'Suggestion Box', path: '/suggestion-box' },
+    { icon: BarChart2, label: 'Reports & Analytics', path: '/reports' },
     { icon: User, label: 'Profile', path: '/profile' },
 ];
 
@@ -62,6 +65,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     const navigate = useNavigate();
     const logout = useAuthStore((state) => state.logout);
     const user = useAuthStore((state) => state.user);
+    const setOpen = useSidebarStore((state) => state.setOpen);
 
     const navItems = user?.role === 'Admin' ? adminNavItems : user?.role === 'Leader' ? leaderNavItems : userNavItems;
 
@@ -70,12 +74,17 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         navigate('/login');
     };
 
+    const handleClose = () => {
+        setOpen(false);
+        onClose?.();
+    };
+
     return (
         <>
             {/* Overlay: Sits BEHIND the sidebar but ABOVE the page content */}
             {/* It is now a sibling, not a child, of the aside */}
             {isOpen && (
-                <div className="sidebar-overlay" onClick={onClose} />
+                <div className="sidebar-overlay" onClick={handleClose} />
             )}
 
             <aside className={clsx('sidebar glass', isOpen && 'sidebar--open')}>
@@ -97,7 +106,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                             className={({ isActive }) =>
                                 isActive ? 'sidebar__link sidebar__link--active' : 'sidebar__link'
                             }
-                            onClick={onClose} // Optional: Close sidebar when a link is clicked on mobile
+                            onClick={handleClose} // Optional: Close sidebar when a link is clicked on mobile
                         >
                             <item.icon size={20} />
                             <span>{item.label}</span>

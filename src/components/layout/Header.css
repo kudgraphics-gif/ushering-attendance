@@ -11,7 +11,9 @@
 }
 
 .header__menu-btn {
-  display: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: transparent;
   border: none;
   color: var(--color-text-primary);
@@ -19,6 +21,7 @@
   padding: var(--space-sm);
   border-radius: var(--radius-sm);
   transition: all var(--transition-fast);
+  flex-shrink: 0;
 }
 
 .header__menu-btn:hover {

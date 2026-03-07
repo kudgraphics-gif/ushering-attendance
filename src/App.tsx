@@ -14,6 +14,7 @@ import { PaymentsPage } from './pages/PaymentsPage';
 import { KoinoniaPage } from './pages/KoinoniaPage';
 import { GroupsPage } from './pages/GroupsPage';
 import { SuggestionBoxPage } from './pages/SuggestionBoxPage';
+import { ReportsPage } from './pages/ReportsPage';
 import { MainLayout } from './components/layout/MainLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { useAuthStore } from './stores/authStore';
@@ -100,6 +101,10 @@ function App() {
             element={<ProtectedRoute allowedRoles={['Admin', 'Leader']}><GroupsPage /></ProtectedRoute>}
           />
           <Route path="/suggestion-box" element={<SuggestionBoxPage />} />
+          <Route
+            path="/reports"
+            element={<ProtectedRoute allowedRoles={['Admin']}><ReportsPage /></ProtectedRoute>}
+          />
         </Route>
 
         <Route path="/" element={<Navigate to="/dashboard" replace />} />

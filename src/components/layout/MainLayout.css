@@ -9,7 +9,20 @@
   margin-left: 260px;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* When the sidebar is collapsed on desktop, shrink left margin so content expands */
+.main-layout.sidebar-closed .main-layout__content {
+  margin-left: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* When sidebar is collapsed ensure overlay not shown */
+.main-layout.sidebar-closed .main-layout__overlay {
+  display: none;
 }
 
 .main-layout__main {
