@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useSidebarStore } from '../../stores/sidebarStore';
 import { Sidebar } from './Sidebar';

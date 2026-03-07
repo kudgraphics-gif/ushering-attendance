@@ -774,7 +774,7 @@ export const suggestionsAPI = {
     },
 
     submit: async (payload: { message: string; category: string }): Promise<{ message: string }> => {
-        const res = await fetch(`${SUGGESTIONS_BASE}/api/suggestions/submit`, {
+        const res = await fetch(`${SUGGESTIONS_BASE}/api/suggestions`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body: JSON.stringify(payload),

@@ -1,28 +1,37 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquarePlus, X, Send, MessageCircle } from 'lucide-react';
+import { MessageSquarePlus, X, Send, User, ChevronLeft, MoreVertical, Search, CheckCircle2 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { suggestionsAPI } from '../../services/api';
-import { Button } from './Button';
 import toast from 'react-hot-toast';
 import './SuggestionBox.css';
 
-interface Suggestion {
+interface ChatMessage {
     id: string;
-    user: string;
-    message: string;
-    date: string;
-    avatar?: string;
+    text: string;
+    sender: 'system' | 'user';
+    timestamp: Date;
+    status?: 'sending' | 'sent';
 }
-
-// suggestion list loaded from API for admin
 
 export function SuggestionBox() {
     const [isOpen, setIsOpen] = useState(false);
     const { user } = useAuthStore();
     const isAdmin = user?.role === 'Admin';
+
+    // User State
     const [message, setMessage] = useState('');
-    const [sending, setSending] = useState(false);
+    const [messages, setMessages] = useState<ChatMessage[]>([
+        {
+            id: 'welcome',
+            text: 'Hi there! 👋\nHave an idea to improve the Ushering department? Let us know below. Your feedback goes directly to the admins.',
+            sender: 'system',
+            timestamp: new Date()
+        }
+    ]);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // Admin State
     const [suggestions, setSuggestions] = useState<any[]>([]);
     const [selectedSuggestion, setSelectedSuggestion] = useState<any | null>(null);
     const [loadingList, setLoadingList] = useState(false);
@@ -30,42 +39,29 @@ export function SuggestionBox() {
 
     const toggleOpen = () => setIsOpen(!isOpen);
 
-    const handleSend = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!message.trim()) return;
-
-        setSending(true);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // Simple Toast
-        toast.success('Suggestion sent! Thank you for your feedback.', {
-            style: {
-                background: '#1e1e1e',
-                color: '#fff',
-                border: '1px solid #333'
-            }
-        });
-
-        setMessage('');
-        setSending(false);
-        setIsOpen(false);
-    };
+    // Scroll to bottom of chat
+    useEffect(() => {
+        if (!isAdmin && isOpen) {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [messages, isOpen, isAdmin]);
 
     useEffect(() => {
-        if (isAdmin) {
+        if (isAdmin && isOpen) {
             fetchSuggestions();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isAdmin]);
+    }, [isAdmin, isOpen]);
 
     const fetchSuggestions = async () => {
         setLoadingList(true);
         try {
             const resp = await suggestionsAPI.getAll();
-            const list = resp.items || [];
-            const sorted = list.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-            setSuggestions(sorted);
+            // @ts-ignore - The response object structure might be nested
+            const list = resp.items || resp.data || resp || [];
+            if (Array.isArray(list)) {
+                const sorted = list.sort((a: any, b: any) => new Date(b.createdAt || b.created_at).getTime() - new Date(a.createdAt || a.created_at).getTime());
+                setSuggestions(sorted);
+            }
         } catch (err) {
             console.error(err);
             toast.error('Failed to load suggestions');
@@ -74,14 +70,57 @@ export function SuggestionBox() {
         }
     };
 
-    const openSuggestion = async (id: number | string) => {
+    const handleSend = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!message.trim()) return;
+
+        const textToSend = message.trim();
+        const newMsgId = Date.now().toString();
+
+        // Add user message to UI immediately
+        const newUserMsg: ChatMessage = {
+            id: newMsgId,
+            text: textToSend,
+            sender: 'user',
+            timestamp: new Date(),
+            status: 'sending'
+        };
+
+        setMessages(prev => [...prev, newUserMsg]);
+        setMessage('');
+
         try {
-            const data = await suggestionsAPI.getById(id);
-            setSelectedSuggestion(data);
+            await suggestionsAPI.submit({ message: textToSend, category: 'General' });
+
+            // Mark as sent
+            setMessages(prev => prev.map(m => m.id === newMsgId ? { ...m, status: 'sent' } : m));
+
+            // Auto reply after a short delay
+            setTimeout(() => {
+                setMessages(prev => [...prev, {
+                    id: Date.now().toString(),
+                    text: 'Thank you! We have received your suggestion.',
+                    sender: 'system',
+                    timestamp: new Date()
+                }]);
+            }, 800);
+
         } catch (err) {
             console.error(err);
-            toast.error('Failed to load suggestion');
+            toast.error('Failed to send suggestion');
+            // Remove the failed message or show as failed (simplifying by removing here)
+            setMessages(prev => prev.filter(m => m.id !== newMsgId));
         }
+    };
+
+    const formatTime = (date: string | Date) => {
+        return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    };
+
+    const formatDate = (date: string | Date) => {
+        const d = new Date(date);
+        if (d.toDateString() === new Date().toDateString()) return 'Today';
+        return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
     };
 
     return (
@@ -109,94 +148,145 @@ export function SuggestionBox() {
                         exit={{ opacity: 0, y: 50, scale: 0.9 }}
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     >
-                        {/* Header */}
-                        <div className="suggestion-box__header">
-                            <div className="suggestion-box__title">
-                                <MessageCircle size={20} />
-                                <span>{isAdmin ? 'Suggestion Inbox' : 'Suggestion Box'}</span>
-                            </div>
-                            {isAdmin && (
-                                <span className="suggestion-box__badge">Admin View</span>
-                            )}
-                        </div>
-
-                        {/* Content */}
-                        <div className="suggestion-box__content">
-                            {isAdmin ? (
-                                // Admin View (Read Only)
-                                <div className="suggestion-list">
-                                            <div className="suggestion-list__controls" style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8 }}>
-                                                <input
-                                                    placeholder="Search suggestions..."
-                                                    value={searchTerm}
-                                                    onChange={e => setSearchTerm(e.target.value)}
-                                                    style={{ flex: 1, padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--surface-glass)', color: 'var(--text-primary)' }}
-                                                />
-                                                <Button variant="secondary" size="sm" onClick={fetchSuggestions}>Refresh</Button>
+                        {/* ── Admin View ── */}
+                        {isAdmin ? (
+                            selectedSuggestion ? (
+                                // Admin: Suggestion Detail View (Chat looking)
+                                <div className="sb-admin-detail">
+                                    <div className="sb-header">
+                                        <button className="sb-back-btn" onClick={() => setSelectedSuggestion(null)}>
+                                            <ChevronLeft size={24} />
+                                        </button>
+                                        <div className="sb-header-info">
+                                            <div className="sb-avatar"><User size={20} /></div>
+                                            <div className="sb-header-text">
+                                                <div className="sb-title">Anonymous #{selectedSuggestion.id || 'User'}</div>
+                                                <div className="sb-subtitle">{selectedSuggestion.category || 'General Suggestion'}</div>
                                             </div>
-                                            {loadingList ? (
-                                                <div style={{ textAlign: 'center', padding: 16 }}>Loading...</div>
-                                            ) : (
-                                                suggestions
-                                                    .filter(s => `${s.message} ${s.category}`.toLowerCase().includes(searchTerm.toLowerCase()))
-                                                    .map((suggestion) => (
-                                                        <div key={suggestion.id} className="suggestion-item" onClick={() => openSuggestion(suggestion.id)} style={{ cursor: 'pointer' }}>
-                                                            <div className="suggestion-item__header">
-                                                                <div className="suggestion-item__avatar" />
-                                                                <div className="suggestion-item__info">
-                                                                    <div className="suggestion-item__name">Suggestion #{suggestion.id}</div>
-                                                                    <div className="suggestion-item__date">{new Date(suggestion.createdAt).toLocaleString()}</div>
-                                                                    <p className="suggestion-item__message">{suggestion.message}</p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    ))
-                                            )}
-                                    <div className="suggestion-item--empty" style={{ textAlign: 'center', opacity: 0.5, fontSize: '12px' }}>
-                                        End of suggestions
+                                        </div>
+                                    </div>
+                                    <div className="sb-chat-body">
+                                        <div className="sb-date-divider">
+                                            <span>{formatDate(selectedSuggestion.createdAt || selectedSuggestion.created_at || new Date())}</span>
+                                        </div>
+                                        <div className="sb-bubble sb-bubble--user">
+                                            <div className="sb-bubble-text">{selectedSuggestion.message}</div>
+                                            <div className="sb-bubble-time">{formatTime(selectedSuggestion.createdAt || selectedSuggestion.created_at || new Date())}</div>
+                                        </div>
                                     </div>
                                 </div>
                             ) : (
-                                // User View (Write)
-                                <form onSubmit={handleSend} className="suggestion-form">
-                                    <p className="suggestion-form__hint">
-                                        Have an idea to improve the Ushering department? Let us know!
-                                    </p>
-                                    <textarea
-                                        rows={4}
-                                        value={message}
-                                        onChange={(e) => setMessage(e.target.value)}
-                                        placeholder="Type your suggestion here..."
-                                        className="suggestion-form__input"
-                                        required
-                                    />
-                                    <div className="suggestion-form__actions">
-                                        <Button
-                                            type="submit"
-                                            variant="primary"
-                                            size="sm"
-                                            loading={sending}
-                                            icon={<Send size={16} />}
-                                        >
-                                            Send Suggestion
-                                        </Button>
+                                // Admin: Chats List View
+                                <div className="sb-admin-list">
+                                    <div className="sb-header">
+                                        <div className="sb-header-info">
+                                            <div className="sb-header-text">
+                                                <div className="sb-title">Suggestions Inbox</div>
+                                                <div className="sb-subtitle">Admin View</div>
+                                            </div>
+                                        </div>
+                                        <div className="sb-header-actions">
+                                            <button className="sb-icon-btn" onClick={fetchSuggestions}><MoreVertical size={20} /></button>
+                                        </div>
                                     </div>
-                                </form>
-                            )}
-                        {selectedSuggestion && (
-                            <div style={{ marginTop: 12 }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <h4 style={{ margin: 0 }}>Suggestion Details</h4>
-                                    <Button variant="ghost" size="sm" onClick={() => setSelectedSuggestion(null)}>Close</Button>
+                                    <div className="sb-search-bar">
+                                        <div className="sb-search-inner">
+                                            <Search size={16} />
+                                            <input
+                                                type="text"
+                                                placeholder="Search or start new chat"
+                                                value={searchTerm}
+                                                onChange={e => setSearchTerm(e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="sb-chats">
+                                        {loadingList ? (
+                                            <div className="sb-loading">Loading suggestions...</div>
+                                        ) : (
+                                            suggestions
+                                                .filter(s => `${s.message} ${s.category}`.toLowerCase().includes(searchTerm.toLowerCase()))
+                                                .map(s => (
+                                                    <div className="sb-chat-item" key={s.id} onClick={() => setSelectedSuggestion(s)}>
+                                                        <div className="sb-chat-avatar"><User size={20} /></div>
+                                                        <div className="sb-chat-content">
+                                                            <div className="sb-chat-top">
+                                                                <span className="sb-chat-name">Anonymous #{s.id || 'User'}</span>
+                                                                <span className="sb-chat-time">{formatDate(s.createdAt || s.created_at || new Date())}</span>
+                                                            </div>
+                                                            <div className="sb-chat-bottom">
+                                                                <span className="sb-chat-preview">{s.message}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                        )}
+                                        {!loadingList && suggestions.length === 0 && (
+                                            <div className="sb-empty">No suggestions yet.</div>
+                                        )}
+                                    </div>
                                 </div>
-                                <div style={{ marginTop: 8, padding: 12, borderRadius: 8, background: 'var(--surface-glass)' }}>
-                                    <p style={{ margin: 0, fontWeight: 700 }}>{selectedSuggestion.category}</p>
-                                    <p style={{ marginTop: 8 }}>{selectedSuggestion.message}</p>
-                                    <p style={{ marginTop: 8, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{new Date(selectedSuggestion.createdAt).toLocaleString()}</p>
+                            )
+                        ) : (
+                            // ── User View (WhatsApp like chat) ──
+                            <div className="sb-user-chat">
+                                <div className="sb-header">
+                                    <div className="sb-header-info">
+                                        <div className="sb-avatar">
+                                            <img src="/logo.png" alt="Admin" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                            <div className="sb-avatar-fallback"><User size={20} /></div>
+                                        </div>
+                                        <div className="sb-header-text">
+                                            <div className="sb-title">Koinonia Admin</div>
+                                            <div className="sb-subtitle" style={{ color: '#10B981' }}>Available</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="sb-chat-body">
+                                    <div className="sb-date-divider">
+                                        <span>Today</span>
+                                    </div>
+                                    {messages.map(msg => (
+                                        <motion.div
+                                            key={msg.id}
+                                            className={`sb-bubble sb-bubble--${msg.sender}`}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                        >
+                                            <div className="sb-bubble-text">{msg.text}</div>
+                                            <div className="sb-bubble-meta">
+                                                <span className="sb-bubble-time">{formatTime(msg.timestamp)}</span>
+                                                {msg.sender === 'user' && (
+                                                    <span className={`sb-bubble-status sb-bubble-status--${msg.status}`}>
+                                                        <CheckCircle2 size={12} />
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                    <div ref={messagesEndRef} />
+                                </div>
+                                <div className="sb-chat-input-area">
+                                    <form onSubmit={handleSend} className="sb-input-form">
+                                        <input
+                                            type="text"
+                                            value={message}
+                                            onChange={e => setMessage(e.target.value)}
+                                            placeholder="Type a suggestion..."
+                                            className="sb-input"
+                                            autoComplete="off"
+                                        />
+                                        <button
+                                            type="submit"
+                                            className={`sb-send-btn ${message.trim() ? 'active' : ''}`}
+                                            disabled={!message.trim()}
+                                        >
+                                            <Send size={18} />
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         )}
-                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>
