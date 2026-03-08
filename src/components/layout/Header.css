@@ -29,8 +29,7 @@
 }
 
 .header__search {
-  flex: 1;
-  max-width: 500px;
+  max-width: 300px;
   position: relative;
   display: flex;
   align-items: center;
@@ -67,8 +66,6 @@
 }
 
 .header__checkin-btn {
-  flex: 1;
-  max-width: 500px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -133,6 +130,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-lg);
+  margin-left: auto;
 }
 
 .header__notification-btn {
@@ -209,7 +207,7 @@
   }
   
   .header__search {
-    max-width: 300px;
+    max-width: 200px;
   }
   
   .header__user-info {
@@ -220,14 +218,49 @@
 @media (max-width: 768px) {
   .header {
     padding: 0 var(--space-md);
+    gap: var(--space-sm);
   }
   
   .header__search {
-    max-width: none;
+    max-width: 180px;
   }
   
   .header__search-input {
     font-size: var(--text-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    gap: var(--space-xs);
+    padding: 0 8px; /* minimize padding */
+  }
+
+  .header__actions {
+    gap: var(--space-sm);
+  }
+
+  .header__search {
+    max-width: 140px;
+  }
+
+  .header__roster-status {
+    padding: 6px 10px;
+  }
+
+  /* Make sure hall location text shows! User explicitly asked for it */
+  .header__roster-status span {
+    display: inline;
+    font-size: 11px;
+  }
+
+  .header__checkin-btn {
+    padding: 6px 12px;
+    font-size: var(--text-sm);
+  }
+  
+  .header__checkin-btn span {
+    display: none; /* Just show the icon to maintain header geometry */
   }
 }
 

@@ -38,15 +38,14 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-md);
-  margin-bottom: 48px; /* Increased from var(--space-xl) to give Dashboard menu item more breathing room */
+  margin-bottom: 64px; /* Increased from 48px to move menu items down more */
 }
 
 .sidebar__logo {
   display: flex;
   align-items: center;
   gap: var(--space-md);
-  flex: 1;
-  min-width: 0;
+  margin-bottom: 48px; /* Push nav items down! */
 }
 
 .sidebar__logo-icon {
@@ -95,7 +94,8 @@
   display: flex;
   align-items: center;
   gap: var(--space-md);
-  padding: var(--space-md) var(--space-lg);
+  padding: 12px;
+  margin-left: -12px; /* Perfectly offsets left padding to align icon with logo */
   border-radius: var(--radius-md);
   color: var(--color-text-secondary);
   text-decoration: none;
@@ -134,7 +134,8 @@
   display: flex;
   align-items: center;
   gap: var(--space-md);
-  padding: var(--space-md) var(--space-lg);
+  padding: 12px;
+  margin-left: -12px; /* Maintains same alignment as links */
   border-radius: var(--radius-md);
   color: var(--color-accent-red);
   background: transparent;

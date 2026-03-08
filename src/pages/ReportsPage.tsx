@@ -77,7 +77,7 @@ interface ReportData {
     rows: AttendanceRow[];
 }
 
-type PeriodType = 'weekly' | 'monthly' | 'yearly' | 'custom';
+type PeriodType = 'quarterly' | 'monthly' | 'yearly' | 'custom';
 type SortKey = keyof AttendanceRow | 'full_name' | 'role' | 'hall';
 type SortDir = 'asc' | 'desc';
 
@@ -434,10 +434,10 @@ function ReportsPageContent() {
         if (!filteredRows.length) return;
         const headers = [
             'Full Name', 'Reg No', 'Role', 'Gender', 'Hall',
-            'Weekly Possible', 'Hall Possible', 'Event Possible',
-            'Weekly Present', 'Hall Present', 'Event Present',
-            'Weekly Absent', 'Hall Absent', 'Event Absent',
-            'Attendance Rate (%)',
+            'Main Service Possible', 'Hall Possible', 'Event Possible',
+            'Main Service Present', 'Hall Present', 'Event Present',
+            'Main Service Absent', 'Hall Absent', 'Event Absent',
+            'Rate (%)',
         ];
         const rows = filteredRows.map(r => [
             `${r.user.first_name} ${r.user.last_name}`,
@@ -468,7 +468,7 @@ function ReportsPageContent() {
 
     // ── Period picker ──
     const PERIOD_OPTIONS: { label: string; value: PeriodType }[] = [
-        { label: 'This Week', value: 'weekly' },
+        { label: 'Quarterly', value: 'quarterly' },
         { label: 'This Month', value: 'monthly' },
         { label: 'This Year', value: 'yearly' },
         { label: 'Custom Range', value: 'custom' },
@@ -655,7 +655,7 @@ function ReportsPageContent() {
                             <div className="rp-chart-card__header">
                                 <div>
                                     <h3 className="rp-chart-card__title">Attendance by Category</h3>
-                                    <p className="rp-chart-card__sub">Weekly · Hall · Event breakdown</p>
+                                    <p className="rp-chart-card__sub">Main Service · Hall · Event breakdown</p>
                                 </div>
                                 <Activity size={18} className="rp-chart-card__icon" />
                             </div>

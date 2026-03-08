@@ -234,3 +234,16 @@
   color: var(--text-secondary);
   display: block;
 }
+
+/* Mobile Responsiveness for Profile Modal */
+@media (max-width: 480px) {
+  .header__profile-modal {
+    position: fixed;
+    top: 72px; /* Just below header */
+    left: 16px;
+    right: 16px;
+    width: auto;
+    max-width: none;
+    max-height: calc(100vh - 90px);
+  }
+}
