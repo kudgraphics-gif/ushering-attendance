@@ -15,6 +15,7 @@ import { KoinoniaPage } from './pages/KoinoniaPage';
 import { GroupsPage } from './pages/GroupsPage';
 import { SuggestionBoxPage } from './pages/SuggestionBoxPage';
 import { ReportsPage } from './pages/ReportsPage';
+import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { MainLayout } from './components/layout/MainLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { useAuthStore } from './stores/authStore';
@@ -58,6 +59,7 @@ function App() {
           path="/login"
           element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />}
         />
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
 
         <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
           <Route

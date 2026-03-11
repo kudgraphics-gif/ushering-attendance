@@ -404,7 +404,7 @@
 .hall-manager__empty-message {
     text-align: center;
     padding: 2rem 1rem;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-secondary);
     font-style: italic;
 }
 
@@ -413,7 +413,7 @@
     padding: 2rem;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+        gap: 1.5rem;
 }
 
 .hall-manager__mark-header {
@@ -428,7 +428,7 @@
     font-size: 1.3rem;
     font-weight: 600;
     margin: 0;
-    color: rgba(255, 255, 255, 0.9);
+        color: var(--text-primary);
 }
 
 .hall-manager__mark-actions {
@@ -440,7 +440,7 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    max-height: 500px;
+        max-height: 500px;
     overflow-y: auto;
     padding-right: 0.5rem;
 }
@@ -454,12 +454,12 @@
 }
 
 .hall-manager__mark-users::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--border-color);
     border-radius: 3px;
 }
 
 .hall-manager__mark-users::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--text-secondary);
 }
 
 .hall-manager__mark-section {
@@ -472,9 +472,9 @@
     font-size: 1rem;
     font-weight: 600;
     margin: 0;
-    color: rgba(255, 255, 255, 0.8);
+        color: var(--text-primary);
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .hall-manager__mark-list {
@@ -487,18 +487,18 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        background: var(--surface-glass);
+        border: 1px solid var(--border-color);
     cursor: pointer;
     transition: all 0.2s ease;
     user-select: none;
 }
 
 .hall-manager__mark-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: var(--surface-hover);
+    border-color: var(--border-color);
 }
 
 .hall-manager__checkbox {
@@ -508,15 +508,7 @@
     accent-color: #3b82f6;
 }
 
-.hall-manager__grip {
-    opacity: 0.4;
-    cursor: grab;
-    flex-shrink: 0;
-}
-
-.hall-manager__grip:active {
-    cursor: grabbing;
-}
+/* drag/reorder grip removed - reordering disabled */
 
 .hall-manager__mark-user-info {
     flex: 1;
@@ -525,13 +517,13 @@
 .hall-manager__mark-user-name {
     font-weight: 600;
     margin: 0;
-    color: rgba(255, 255, 255, 0.9);
+        color: var(--text-primary);
     font-size: 0.95rem;
 }
 
 .hall-manager__mark-user-meta {
     font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.5);
+        color: var(--text-secondary);
     margin: 0.25rem 0 0 0;
 }
 
@@ -556,7 +548,7 @@
 .hall-manager__no-users {
     text-align: center;
     padding: 1rem;
-    color: rgba(255, 255, 255, 0.5);
+        color: var(--text-secondary);
     font-style: italic;
 }
 
@@ -566,13 +558,13 @@
     align-items: center;
     gap: 1rem;
     padding-top: 1rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+        border-top: 1px solid var(--border-color);
     flex-wrap: wrap;
 }
 
 .hall-manager__selected-count {
     font-size: 1rem;
-    color: rgba(255, 255, 255, 0.7);
+        color: var(--text-secondary);
     margin: 0;
     font-weight: 500;
 }
@@ -606,6 +598,50 @@
 
     .hall-manager__mark-actions {
         width: 100%;
+    }
+    /* Controls styling and responsive stacking for small screens */
+    .hall-manager__controls {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .hall-manager__controls-left {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .hall-manager__controls-right {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-left: auto;
+    }
+
+    .hall-manager__controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .hall-manager__controls-right {
+        margin-left: 0;
+        width: 100%;
+        justify-content: flex-start;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .hall-manager__controls-right select,
+    .hall-manager__controls-right button {
+        width: 100%;
+    }
+
+    .hall-manager__controls-left input[type="date"],
+    .hall-manager__controls-left input[type="text"] {
+        min-width: 150px;
+        flex: 1 1 auto;
     }
 
     .hall-manager__mark-actions button {

@@ -118,6 +118,17 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     <LogOut size={20} />
                     <span>Logout</span>
                 </button>
+
+                <div style={{
+                    marginTop: 'auto',
+                    padding: 'var(--space-xl) var(--space-md) var(--space-md)',
+                    textAlign: 'center',
+                    fontSize: '10px',
+                    color: 'var(--color-text-tertiary)',
+                    opacity: 0.6
+                }}>
+                    &copy; {new Date().getFullYear()} Koinonia Ushering Department Abuja
+                </div>
             </aside>
         </>
     );

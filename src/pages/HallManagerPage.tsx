@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Users, UserCheck, UserX, Loader, GripVertical, Search, Download } from 'lucide-react';
+import { MapPin, Users, UserCheck, UserX, Loader, Search, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -35,6 +35,7 @@ export function HallManagerPage() {
     const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [loading, setLoading] = useState(false);
     const [marking, setMarking] = useState(false);
+    const [revoking, setRevoking] = useState(false);
     const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
     const [tabView, setTabView] = useState<'attendance' | 'users'>('attendance');
 
@@ -161,6 +162,33 @@ export function HallManagerPage() {
                 console.error('Geolocation error:', error);
             }
         );
+    };
+
+    const handleRevokeUser = async (userId: string) => {
+        if (!token || !selectedHall) {
+            toast.error('Hall is required to revoke attendance');
+            return;
+        }
+
+        if (!confirm('Are you sure you want to revoke this user\'s attendance?')) return;
+
+        setRevoking(true);
+        try {
+            await hallsAPI.revokeAttendance(
+                selectedHall,
+                selectedDate,
+                { date: selectedDate, hall: selectedHall, user_ids: [userId] },
+                token
+            );
+            toast.success('Attendance revoked successfully');
+            // refresh data
+            await fetchAttendance();
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Failed to revoke attendance');
+            console.error(error);
+        } finally {
+            setRevoking(false);
+        }
     };
 
     const handleSelectAll = () => {
@@ -325,7 +353,7 @@ export function HallManagerPage() {
                     </div>
 
                     <div className="hall-manager__controls" style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: '12px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div className="hall-manager__controls-left" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                             <Search size={16} />
                             <input
                                 placeholder="Search attendees..."
@@ -358,7 +386,7 @@ export function HallManagerPage() {
                             />
                         </div>
 
-                        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <div className="hall-manager__controls-right" style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
                             <select value={exportHall ?? ''} onChange={e => setExportHall(e.target.value)} style={{ padding: '0 12px', borderRadius: 6, border: '1px solid var(--border-color)', background: 'var(--surface-glass)', color: 'var(--text-primary)', height: '44px', fontSize: 'var(--text-base)' }}>
                                 {halls.map(h => <option key={h.name} value={h.name}>{h.name}</option>)}
                             </select>
@@ -408,24 +436,29 @@ export function HallManagerPage() {
                                                 attendanceData.presents
                                                     .filter(u => `${u.first_name} ${u.last_name} ${u.email} ${u.reg_no}`.toLowerCase().includes(searchQuery.toLowerCase()))
                                                     .map((user) => (
-                                                    <motion.div
-                                                        key={user.id}
-                                                        className="hall-manager__user-item"
-                                                        initial={{ opacity: 0, x: -20 }}
-                                                        animate={{ opacity: 1, x: 0 }}
-                                                    >
-                                                        <Avatar src={user.avatar_url} alt={`${user.first_name} ${user.last_name}`} size="sm" fallback={getInitials(user)} />
-                                                        <div className="hall-manager__user-info">
-                                                            <p className="hall-manager__user-name">
-                                                                {user.first_name} {user.last_name}
-                                                            </p>
-                                                            <p className="hall-manager__user-meta">
-                                                                {user.email || 'No email'}
-                                                            </p>
-                                                        </div>
-                                                        <span className="hall-manager__badge hall-manager__badge--present">Present</span>
-                                                    </motion.div>
-                                                ))
+                                                        <motion.div
+                                                            key={user.id}
+                                                            className="hall-manager__user-item"
+                                                            initial={{ opacity: 0, x: -20 }}
+                                                            animate={{ opacity: 1, x: 0 }}
+                                                        >
+                                                            <Avatar src={user.avatar_url} alt={`${user.first_name} ${user.last_name}`} size="sm" fallback={getInitials(user)} />
+                                                            <div className="hall-manager__user-info">
+                                                                <p className="hall-manager__user-name">
+                                                                    {user.first_name} {user.last_name}
+                                                                </p>
+                                                                <p className="hall-manager__user-meta">
+                                                                    {user.email || 'No email'}
+                                                                </p>
+                                                            </div>
+                                                            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                                                <span className="hall-manager__badge hall-manager__badge--present">Present</span>
+                                                                <Button size="sm" variant="secondary" onClick={() => handleRevokeUser(user.id)} loading={revoking}>
+                                                                    Revoke
+                                                                </Button>
+                                                            </div>
+                                                        </motion.div>
+                                                    ))
                                             )}
                                         </div>
                                     </Card>
@@ -438,29 +471,29 @@ export function HallManagerPage() {
                                         </h3>
                                         <div className="hall-manager__users-list">
                                             {attendanceData.absents.filter(u => `${u.first_name} ${u.last_name} ${u.email} ${u.reg_no}`.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 ? (
-                                                    <p className="hall-manager__empty-message">No absent users</p>
-                                                ) : (
-                                                    attendanceData.absents
-                                                        .filter(u => `${u.first_name} ${u.last_name} ${u.email} ${u.reg_no}`.toLowerCase().includes(searchQuery.toLowerCase()))
-                                                        .map((user) => (
-                                                    <motion.div
-                                                        key={user.id}
-                                                        className="hall-manager__user-item"
-                                                        initial={{ opacity: 0, x: -20 }}
-                                                        animate={{ opacity: 1, x: 0 }}
-                                                    >
-                                                        <Avatar src={user.avatar_url} alt={`${user.first_name} ${user.last_name}`} size="sm" fallback={getInitials(user)} />
-                                                        <div className="hall-manager__user-info">
-                                                            <p className="hall-manager__user-name">
-                                                                {user.first_name} {user.last_name}
-                                                            </p>
-                                                            <p className="hall-manager__user-meta">
-                                                                {user.email || 'No email'}
-                                                            </p>
-                                                        </div>
-                                                        <span className="hall-manager__badge hall-manager__badge--absent">Absent</span>
-                                                    </motion.div>
-                                                ))
+                                                <p className="hall-manager__empty-message">No absent users</p>
+                                            ) : (
+                                                attendanceData.absents
+                                                    .filter(u => `${u.first_name} ${u.last_name} ${u.email} ${u.reg_no}`.toLowerCase().includes(searchQuery.toLowerCase()))
+                                                    .map((user) => (
+                                                        <motion.div
+                                                            key={user.id}
+                                                            className="hall-manager__user-item"
+                                                            initial={{ opacity: 0, x: -20 }}
+                                                            animate={{ opacity: 1, x: 0 }}
+                                                        >
+                                                            <Avatar src={user.avatar_url} alt={`${user.first_name} ${user.last_name}`} size="sm" fallback={getInitials(user)} />
+                                                            <div className="hall-manager__user-info">
+                                                                <p className="hall-manager__user-name">
+                                                                    {user.first_name} {user.last_name}
+                                                                </p>
+                                                                <p className="hall-manager__user-meta">
+                                                                    {user.email || 'No email'}
+                                                                </p>
+                                                            </div>
+                                                            <span className="hall-manager__badge hall-manager__badge--absent">Absent</span>
+                                                        </motion.div>
+                                                    ))
                                             )}
                                         </div>
                                     </Card>
@@ -517,7 +550,7 @@ export function HallManagerPage() {
                                                             onChange={() => handleUserToggle(user.id)}
                                                             className="hall-manager__checkbox"
                                                         />
-                                                        <GripVertical size={18} className="hall-manager__grip" />
+                                                        {/* drag handle removed - reordering disabled */}
                                                         <Avatar src={user.avatar_url} alt={`${user.first_name} ${user.last_name}`} size="sm" fallback={getInitials(user)} />
                                                         <div className="hall-manager__mark-user-info">
                                                             <p className="hall-manager__mark-user-name">
@@ -556,7 +589,7 @@ export function HallManagerPage() {
                                                                 onChange={() => handleUserToggle(user.id)}
                                                                 className="hall-manager__checkbox"
                                                             />
-                                                            <GripVertical size={18} className="hall-manager__grip" />
+                                                            {/* drag handle removed - reordering disabled */}
                                                             <Avatar src={user.avatar_url} alt={`${user.first_name} ${user.last_name}`} size="sm" fallback={getInitials(user)} />
                                                             <div className="hall-manager__mark-user-info">
                                                                 <p className="hall-manager__mark-user-name">
@@ -580,14 +613,26 @@ export function HallManagerPage() {
                                         <p className="hall-manager__selected-count">
                                             {selectedUsers.size} user{selectedUsers.size !== 1 ? 's' : ''} selected
                                         </p>
-                                        <Button
-                                            onClick={handleMarkAttendance}
-                                            loading={marking}
-                                            disabled={selectedUsers.size === 0}
-                                            className="hall-manager__mark-button"
-                                        >
-                                            Mark Attendance
-                                        </Button>
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            <Button
+                                                onClick={handleMarkAttendance}
+                                                loading={revoking}
+                                                disabled={selectedUsers.size === 0 || marking}
+                                                className="hall-manager__mark-button"
+                                                variant="secondary"
+                                                style={{ color: 'var(--color-accent-red)', borderColor: 'var(--color-accent-red)' }}
+                                            >
+                                                Revoke Selected
+                                            </Button>
+                                            <Button
+                                                onClick={handleMarkAttendance}
+                                                loading={marking}
+                                                disabled={selectedUsers.size === 0 || revoking}
+                                                className="hall-manager__mark-button"
+                                            >
+                                                Mark Present
+                                            </Button>
+                                        </div>
                                     </div>
                                 </Card>
                             </motion.div>

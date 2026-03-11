@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Lock, LogIn } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -146,6 +146,19 @@ export function LoginPage() {
                         >
                             Clear Storage
                         </button>
+                    </div>
+
+                    <div style={{
+                        textAlign: 'center',
+                        marginTop: '24px',
+                        fontSize: '11px',
+                        color: 'var(--text-tertiary)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '6px'
+                    }}>
+                        <Link to="/privacy-policy" style={{ color: 'var(--color-primary)', textDecoration: 'none' }}>Privacy Policy</Link>
+                        <span>&copy; {new Date().getFullYear()} Koinonia Ushering Department Abuja</span>
                     </div>
                 </form>
             </motion.div>

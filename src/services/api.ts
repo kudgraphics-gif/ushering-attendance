@@ -810,4 +810,13 @@ export const hallsAPI = {
     ): Promise<{ message: string }> => {
         return apiCall<{ message: string }>('POST', `/halls/${hallName}/attendance`, payload, token);
     },
+
+    revokeAttendance: async (
+        hallName: string,
+        date: string,
+        payload: { date: string; hall: string; user_ids: string[] },
+        token: string
+    ): Promise<{ message: string; data: null }> => {
+        return apiCall<{ message: string; data: null }>('DELETE', `/groups/attendance/remove/${hallName}/${date}`, payload, token);
+    },
 };
