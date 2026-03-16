@@ -817,6 +817,7 @@ export const hallsAPI = {
         payload: { date: string; hall: string; user_ids: string[] },
         token: string
     ): Promise<{ message: string; data: null }> => {
-        return apiCall<{ message: string; data: null }>('DELETE', `/groups/attendance/remove/${hallName}/${date}`, payload, token);
+        // Call the halls attendance revoke endpoint with DELETE and JSON body
+        return apiCall<{ message: string; data: null }>('DELETE', `/halls/attendance`, payload, token);
     },
 };

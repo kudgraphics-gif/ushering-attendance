@@ -616,16 +616,6 @@ export function HallManagerPage() {
                                         <div style={{ display: 'flex', gap: '8px' }}>
                                             <Button
                                                 onClick={handleMarkAttendance}
-                                                loading={revoking}
-                                                disabled={selectedUsers.size === 0 || marking}
-                                                className="hall-manager__mark-button"
-                                                variant="secondary"
-                                                style={{ color: 'var(--color-accent-red)', borderColor: 'var(--color-accent-red)' }}
-                                            >
-                                                Revoke Selected
-                                            </Button>
-                                            <Button
-                                                onClick={handleMarkAttendance}
                                                 loading={marking}
                                                 disabled={selectedUsers.size === 0 || revoking}
                                                 className="hall-manager__mark-button"
