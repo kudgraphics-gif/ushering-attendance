@@ -812,8 +812,8 @@ export const hallsAPI = {
     },
 
     revokeAttendance: async (
-        hallName: string,
-        date: string,
+        _hallName: string,
+        _date: string,
         payload: { date: string; hall: string; user_ids: string[] },
         token: string
     ): Promise<{ message: string; data: null }> => {
