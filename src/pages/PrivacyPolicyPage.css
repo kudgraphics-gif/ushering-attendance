@@ -94,11 +94,32 @@
     border-bottom: 1px solid var(--border-color);
 }
 
+/* Updated Paragraph Styles for multiple paragraphs */
 .privacy-page__section p {
     font-size: var(--text-base);
     color: var(--text-secondary);
     line-height: 1.6;
-    margin: 0;
+    margin: 0 0 var(--space-md) 0;
+}
+
+/* NEW: List Styles */
+.privacy-page__section ul {
+    margin: 0 0 var(--space-md) 0;
+    padding-left: var(--space-xl);
+    color: var(--text-secondary);
+}
+
+.privacy-page__section li {
+    font-size: var(--text-base);
+    line-height: 1.6;
+    margin-bottom: var(--space-sm);
+}
+
+/* Remove bottom margins for the last items in a section to keep padding clean */
+.privacy-page__section p:last-child,
+.privacy-page__section ul:last-child,
+.privacy-page__section li:last-child {
+    margin-bottom: 0;
 }
 
 .privacy-page__section strong {
@@ -130,5 +151,10 @@
 
     .privacy-page__content {
         padding: var(--space-lg);
+    }
+    
+    /* NEW: Adjust list padding for mobile */
+    .privacy-page__section ul {
+        padding-left: var(--space-lg);
     }
 }

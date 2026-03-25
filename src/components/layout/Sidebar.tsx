@@ -27,6 +27,7 @@ const adminNavItems = [
     { icon: ClipboardCheck, label: 'Attendance', path: '/attendance' },
     { icon: DollarSign, label: 'Payments', path: '/payments' },
     { icon: Music, label: 'Koinonia', path: '/koinonia' },
+    { icon: Music, label: 'KUD Sermons', path: '/kud-sermons' },
     { icon: Eye, label: 'Activity Logs', path: '/activity-logs' },
     { icon: List, label: 'Roster Management', path: '/roster-management' },
     { icon: MapPin, label: 'Hall Manager', path: '/hall-manager' },
@@ -43,6 +44,7 @@ const leaderNavItems = [
     { icon: Users2, label: 'Groups', path: '/groups' },
     { icon: DollarSign, label: 'Payments', path: '/payments' },
     { icon: Music, label: 'Koinonia', path: '/koinonia' },
+    { icon: Music, label: 'KUD Sermons', path: '/kud-sermons' },
     { icon: MessageSquare, label: 'Suggestion Box', path: '/suggestion-box' },
     { icon: User, label: 'Profile', path: '/profile' },
 ];
@@ -52,6 +54,7 @@ const userNavItems = [
     { icon: Calendar, label: 'Events', path: '/events' },
     { icon: DollarSign, label: 'Payments', path: '/payments' },
     { icon: Music, label: 'Koinonia', path: '/koinonia' },
+    { icon: Music, label: 'KUD Sermons', path: '/kud-sermons' },
     { icon: MessageSquare, label: 'Suggestion Box', path: '/suggestion-box' },
     { icon: User, label: 'Profile', path: '/profile' },
 ];

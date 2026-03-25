@@ -12,6 +12,7 @@ import { RosterAssignmentsPage } from './pages/RosterAssignmentPage'; // New Imp
 import { HallManagerPage } from './pages/HallManagerPage';
 import { PaymentsPage } from './pages/PaymentsPage';
 import { KoinoniaPage } from './pages/KoinoniaPage';
+import { KudSermonsPage } from './pages/KudSermonsPage';
 import { GroupsPage } from './pages/GroupsPage';
 import { SuggestionBoxPage } from './pages/SuggestionBoxPage';
 import { ReportsPage } from './pages/ReportsPage';
@@ -69,6 +70,7 @@ function App() {
           <Route path="/events" element={<EventsPage />} />
           <Route path="/payments" element={<PaymentsPage />} />
           <Route path="/koinonia" element={<KoinoniaPage />} />
+          <Route path="/kud-sermons" element={<KudSermonsPage />} />
           <Route
             path="/users"
             element={<ProtectedRoute allowedRoles={['Admin']}><UsersPage /></ProtectedRoute>}

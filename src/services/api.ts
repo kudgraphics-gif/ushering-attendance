@@ -273,6 +273,15 @@ export const usersAPI = {
             token
         );
     },
+
+    adminSignOut: async (userId: string, token: string): Promise<{ message: string }> => {
+        return apiCall<{ message: string }>(
+            'PATCH',
+            `/users/admin/sign-out/${userId}`,
+            undefined,
+            token
+        );
+    },
 };
 
 // Attendance APIs
