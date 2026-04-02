@@ -771,6 +771,7 @@
 }
 
 @media (max-width: 600px) {
+  .home-nav__links { display: none; }
   .home-nav__name { display: none; }
   .home-cta span { display: inline; }
 

@@ -71,11 +71,13 @@ export function AttendancePage() {
                 attendance_date: record.attendance?.date,
                 attendance_weekday: record.attendance?.week_day,
                 attendance_type: record.attendance?.attendance_type
-            }));
+            })).filter((u: any) => u.is_active !== false);
 
             // Calculate absentees
             const presentUserIds = new Set(attendees.map((a: any) => a.user?.id));
-            const absenteesList = allUsers.filter((u: any) => !presentUserIds.has(u.id));
+            const absenteesList = allUsers
+                .filter((u: any) => u.is_active !== false)
+                .filter((u: any) => !presentUserIds.has(u.id));
 
             setPresentees(presenteesList);
             setAbsentees(absenteesList);

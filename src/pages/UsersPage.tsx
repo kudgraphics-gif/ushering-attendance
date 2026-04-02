@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Download, Upload, AlertCircle, Grid3x3, List, LogIn, Eye, Trash2, Edit2, UserCheck, UserX } from 'lucide-react';
+import { Plus, Search, Download, Upload, AlertCircle, Grid3x3, List, LogIn, Eye, Trash2, Edit2, UserCheck, UserX, AlertTriangle, Zap } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -238,6 +238,25 @@ export function UsersPage() {
         }
     };
 
+    const handleAddStrike = async (_userId: string, userName: string) => {
+        if (!token) {
+            toast.error('Not authenticated');
+            return;
+        }
+
+        const confirmStrike = window.confirm(
+            `Are you sure you want to add a strike to ${userName}?`
+        );
+
+        if (!confirmStrike) return;
+
+        // API not ready yet — UI only
+        toast.success(`Strike added to ${userName} (API pending)`);
+        // When API is ready, uncomment:
+        // await usersAPI.addStrike(userId, token);
+        // setUsers(users.map(u => u.id === userId ? { ...u, strike_count: (u.strike_count || 0) + 1 } : u));
+    };
+
     return (
         <motion.div
             className="users-page"
@@ -336,7 +355,8 @@ export function UsersPage() {
                             onViewAttendance={handleViewAttendance}
                             onEdit={handleEditUser}
                             onDelete={handleDeleteUser}
-                            onToggleStatus={handleToggleStatus} // Passed down
+                            onToggleStatus={handleToggleStatus}
+                            onAddStrike={handleAddStrike}
                             isCheckingIn={checkingInUser === user.id}
                             isAdmin={currentUser?.role === 'Admin'}
                         />
@@ -388,6 +408,7 @@ function UserCard({
     onEdit,
     onDelete,
     onToggleStatus,
+    onAddStrike,
     isCheckingIn,
     isAdmin,
 }: {
@@ -398,6 +419,7 @@ function UserCard({
     onEdit: (user: UserDto) => void;
     onDelete: (userId: string, userName: string) => Promise<void>;
     onToggleStatus: (user: UserDto) => Promise<void>;
+    onAddStrike: (userId: string, userName: string) => Promise<void>;
     isCheckingIn: boolean;
     isAdmin: boolean;
 }) {
@@ -443,6 +465,13 @@ function UserCard({
                             {user.is_active ? 'Active' : 'Inactive'}
                         </span>
                     </div>
+                    <div className="user-card__detail">
+                        <span className="user-card__detail-label">Strikes:</span>
+                        <span className={`user-card__strike-badge ${(user.strike_count || 0) > 0 ? 'user-card__strike-badge--warning' : ''}`}>
+                            <AlertTriangle size={12} />
+                            {user.strike_count ?? 0}
+                        </span>
+                    </div>
                 </div>
 
                 <div className="user-card__actions">
@@ -482,6 +511,16 @@ function UserCard({
                             onClick={() => onToggleStatus(user)}
                         >
                             {user.is_active ? <UserX size={20} /> : <UserCheck size={20} />}
+                        </button>
+                    )}
+                    {/* Add Strike Button */}
+                    {isAdmin && (
+                        <button
+                            className="user-card__action-btn user-card__action-btn--strike"
+                            title="Add Strike"
+                            onClick={() => onAddStrike(user.id, `${user.first_name} ${user.last_name}`)}
+                        >
+                            <Zap size={20} />
                         </button>
                     )}
                     {isAdmin && (

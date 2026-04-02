@@ -284,7 +284,7 @@ export function HomePage() {
             <span className="home-identity__heading--gold">This is</span> Koinonia
           </h2>
           <p className="home-identity__body">
-            We are the Koinonia Ushering Department Abuja — a passionate team of dedicated volunteers
+            We are the Koinonia Ushering Department Abuja — a passionate team of dedicated individuals
             committed to creating a warm, orderly, and Spirit-filled atmosphere for every service.
             We don't just open doors; we open hearts.
           </p>

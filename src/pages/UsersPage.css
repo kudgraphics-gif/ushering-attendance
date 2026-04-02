@@ -201,6 +201,24 @@
   color: var(--color-text-tertiary);
 }
 
+.user-card__strike-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-semibold);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-text-tertiary);
+}
+
+.user-card__strike-badge--warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #F59E0B;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
 .user-card__actions {
   display: flex;
   gap: var(--space-xs);
@@ -209,6 +227,7 @@
   margin-top: var(--space-md);
   padding-top: var(--space-md);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex-wrap: wrap; /* allow wrapping if too many buttons */
 }
 
 .user-card__actions button {
@@ -251,6 +270,18 @@
 .user-card__action-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.user-card__action-btn--strike {
+  background: rgba(245, 158, 11, 0.1);
+  color: #F59E0B;
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.user-card__action-btn--strike:hover:not(:disabled) {
+  background: rgba(245, 158, 11, 0.2);
+  color: #F59E0B;
+  border-color: rgba(245, 158, 11, 0.5);
 }
 
 .user-card__action-btn--delete {

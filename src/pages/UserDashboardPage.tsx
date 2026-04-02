@@ -3,7 +3,7 @@ import { useAuthStore } from '../stores/authStore';
 import { analyticsAPI, eventsAPI, attendanceAPI } from '../services/api';
 import type { Event, UserDto } from '../types';
 import toast from 'react-hot-toast';
-import { MapPin, Calendar, CheckCircle2, User, Info, Crown } from 'lucide-react';
+import { MapPin, Calendar, CheckCircle2, User, Info, Crown, AlertTriangle } from 'lucide-react';
 import { getNearestVenue } from '../utils/geoCheck';
 import { SuggestionBox } from '../components/ui/SuggestionBox';
 import { LocationWarningModal } from '../components/ui/LocationWarningModal';
@@ -105,6 +105,7 @@ export function UserDashboardPage() {
     const [checkingIn, setCheckingIn] = useState(false);
     const [checkingOut, setCheckingOut] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [showStrikeInfo, setShowStrikeInfo] = useState(false);
 
     // ── Security check state ──────────────────────────────────────────────────
     const [locationWarning, setLocationWarning] = useState<{
@@ -527,6 +528,47 @@ export function UserDashboardPage() {
                     </div>
                 </div>
             )}
+
+            {/* Strike Count */}
+            <div className="user-dashboard__section">
+                <h2>Strike Count</h2>
+                <div className="strike-card">
+                    <div className="strike-card__main">
+                        <div className="strike-card__icon">
+                            <AlertTriangle size={24} />
+                        </div>
+                        <div className="strike-card__content">
+                            <div className="strike-card__value">{(user as any)?.strike_count ?? 0}</div>
+                            <div className="strike-card__label">Active Strikes</div>
+                        </div>
+                        <button
+                            className="strike-card__info-btn"
+                            onClick={() => setShowStrikeInfo(!showStrikeInfo)}
+                            title="What is a strike?"
+                        >
+                            <Info size={18} />
+                        </button>
+                    </div>
+                    <AnimatePresence>
+                        {showStrikeInfo && (
+                            <motion.div
+                                className="strike-card__info-panel"
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.25 }}
+                            >
+                                <p>
+                                    A <strong>strike</strong> represents the number of times you have defaulted
+                                    or committed a specific offense. Accumulating strikes may lead to
+                                    disciplinary actions. Please ensure to follow all guidelines to maintain
+                                    a clean record.
+                                </p>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            </div>
 
             {/* Upcoming Events */}
             {upcomingEvents.length > 0 && (

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Users, UserCheck, UserX, Loader, Search, Download } from 'lucide-react';
+import { MapPin, Users, UserCheck, UserX, Loader, Search, Download, ClipboardList, Calendar, Armchair, Send } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -37,7 +37,13 @@ export function HallManagerPage() {
     const [marking, setMarking] = useState(false);
     const [revoking, setRevoking] = useState(false);
     const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
-    const [tabView, setTabView] = useState<'attendance' | 'users'>('attendance');
+    const [tabView, setTabView] = useState<'attendance' | 'users' | 'headcount'>('attendance');
+
+    // Head Count form state
+    const [headCountPeople, setHeadCountPeople] = useState<string>('');
+    const [headCountChairs, setHeadCountChairs] = useState<string>('');
+    const [headCountDate, setHeadCountDate] = useState<string>(new Date().toISOString().split('T')[0]);
+    const [submittingHeadCount, setSubmittingHeadCount] = useState(false);
 
     useEffect(() => {
         if (token) {
@@ -410,6 +416,12 @@ export function HallManagerPage() {
                         >
                             Mark Attendance
                         </button>
+                        <button
+                            className={`hall-manager__tab ${tabView === 'headcount' ? 'hall-manager__tab--active' : ''}`}
+                            onClick={() => setTabView('headcount')}
+                        >
+                            Head Count
+                        </button>
                     </div>
 
                     {/* Attendance View */}
@@ -623,6 +635,107 @@ export function HallManagerPage() {
                                                 Mark Present
                                             </Button>
                                         </div>
+                                    </div>
+                                </Card>
+                            </motion.div>
+                        )}
+
+                        {/* Head Count View */}
+                        {tabView === 'headcount' && (
+                            <motion.div
+                                key="headcount-view"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="hall-manager__tab-content"
+                            >
+                                <Card glass padding="lg" className="hall-manager__headcount-card">
+                                    <div className="hall-manager__headcount-header">
+                                        <div className="hall-manager__headcount-icon-wrap">
+                                            <ClipboardList size={24} />
+                                        </div>
+                                        <div>
+                                            <h3 className="hall-manager__headcount-title">Head Count</h3>
+                                            <p className="hall-manager__headcount-subtitle">
+                                                Record attendance numbers for <strong>{selectedHall}</strong>
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="hall-manager__headcount-form">
+                                        <div className="hall-manager__headcount-field">
+                                            <label className="hall-manager__headcount-label">
+                                                <Users size={16} />
+                                                Total Number of People
+                                            </label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                placeholder="e.g. 250"
+                                                value={headCountPeople}
+                                                onChange={(e) => setHeadCountPeople(e.target.value)}
+                                                className="hall-manager__headcount-input"
+                                            />
+                                        </div>
+
+                                        <div className="hall-manager__headcount-field">
+                                            <label className="hall-manager__headcount-label">
+                                                <Armchair size={16} />
+                                                Total Number of Chairs
+                                            </label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                placeholder="e.g. 300"
+                                                value={headCountChairs}
+                                                onChange={(e) => setHeadCountChairs(e.target.value)}
+                                                className="hall-manager__headcount-input"
+                                            />
+                                        </div>
+
+                                        <div className="hall-manager__headcount-field">
+                                            <label className="hall-manager__headcount-label">
+                                                <Calendar size={16} />
+                                                Date
+                                            </label>
+                                            <input
+                                                type="date"
+                                                value={headCountDate}
+                                                onChange={(e) => setHeadCountDate(e.target.value)}
+                                                className="hall-manager__headcount-input"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="hall-manager__headcount-footer">
+                                        <div className="hall-manager__headcount-summary">
+                                            {headCountPeople && headCountChairs && (
+                                                <p className="hall-manager__headcount-ratio">
+                                                    Occupancy: <strong>{Math.round((parseInt(headCountPeople) / parseInt(headCountChairs)) * 100) || 0}%</strong>
+                                                    <span> ({headCountPeople} people / {headCountChairs} chairs)</span>
+                                                </p>
+                                            )}
+                                        </div>
+                                        <Button
+                                            onClick={() => {
+                                                if (!headCountPeople || !headCountChairs) {
+                                                    toast.error('Please fill in all fields');
+                                                    return;
+                                                }
+                                                setSubmittingHeadCount(true);
+                                                // Simulated submission — API route not yet connected
+                                                setTimeout(() => {
+                                                    toast.success(`Head count recorded for ${selectedHall} on ${headCountDate}`);
+                                                    setSubmittingHeadCount(false);
+                                                }, 600);
+                                            }}
+                                            loading={submittingHeadCount}
+                                            disabled={!headCountPeople || !headCountChairs}
+                                            icon={<Send size={16} />}
+                                            className="hall-manager__headcount-submit"
+                                        >
+                                            Submit Head Count
+                                        </Button>
                                     </div>
                                 </Card>
                             </motion.div>
