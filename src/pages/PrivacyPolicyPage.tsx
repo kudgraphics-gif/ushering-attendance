@@ -7,9 +7,9 @@ export function PrivacyPolicyPage() {
         <div className="privacy-page">
             <div className="privacy-page__container">
                 <header className="privacy-page__header">
-                    <Link to="/login" className="privacy-page__back">
+                    <Link to="/" className="privacy-page__back">
                         <ArrowLeft size={20} />
-                        <span>Back to Login</span>
+                        <span>Back to Home</span>
                     </Link>
                     <div className="privacy-page__icon">
                         <Shield size={48} />

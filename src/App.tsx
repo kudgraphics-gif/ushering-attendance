@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
+import { RegisterVolunteerPage } from './pages/RegisterVolunteerPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { UserDashboardPage } from './pages/UserDashboardPage';
 import { EventsPage } from './pages/EventsPage';
@@ -8,7 +10,7 @@ import { AttendancePage } from './pages/AttendancePage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ActivityLogsPage } from './pages/ActivityLogsPage';
 import { RosterManagementPage } from './pages/RosterManagementPage';
-import { RosterAssignmentsPage } from './pages/RosterAssignmentPage'; // New Import
+import { RosterAssignmentsPage } from './pages/RosterAssignmentPage';
 import { HallManagerPage } from './pages/HallManagerPage';
 import { PaymentsPage } from './pages/PaymentsPage';
 import { KoinoniaPage } from './pages/KoinoniaPage';
@@ -20,7 +22,7 @@ import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { MainLayout } from './components/layout/MainLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { useAuthStore } from './stores/authStore';
-import { useEffect } from 'react'; // Added useEffect
+import { useEffect } from 'react';
 
 function App() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -56,12 +58,19 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* ── Public routes (no auth required) ── */}
+        <Route
+          path="/"
+          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <HomePage />}
+        />
         <Route
           path="/login"
           element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />}
         />
+        <Route path="/register-volunteer" element={<RegisterVolunteerPage />} />
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
 
+        {/* ── Protected routes (authenticated users) ── */}
         <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
           <Route
             path="/dashboard"
@@ -91,7 +100,6 @@ function App() {
             path="/roster-management"
             element={<ProtectedRoute allowedRoles={['Admin']}><RosterManagementPage /></ProtectedRoute>}
           />
-          {/* New Route for Roster Assignments */}
           <Route
             path="/roster/:id"
             element={<ProtectedRoute allowedRoles={['Admin']}><RosterAssignmentsPage /></ProtectedRoute>}
@@ -111,8 +119,8 @@ function App() {
           />
         </Route>
 
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        {/* ── Fallback ── */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
