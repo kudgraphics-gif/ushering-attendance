@@ -282,6 +282,15 @@ export const usersAPI = {
             token
         );
     },
+
+    addStrike: async (userId: string, token: string): Promise<{ message: string; data: null }> => {
+        return apiCall<{ message: string; data: null }>(
+            'POST', // NOTE: If your backend uses PATCH instead of POST, change this to 'PATCH'
+            `/users/admin/strike/${userId}`,
+            undefined,
+            token
+        );
+    },
 };
 
 // Attendance APIs
@@ -828,5 +837,16 @@ export const hallsAPI = {
     ): Promise<{ message: string; data: null }> => {
         // Call the halls attendance revoke endpoint with DELETE and JSON body
         return apiCall<{ message: string; data: null }>('DELETE', `/halls/attendance`, payload, token);
+    },
+
+    submitHeadCount: async (
+        payload: { counts: { chair_count: number; hall: string; head_count: number }; date: string },
+        token: string
+    ): Promise<{ message: string }> => {
+        return apiCall<{ message: string }>('POST', '/halls/counts', payload, token);
+    },
+
+    getHeadCountHistory: async (hall: string, token: string): Promise<any[]> => {
+        return apiCall<any[]>('GET', `/halls/hall/counts/history?hall=${hall}`, undefined, token);
     },
 };

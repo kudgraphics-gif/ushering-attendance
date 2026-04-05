@@ -35,7 +35,7 @@ export interface UserDto {
     country?: string;
     is_active?: boolean;
     is_cleaning_day?: boolean;
-    strike_count?: number;
+    strike?: number;
 }
 
 export interface Event {

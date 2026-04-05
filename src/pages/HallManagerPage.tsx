@@ -41,6 +41,8 @@ export function HallManagerPage() {
 
     // Head Count form state
     const [headCountPeople, setHeadCountPeople] = useState<string>('');
+    const [headCountHistory, setHeadCountHistory] = useState<any[]>([]);
+    const [loadingHistory, setLoadingHistory] = useState(false);
     const [headCountChairs, setHeadCountChairs] = useState<string>('');
     const [headCountDate, setHeadCountDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [submittingHeadCount, setSubmittingHeadCount] = useState(false);
@@ -56,6 +58,25 @@ export function HallManagerPage() {
             fetchAttendance();
         }
     }, [selectedHall, token, selectedDate]);
+
+    useEffect(() => {
+        if (selectedHall && token) {
+            fetchHeadCountHistory();
+        }
+    }, [selectedHall, token]);
+
+    const fetchHeadCountHistory = async () => {
+        if (!token || !selectedHall) return;
+        setLoadingHistory(true);
+        try {
+            const data = await hallsAPI.getHeadCountHistory(selectedHall, token);
+            setHeadCountHistory(data);
+        } catch (error) {
+            console.error('Failed to load headcount history:', error);
+        } finally {
+            setLoadingHistory(false);
+        }
+    };
 
     const fetchHalls = async () => {
         if (!token) return;
@@ -717,17 +738,35 @@ export function HallManagerPage() {
                                             )}
                                         </div>
                                         <Button
-                                            onClick={() => {
+                                            onClick={async () => {
                                                 if (!headCountPeople || !headCountChairs) {
                                                     toast.error('Please fill in all fields');
                                                     return;
                                                 }
+                                                if (!token || !selectedHall) return;
+                                                
                                                 setSubmittingHeadCount(true);
-                                                // Simulated submission — API route not yet connected
-                                                setTimeout(() => {
-                                                    toast.success(`Head count recorded for ${selectedHall} on ${headCountDate}`);
+                                                try {
+                                                    await hallsAPI.submitHeadCount({
+                                                        counts: {
+                                                            chair_count: parseInt(headCountChairs),
+                                                            hall: selectedHall,
+                                                            head_count: parseInt(headCountPeople)
+                                                        },
+                                                        date: headCountDate
+                                                    }, token);
+                                                    
+                                                    toast.success(`Head count recorded for ${selectedHall}`);
+                                                    setHeadCountPeople('');
+                                                    setHeadCountChairs('');
+                                                    
+                                                    await fetchHeadCountHistory();
+                                                } catch (error) {
+                                                    toast.error(error instanceof Error ? error.message : 'Failed to submit head count');
+                                                    console.error(error);
+                                                } finally {
                                                     setSubmittingHeadCount(false);
-                                                }, 600);
+                                                }
                                             }}
                                             loading={submittingHeadCount}
                                             disabled={!headCountPeople || !headCountChairs}
@@ -737,6 +776,38 @@ export function HallManagerPage() {
                                             Submit Head Count
                                         </Button>
                                     </div>
+                                </Card>
+
+                                <Card glass padding="lg" className="hall-manager__headcount-history" style={{ marginTop: '24px' }}>
+                                    <h3 style={{ marginBottom: '16px', fontSize: '1.2rem', color: 'var(--text-primary)' }}>History for {selectedHall}</h3>
+                                    {loadingHistory ? (
+                                        <p>Loading history...</p>
+                                    ) : headCountHistory.length === 0 ? (
+                                        <p style={{ color: 'var(--text-secondary)' }}>No history entries found.</p>
+                                    ) : (
+                                        <div style={{ overflowX: 'auto' }}>
+                                            <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', color: 'var(--text-primary)' }}>
+                                                <thead>
+                                                    <tr style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.1)', color: 'var(--text-secondary)' }}>
+                                                        <th style={{ padding: '12px', fontWeight: '500' }}>Date</th>
+                                                        <th style={{ padding: '12px', fontWeight: '500' }}>Hall</th>
+                                                        <th style={{ padding: '12px', fontWeight: '500' }}>Head Count</th>
+                                                        <th style={{ padding: '12px', fontWeight: '500' }}>Chair Count</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {headCountHistory.map((item, idx) => (
+                                                        <tr key={idx} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                                                            <td style={{ padding: '12px' }}>{item.date}</td>
+                                                            <td style={{ padding: '12px' }}>{item.hall}</td>
+                                                            <td style={{ padding: '12px' }}>{item.head_count}</td>
+                                                            <td style={{ padding: '12px' }}>{item.chair_count}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    )}
                                 </Card>
                             </motion.div>
                         )}

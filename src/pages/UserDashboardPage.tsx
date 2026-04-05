@@ -538,7 +538,7 @@ export function UserDashboardPage() {
                             <AlertTriangle size={24} />
                         </div>
                         <div className="strike-card__content">
-                            <div className="strike-card__value">{(user as any)?.strike_count ?? 0}</div>
+                            <div className="strike-card__value">{(user as any)?.strike ?? 0}</div>
                             <div className="strike-card__label">Active Strikes</div>
                         </div>
                         <button

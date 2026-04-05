@@ -238,7 +238,7 @@ export function UsersPage() {
         }
     };
 
-    const handleAddStrike = async (_userId: string, userName: string) => {
+    const handleAddStrike = async (userId: string, userName: string) => {
         if (!token) {
             toast.error('Not authenticated');
             return;
@@ -250,11 +250,14 @@ export function UsersPage() {
 
         if (!confirmStrike) return;
 
-        // API not ready yet — UI only
-        toast.success(`Strike added to ${userName} (API pending)`);
-        // When API is ready, uncomment:
-        // await usersAPI.addStrike(userId, token);
-        // setUsers(users.map(u => u.id === userId ? { ...u, strike_count: (u.strike_count || 0) + 1 } : u));
+        try {
+            await usersAPI.addStrike(userId, token);
+            setUsers(users.map(u => u.id === userId ? { ...u, strike: (u.strike || 0) + 1 } : u));
+            toast.success(`Strike added to ${userName}`);
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Failed to add strike');
+            console.error(error);
+        }
     };
 
     return (
@@ -467,9 +470,9 @@ function UserCard({
                     </div>
                     <div className="user-card__detail">
                         <span className="user-card__detail-label">Strikes:</span>
-                        <span className={`user-card__strike-badge ${(user.strike_count || 0) > 0 ? 'user-card__strike-badge--warning' : ''}`}>
+                        <span className={`user-card__strike-badge ${(user.strike || 0) > 0 ? 'user-card__strike-badge--warning' : ''}`}>
                             <AlertTriangle size={12} />
-                            {user.strike_count ?? 0}
+                            {user.strike ?? 0}
                         </span>
                     </div>
                 </div>
