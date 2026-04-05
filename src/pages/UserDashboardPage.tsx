@@ -562,7 +562,7 @@ export function UserDashboardPage() {
                                     A <strong>strike</strong> represents the number of times you have defaulted
                                     or committed a specific offense. Accumulating strikes may lead to
                                     disciplinary actions. Please ensure to follow all guidelines to maintain
-                                    a clean record.
+                                    a clean record. For an accumulation of 3 strikes is the highest possible strikes.
                                 </p>
                             </motion.div>
                         )}
