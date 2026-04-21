@@ -78,6 +78,7 @@ interface UsersTableProps {
     isCheckingIn?: string | null;
     onEdit?: (user: UserDto) => void;
     onToggleStatus?: (user: UserDto) => void;
+    onViewDetails?: (user: UserDto) => void;
 }
 
 export function UsersTable({
@@ -90,6 +91,7 @@ export function UsersTable({
     isCheckingIn,
     onEdit,
     onToggleStatus,
+    onViewDetails,
 }: UsersTableProps) {
     const columns = [
         {
@@ -98,7 +100,9 @@ export function UsersTable({
             width: '200px',
             render: (_value: string, user: UserDto) => (
                 <div className="users-table__name-cell">
-                    <Avatar src={user.avatar_url} alt={user.first_name} size="sm" />
+                    <div style={{ cursor: 'pointer' }} onClick={() => onViewDetails?.(user)} title="View profile details">
+                        <Avatar src={user.avatar_url} alt={user.first_name} size="sm" />
+                    </div>
                     <div>
                         <div className="users-table__name">{user.first_name} {user.last_name}</div>
                         <div className="users-table__email">{user.email}</div>

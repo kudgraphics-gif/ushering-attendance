@@ -9,6 +9,7 @@ import { Badge } from '../components/ui/Badge';
 import { UsersTable } from '../components/ui/DataTable';
 import { UserFormModal } from '../components/ui/UserFormModal';
 import { AttendanceModal } from '../components/ui/AttendanceModal';
+import { UserDetailsModal } from '../components/ui/UserDetailsModal';
 import { usersAPI, attendanceAPI, usersExportAPI } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import type { UserDto } from '../types';
@@ -24,6 +25,8 @@ export function UsersPage() {
     const [checkingInUser, setCheckingInUser] = useState<string | null>(null);
     const [attendanceModalOpen, setAttendanceModalOpen] = useState(false);
     const [selectedUserForAttendance, setSelectedUserForAttendance] = useState<UserDto | null>(null);
+    const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+    const [selectedUserForDetails, setSelectedUserForDetails] = useState<UserDto | null>(null);
     const [exporting, setExporting] = useState(false);
     const [importing, setImporting] = useState(false);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -138,6 +141,11 @@ export function UsersPage() {
     const handleViewAttendance = (user: UserDto) => {
         setSelectedUserForAttendance(user);
         setAttendanceModalOpen(true);
+    };
+
+    const handleViewDetails = (user: UserDto) => {
+        setSelectedUserForDetails(user);
+        setDetailsModalOpen(true);
     };
 
     const handleFormSubmit = async (data: Partial<UserDto> & { password?: string }) => {
@@ -360,6 +368,7 @@ export function UsersPage() {
                             onDelete={handleDeleteUser}
                             onToggleStatus={handleToggleStatus}
                             onAddStrike={handleAddStrike}
+                            onViewDetails={handleViewDetails}
                             isCheckingIn={checkingInUser === user.id}
                             isAdmin={currentUser?.role === 'Admin'}
                         />
@@ -375,6 +384,7 @@ export function UsersPage() {
                         onDelete={handleDeleteUser}
                         onResetDeviceId={handleResetDeviceId}
                         onToggleStatus={handleToggleStatus} // Passed down for table view
+                        onViewDetails={handleViewDetails}
                         isAdmin={currentUser?.role === 'Admin'}
                         isCheckingIn={checkingInUser}
                     />
@@ -399,6 +409,12 @@ export function UsersPage() {
                     token={token}
                 />
             )}
+
+            <UserDetailsModal
+                isOpen={detailsModalOpen}
+                onClose={() => setDetailsModalOpen(false)}
+                user={selectedUserForDetails}
+            />
         </motion.div>
     );
 }
@@ -412,6 +428,7 @@ function UserCard({
     onDelete,
     onToggleStatus,
     onAddStrike,
+    onViewDetails,
     isCheckingIn,
     isAdmin,
 }: {
@@ -423,6 +440,7 @@ function UserCard({
     onDelete: (userId: string, userName: string) => Promise<void>;
     onToggleStatus: (user: UserDto) => Promise<void>;
     onAddStrike: (userId: string, userName: string) => Promise<void>;
+    onViewDetails: (user: UserDto) => void;
     isCheckingIn: boolean;
     isAdmin: boolean;
 }) {
@@ -434,7 +452,9 @@ function UserCard({
         >
             <Card glass hover className="user-card">
                 <div className="user-card__header">
-                    <Avatar src={user.avatar_url} alt={user.first_name} size="lg" />
+                    <div style={{ cursor: 'pointer' }} onClick={() => onViewDetails(user)} title="View profile details">
+                        <Avatar src={user.avatar_url} alt={user.first_name} size="lg" />
+                    </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-end' }}>
                         <Badge role={user.role} size="sm">{user.role}</Badge>
                         <Badge variant={user.current_roster_hall ? 'success' : 'info'} size="sm">
