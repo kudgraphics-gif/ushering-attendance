@@ -628,6 +628,94 @@
   object-fit: cover;
 }
 
+/* ────────────────────────────────── LEADERS SECTION */
+.home-leaders {
+  padding: 100px 40px;
+  background: #030303;
+  overflow: hidden;
+}
+
+.home-leaders__heading {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(32px, 4vw, 56px);
+  font-weight: 300;
+  color: #fff;
+  margin: 0;
+}
+
+.home-leaders__grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 40px;
+}
+
+.home-leaders__card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+.home-leaders__card:hover {
+  background: rgba(212, 175, 55, 0.05);
+  border-color: rgba(212, 175, 55, 0.3);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+}
+
+.home-leaders__img-wrap {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  position: relative;
+}
+.home-leaders__img-wrap::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent 50%);
+}
+
+.home-leaders__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+  transition: transform 0.5s ease;
+}
+.home-leaders__card:hover .home-leaders__img {
+  transform: scale(1.05);
+}
+
+.home-leaders__info {
+  padding: 24px;
+  text-align: center;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.home-leaders__name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #D4AF37;
+  margin: 0 0 8px;
+}
+
+.home-leaders__role {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 300;
+  line-height: 1.4;
+  margin: 0;
+}
+
 /* ────────────────────────────────── JOIN CTA */
 .home-join {
   position: relative;

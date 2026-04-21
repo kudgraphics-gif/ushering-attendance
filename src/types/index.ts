@@ -36,6 +36,12 @@ export interface UserDto {
     is_active?: boolean;
     is_cleaning_day?: boolean;
     strike?: number;
+    contact_first_name?: string;
+    contact_last_name?: string;
+    contact_phone?: string;
+    contact_email?: string;
+    contact_residence?: string;
+    contact_relationship?: string;
 }
 
 export interface Event {

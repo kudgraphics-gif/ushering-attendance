@@ -30,6 +30,12 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
         city: '',
         state: '',
         country: '',
+        contact_first_name: '',
+        contact_last_name: '',
+        contact_phone: '',
+        contact_email: '',
+        contact_residence: '',
+        contact_relationship: '',
     });
 
     useEffect(() => {
@@ -51,6 +57,12 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
                 city: currentUser.city || '',
                 state: currentUser.state || '',
                 country: currentUser.country || '',
+                contact_first_name: currentUser.contact_first_name || '',
+                contact_last_name: currentUser.contact_last_name || '',
+                contact_phone: currentUser.contact_phone || '',
+                contact_email: currentUser.contact_email || '',
+                contact_residence: currentUser.contact_residence || '',
+                contact_relationship: currentUser.contact_relationship || '',
             });
 
             // Set initial avatar preview
@@ -359,6 +371,97 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
                                     placeholder="Country"
                                     icon={<Globe size={18} />}
                                 />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="update-profile-form__section">
+                        <h2 className="update-profile-form__section-title">Close Family Contact Information</h2>
+
+                        <div className="update-profile-form__grid">
+                            <div className="update-profile-form__field">
+                                <label className="update-profile-form__label">First Name</label>
+                                <Input
+                                    type="text"
+                                    name="contact_first_name"
+                                    value={formData.contact_first_name || ''}
+                                    onChange={handleChange}
+                                    placeholder="First name"
+                                />
+                            </div>
+
+                            <div className="update-profile-form__field">
+                                <label className="update-profile-form__label">Last Name</label>
+                                <Input
+                                    type="text"
+                                    name="contact_last_name"
+                                    value={formData.contact_last_name || ''}
+                                    onChange={handleChange}
+                                    placeholder="Last name"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="update-profile-form__grid">
+                            <div className="update-profile-form__field">
+                                <label className="update-profile-form__label">Email</label>
+                                <Input
+                                    type="email"
+                                    name="contact_email"
+                                    value={formData.contact_email || ''}
+                                    onChange={handleChange}
+                                    placeholder="Email address"
+                                    icon={<Mail size={18} />}
+                                />
+                            </div>
+
+                            <div className="update-profile-form__field">
+                                <label className="update-profile-form__label">Phone</label>
+                                <Input
+                                    type="tel"
+                                    name="contact_phone"
+                                    value={formData.contact_phone || ''}
+                                    onChange={handleChange}
+                                    placeholder="Phone number"
+                                    icon={<Phone size={18} />}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="update-profile-form__grid">
+                            <div className="update-profile-form__field">
+                                <label className="update-profile-form__label">Residence</label>
+                                <Input
+                                    type="text"
+                                    name="contact_residence"
+                                    value={formData.contact_residence || ''}
+                                    onChange={handleChange}
+                                    placeholder="Residence address"
+                                    icon={<MapPin size={18} />}
+                                />
+                            </div>
+
+                            <div className="update-profile-form__field">
+                                <label className="update-profile-form__label">Relationship</label>
+                                <select
+                                    name="contact_relationship"
+                                    value={formData.contact_relationship || ''}
+                                    onChange={handleChange}
+                                    className="update-profile-form__select"
+                                >
+                                    <option value="">Select relationship</option>
+                                    <option value="brother">Brother</option>
+                                    <option value="sister">Sister</option>
+                                    <option value="uncle">Uncle</option>
+                                    <option value="father">Father</option>
+                                    <option value="mother">Mother</option>
+                                    <option value="nephew">Nephew</option>
+                                    <option value="niece">Niece</option>
+                                    <option value="grandma">Grandma</option>
+                                    <option value="grandpa">Grandpa</option>
+                                    <option value="friend">Friend</option>
+                                    <option value="aunt">Aunt</option>
+                                </select>
                             </div>
                         </div>
                     </div>

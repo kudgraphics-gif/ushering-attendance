@@ -34,6 +34,21 @@ import pic28 from '../assets/pictures/28.jpg';
 import pic29 from '../assets/pictures/29.jpg';
 import pic618 from '../assets/pictures/618531923_1207748671471655_7560232948923943112_n.jpg';
 import pic634 from '../assets/pictures/634130028_1226368452943010_6417466623284303872_n.jpg';
+import picAbiodun from '../assets/pictures/Abiodun.JPG';
+import picMax from '../assets/pictures/Max.JPG';
+import picEmem from '../assets/pictures/Emem.JPG';
+import picElijah from '../assets/pictures/Elijah.JPG';
+import picBlessing from '../assets/pictures/Blessing.JPG';
+import picBusola from '../assets/pictures/Busola.JPG';
+
+const leaders = [
+  { name: 'Abiodun Awe', role: 'Head of Department Koinonia Global', image: picAbiodun },
+  { name: 'Maxwell Daniel', role: 'General Secretary', image: picMax },
+  { name: 'Udoh Oritseweyinmi Emem', role: 'Costume/Wardrobe Manager', image: picEmem },
+  { name: 'Elijah Haruna', role: 'Prayer Secretary', image: picElijah },
+  { name: 'Blessing Mohammed', role: 'Departmental Treasurer', image: picBlessing },
+  { name: 'Busola Perez-Folayan', role: 'Welfare Officer', image: picBusola },
+];
 
 const slides = [
   pic1, pic2, pic3, pic5, pic6, pic7, pic8, pic9, pic10, pic11,
@@ -356,6 +371,42 @@ export function HomePage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ─── OUR LEADERS SECTION ─── */}
+      <section className="home-leaders">
+        <motion.div
+          className="home-section-header"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="home-section-tag">Our Leaders</div>
+          <h2 className="home-leaders__heading">Meet the Visionaries</h2>
+        </motion.div>
+
+        <div className="home-leaders__grid">
+          {leaders.map((leader, i) => (
+            <motion.div
+              key={i}
+              className="home-leaders__card"
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
+              whileInView={{ opacity: 1, scale: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1, duration: 0.5 }}
+              whileHover={{ y: -10 }}
+            >
+              <div className="home-leaders__img-wrap">
+                <img src={leader.image} alt={leader.name} className="home-leaders__img" />
+              </div>
+              <div className="home-leaders__info">
+                <h3 className="home-leaders__name">{leader.name}</h3>
+                <p className="home-leaders__role">{leader.role}</p>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </section>
 
