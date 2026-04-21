@@ -376,7 +376,7 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
                     </div>
 
                     <div className="update-profile-form__section">
-                        <h2 className="update-profile-form__section-title">Close Family Contact Information</h2>
+                        <h2 className="update-profile-form__section-title">Close Family/Friend Contact Information</h2>
 
                         <div className="update-profile-form__grid">
                             <div className="update-profile-form__field">
