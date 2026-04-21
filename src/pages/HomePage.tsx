@@ -34,12 +34,12 @@ import pic28 from '../assets/pictures/28.jpg';
 import pic29 from '../assets/pictures/29.jpg';
 import pic618 from '../assets/pictures/618531923_1207748671471655_7560232948923943112_n.jpg';
 import pic634 from '../assets/pictures/634130028_1226368452943010_6417466623284303872_n.jpg';
-import picAbiodun from '../assets/pictures/Abiodun.JPG';
-import picMax from '../assets/pictures/Max.JPG';
-import picEmem from '../assets/pictures/Emem.JPG';
-import picElijah from '../assets/pictures/Elijah.JPG';
-import picBlessing from '../assets/pictures/Blessing.JPG';
-import picBusola from '../assets/pictures/Busola.JPG';
+import picAbiodun from '../assets/pictures/Abiodun.jpg';
+import picMax from '../assets/pictures/Max.jpg';
+import picEmem from '../assets/pictures/Emem.jpg';
+import picElijah from '../assets/pictures/Elijah.jpg';
+import picBlessing from '../assets/pictures/Blessing.jpg';
+import picBusola from '../assets/pictures/Busola.jpg';
 
 const leaders = [
   { name: 'Abiodun Awe', role: 'Head of Department Koinonia Global', image: picAbiodun },
