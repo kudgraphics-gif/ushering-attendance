@@ -453,6 +453,8 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
                                     <option value="brother">Brother</option>
                                     <option value="sister">Sister</option>
                                     <option value="uncle">Uncle</option>
+                                    <option value="husband">Husband</option>
+                                    <option value="wife">Wife</option>
                                     <option value="father">Father</option>
                                     <option value="mother">Mother</option>
                                     <option value="nephew">Nephew</option>
