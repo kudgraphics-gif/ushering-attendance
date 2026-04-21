@@ -42,7 +42,7 @@ import picBlessing from '../assets/pictures/Blessing.jpg';
 import picBusola from '../assets/pictures/Busola.jpg';
 
 const leaders = [
-  { name: 'Abiodun Awe', role: 'Head of Department Koinonia Global', image: picAbiodun },
+  { name: 'Pst. Abiodun Awe', role: 'Head of Department Koinonia Global', image: picAbiodun },
   
   { name: 'Udoh Oritseweyinmi Emem', role: 'Costume/Wardrobe Manager', image: picEmem },
    { name: 'Elijah Haruna', role: 'Prayer Secretary', image: picElijah },

@@ -285,7 +285,7 @@ export const usersAPI = {
 
     addStrike: async (userId: string, token: string): Promise<{ message: string; data: null }> => {
         return apiCall<{ message: string; data: null }>(
-            'POST', // NOTE: If your backend uses PATCH instead of POST, change this to 'PATCH'
+            'PATCH', // NOTE: If your backend uses PATCH instead of POST, change this to 'PATCH'
             `/users/admin/strike/${userId}`,
             undefined,
             token
