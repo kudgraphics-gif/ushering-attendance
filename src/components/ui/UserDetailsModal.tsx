@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, User, Phone, MapPin, Calendar, Heart } from 'lucide-react';
+import { X, User, Heart } from 'lucide-react';
 import type { UserDto } from '../../types';
 import './UserDetailsModal.css';
 
