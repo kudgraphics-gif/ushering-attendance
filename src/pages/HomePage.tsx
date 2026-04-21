@@ -43,11 +43,12 @@ import picBusola from '../assets/pictures/Busola.jpg';
 
 const leaders = [
   { name: 'Abiodun Awe', role: 'Head of Department Koinonia Global', image: picAbiodun },
-  { name: 'Maxwell Daniel', role: 'General Secretary', image: picMax },
+  
   { name: 'Udoh Oritseweyinmi Emem', role: 'Costume/Wardrobe Manager', image: picEmem },
-  { name: 'Elijah Haruna', role: 'Prayer Secretary', image: picElijah },
-  { name: 'Blessing Mohammed', role: 'Departmental Treasurer', image: picBlessing },
+   { name: 'Elijah Haruna', role: 'Prayer Secretary', image: picElijah },
+   { name: 'Blessing Mohammed', role: 'Departmental Treasurer', image: picBlessing },
   { name: 'Busola Perez-Folayan', role: 'Welfare Officer', image: picBusola },
+  { name: 'Maxwell Daniel', role: 'General Secretary', image: picMax },
 ];
 
 const slides = [
