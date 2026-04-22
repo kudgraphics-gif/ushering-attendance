@@ -56,13 +56,10 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
                 city: currentUser.city || '',
                 state: currentUser.state || '',
                 country: currentUser.country || '',
-                patreon_address: currentUser.patreon_address || (currentUser as any).contact_residence || '',
-                patreon_name: currentUser.patreon_name || 
-                    ((currentUser as any).contact_first_name || (currentUser as any).contact_last_name 
-                        ? `${(currentUser as any).contact_first_name || ''} ${(currentUser as any).contact_last_name || ''}`.trim() 
-                        : ''),
-                patreon_phone: currentUser.patreon_phone || (currentUser as any).contact_phone || '',
-                patreon_relationship: currentUser.patreon_relationship || (currentUser as any).contact_relationship || '',
+                patreon_address: currentUser.patreon_address || '',
+                patreon_name: currentUser.patreon_name || '',
+                patreon_phone: currentUser.patreon_phone || '',
+                patreon_relationship: currentUser.patreon_relationship || '',
                 local_church: currentUser.local_church || '',
             });
 
@@ -70,7 +67,6 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
             const localAvatar = localStorage.getItem(`avatar_${currentUser.email}`);
             if (localAvatar) {
                 setAvatarPreview(localAvatar);
-                // Optionally update the prompt user state if needed, but for now just form persistence
             } else if (currentUser.avatar_url) {
                 setAvatarPreview(currentUser.avatar_url);
             }
