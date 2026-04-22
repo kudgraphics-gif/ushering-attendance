@@ -30,12 +30,11 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
         city: '',
         state: '',
         country: '',
-        contact_first_name: '',
-        contact_last_name: '',
-        contact_phone: '',
-        contact_email: '',
-        contact_residence: '',
-        contact_relationship: '',
+        patreon_address: '',
+        patreon_name: '',
+        patreon_phone: '',
+        patreon_relationship: '',
+        local_church: '',
     });
 
     useEffect(() => {
@@ -57,12 +56,11 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
                 city: currentUser.city || '',
                 state: currentUser.state || '',
                 country: currentUser.country || '',
-                contact_first_name: currentUser.contact_first_name || '',
-                contact_last_name: currentUser.contact_last_name || '',
-                contact_phone: currentUser.contact_phone || '',
-                contact_email: currentUser.contact_email || '',
-                contact_residence: currentUser.contact_residence || '',
-                contact_relationship: currentUser.contact_relationship || '',
+                patreon_address: currentUser.patreon_address || '',
+                patreon_name: currentUser.patreon_name || '',
+                patreon_phone: currentUser.patreon_phone || '',
+                patreon_relationship: currentUser.patreon_relationship || '',
+                local_church: currentUser.local_church || '',
             });
 
             // Set initial avatar preview
@@ -319,6 +317,19 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
                                 />
                             </div>
                         </div>
+
+                        <div className="update-profile-form__grid">
+                            <div className="update-profile-form__field">
+                                <label className="update-profile-form__label">Local Church</label>
+                                <Input
+                                    type="text"
+                                    name="local_church"
+                                    value={formData.local_church || ''}
+                                    onChange={handleChange}
+                                    placeholder="Local Church Name"
+                                />
+                            </div>
+                        </div>
                     </div>
 
                     <div className="update-profile-form__section">
@@ -380,38 +391,13 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
 
                         <div className="update-profile-form__grid">
                             <div className="update-profile-form__field">
-                                <label className="update-profile-form__label">First Name</label>
+                                <label className="update-profile-form__label">Name</label>
                                 <Input
                                     type="text"
-                                    name="contact_first_name"
-                                    value={formData.contact_first_name || ''}
+                                    name="patreon_name"
+                                    value={formData.patreon_name || ''}
                                     onChange={handleChange}
-                                    placeholder="First name"
-                                />
-                            </div>
-
-                            <div className="update-profile-form__field">
-                                <label className="update-profile-form__label">Last Name</label>
-                                <Input
-                                    type="text"
-                                    name="contact_last_name"
-                                    value={formData.contact_last_name || ''}
-                                    onChange={handleChange}
-                                    placeholder="Last name"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="update-profile-form__grid">
-                            <div className="update-profile-form__field">
-                                <label className="update-profile-form__label">Email</label>
-                                <Input
-                                    type="email"
-                                    name="contact_email"
-                                    value={formData.contact_email || ''}
-                                    onChange={handleChange}
-                                    placeholder="Email address"
-                                    icon={<Mail size={18} />}
+                                    placeholder="Full name"
                                 />
                             </div>
 
@@ -419,8 +405,8 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
                                 <label className="update-profile-form__label">Phone</label>
                                 <Input
                                     type="tel"
-                                    name="contact_phone"
-                                    value={formData.contact_phone || ''}
+                                    name="patreon_phone"
+                                    value={formData.patreon_phone || ''}
                                     onChange={handleChange}
                                     placeholder="Phone number"
                                     icon={<Phone size={18} />}
@@ -433,8 +419,8 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
                                 <label className="update-profile-form__label">Residence</label>
                                 <Input
                                     type="text"
-                                    name="contact_residence"
-                                    value={formData.contact_residence || ''}
+                                    name="patreon_address"
+                                    value={formData.patreon_address || ''}
                                     onChange={handleChange}
                                     placeholder="Residence address"
                                     icon={<MapPin size={18} />}
@@ -444,8 +430,8 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
                             <div className="update-profile-form__field">
                                 <label className="update-profile-form__label">Relationship</label>
                                 <select
-                                    name="contact_relationship"
-                                    value={formData.contact_relationship || ''}
+                                    name="patreon_relationship"
+                                    value={formData.patreon_relationship || ''}
                                     onChange={handleChange}
                                     className="update-profile-form__select"
                                 >

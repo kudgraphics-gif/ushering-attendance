@@ -69,6 +69,7 @@ export function UserDetailsModal({ isOpen, onClose, user }: UserDetailsModalProp
                                     <DetailItem label="City" value={getValue(user.city)} />
                                     <DetailItem label="State" value={getValue(user.state)} />
                                     <DetailItem label="Country" value={getValue(user.country)} />
+                                    <DetailItem label="Local Church" value={getValue(user.local_church)} />
                                 </div>
                             </section>
 
@@ -77,12 +78,10 @@ export function UserDetailsModal({ isOpen, onClose, user }: UserDetailsModalProp
                                     <Heart size={18} /> Close Relative Details
                                 </h3>
                                 <div className="user-details-modal__grid">
-                                    <DetailItem label="First Name" value={getValue(user.contact_first_name)} />
-                                    <DetailItem label="Last Name" value={getValue(user.contact_last_name)} />
-                                    <DetailItem label="Phone" value={getValue(user.contact_phone)} />
-                                    <DetailItem label="Email" value={getValue(user.contact_email)} />
-                                    <DetailItem label="Residence" value={getValue(user.contact_residence)} />
-                                    <DetailItem label="Relationship" value={getValue(user.contact_relationship)} />
+                                    <DetailItem label="Name" value={getValue(user.patreon_name)} />
+                                    <DetailItem label="Phone" value={getValue(user.patreon_phone)} />
+                                    <DetailItem label="Residence" value={getValue(user.patreon_address)} />
+                                    <DetailItem label="Relationship" value={getValue(user.patreon_relationship)} />
                                 </div>
                             </section>
                         </div>
