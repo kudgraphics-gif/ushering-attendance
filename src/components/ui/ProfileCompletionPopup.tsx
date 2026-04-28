@@ -1,94 +1,108 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertCircle, X } from 'lucide-react';
+import { AlertCircle, ArrowRight, User } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
+import type { UserDto } from '../../types';
 import './ProfileCompletionPopup.css';
 
+/**
+ * Blocking profile completion popup for User and Leader roles.
+ * The popup cannot be dismissed — it redirects to /profile and blocks
+ * all interaction until the close-family contact fields are fully filled.
+ * Admins are excluded.
+ */
 export function ProfileCompletionPopup() {
     const user = useAuthStore((state) => state.user);
-    const [isVisible, setIsVisible] = useState(false);
+    const navigate = useNavigate();
+    const location = useLocation();
 
+    // Fields that MUST be filled for User/Leader roles
+    const requiredFields: { key: keyof UserDto; label: string }[] = [
+        { key: 'patreon_name', label: 'Close contact name' },
+        { key: 'patreon_phone', label: 'Close contact phone' },
+        { key: 'patreon_address', label: 'Close contact address' },
+        { key: 'patreon_relationship', label: 'Close contact relationship' },
+        { key: 'phone', label: 'Your phone number' },
+        { key: 'gender', label: 'Your gender' },
+    ];
+
+    // Only show for User / Leader roles
+    if (!user || user.role === 'Admin') return null;
+
+    const missingFields = requiredFields.filter(f => !user[f.key as keyof typeof user]);
+    const isIncomplete = missingFields.length > 0;
+
+    // Already on profile page — don't show popup (let them fill the form)
+    const isOnProfilePage = location.pathname === '/profile';
+
+    // Auto-navigate to profile if incomplete and not already there
     useEffect(() => {
-        if (!user) {
-            setIsVisible(false);
-            return;
+        if (isIncomplete && !isOnProfilePage) {
+            const timer = setTimeout(() => {
+                navigate('/profile');
+            }, 1200);
+            return () => clearTimeout(timer);
         }
+    }, [isIncomplete, isOnProfilePage, navigate]);
 
-        // Check if user is not admin and has missing profile info
-        const hasMissingInfo = 
-            user.role !== 'Admin' &&
-            (!user.address || !user.state || !user.city);
-
-        // Check if user has already dismissed this popup today
-        const dismissedToday = localStorage.getItem('profile-popup-dismissed');
-        const today = new Date().toDateString();
-        
-        if (hasMissingInfo && dismissedToday !== today) {
-            setIsVisible(true);
-        }
-    }, [user]);
-
-    const handleDismiss = () => {
-        setIsVisible(false);
-        const today = new Date().toDateString();
-        localStorage.setItem('profile-popup-dismissed', today);
-    };
-
-    const handleNavigateToSettings = () => {
-        setIsVisible(false);
-        const today = new Date().toDateString();
-        localStorage.setItem('profile-popup-dismissed', today);
-        window.location.href = '/profile';
-    };
-
-    if (!user || user.role === 'Admin') {
-        return null;
-    }
+    if (!isIncomplete || isOnProfilePage) return null;
 
     return (
         <AnimatePresence>
-            {isVisible && (
+            <motion.div
+                className="profile-block-overlay"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+            >
                 <motion.div
-                    className="profile-completion-popup"
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.9 }}
+                    className="profile-block-modal"
+                    initial={{ opacity: 0, scale: 0.9, y: 24 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ duration: 0.4, type: 'spring', stiffness: 180 }}
                 >
-                    <div className="profile-completion-popup__content">
-                        <div className="profile-completion-popup__icon">
-                            <AlertCircle size={24} />
-                        </div>
-                        <div className="profile-completion-popup__text">
-                            <h3 className="profile-completion-popup__title">Complete Your Profile</h3>
-                            <p className="profile-completion-popup__message">
-                                Please complete your profile information to enhance your experience.
-                            </p>
-                        </div>
-                        <div className="profile-completion-popup__actions">
-                            <button 
-                                className="profile-completion-popup__btn profile-completion-popup__btn--primary"
-                                onClick={handleNavigateToSettings}
-                            >
-                                Complete Now
-                            </button>
-                            <button 
-                                className="profile-completion-popup__btn profile-completion-popup__btn--secondary"
-                                onClick={handleDismiss}
-                            >
-                                Dismiss
-                            </button>
+                    {/* Icon */}
+                    <div className="profile-block-modal__icon">
+                        <User size={32} />
+                    </div>
+
+                    {/* Text */}
+                    <div className="profile-block-modal__body">
+                        <h2 className="profile-block-modal__title">Complete Your Profile</h2>
+                        <p className="profile-block-modal__message">
+                            To continue using the app, please fill in the required information.
+                            This helps us keep everyone safe and connected.
+                        </p>
+
+                        {/* Missing fields list */}
+                        <div className="profile-block-modal__missing">
+                            <div className="profile-block-modal__missing-label">
+                                <AlertCircle size={14} />
+                                Missing information:
+                            </div>
+                            <ul className="profile-block-modal__missing-list">
+                                {missingFields.map(f => (
+                                    <li key={f.key}>{f.label}</li>
+                                ))}
+                            </ul>
                         </div>
                     </div>
+
+                    {/* CTA */}
                     <button
-                        className="profile-completion-popup__close"
-                        onClick={handleDismiss}
-                        aria-label="Close"
+                        className="profile-block-modal__btn"
+                        onClick={() => navigate('/profile')}
                     >
-                        <X size={20} />
+                        <span>Go to Profile</span>
+                        <ArrowRight size={18} />
                     </button>
+
+                    <p className="profile-block-modal__note">
+                        You will be redirected automatically…
+                    </p>
                 </motion.div>
-            )}
+            </motion.div>
         </AnimatePresence>
     );
 }

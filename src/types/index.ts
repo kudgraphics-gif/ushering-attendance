@@ -384,3 +384,33 @@ export interface HallAttendanceResponse {
     absents: UserDto[];
     presents: UserDto[];
 }
+
+// Volunteer types
+export interface VolunteerDto {
+    id: string;
+    address?: string;
+    attendance_count?: number;
+    avatar_url?: string;
+    city?: string;
+    country?: string;
+    created_at: string;
+    current_roster_allocation?: string;
+    current_roster_hall?: string;
+    device_id?: string;
+    dob?: string;
+    email: string;
+    first_name: string;
+    gender?: string;
+    is_active?: boolean;
+    last_attendance?: string;
+    last_name: string;
+    last_seen?: string;
+    local_church?: string;
+    phone?: string;
+    reg_no?: string;
+    role: 'Ksom';
+    state?: string;
+    updated_at?: string;
+    username?: string;
+    year_joined?: string;
+}

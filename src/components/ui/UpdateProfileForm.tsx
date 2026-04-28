@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Globe, Upload, X } from 'lucide-react';
+import { Mail, Phone, MapPin, Globe } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card } from './Card';
 import { Button } from './Button';
@@ -17,8 +17,6 @@ interface UpdateProfileFormProps {
 export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
     const { user: currentUser, token, setUser } = useAuthStore();
     const [loading, setLoading] = useState(false);
-    const [uploadingAvatar, setUploadingAvatar] = useState(false);
-    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     const [formData, setFormData] = useState<Partial<UserDto>>({
         first_name: '',
         last_name: '',
@@ -62,14 +60,6 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
                 patreon_relationship: currentUser.patreon_relationship || '',
                 local_church: currentUser.local_church || '',
             });
-
-            // Set initial avatar preview
-            const localAvatar = localStorage.getItem(`avatar_${currentUser.email}`);
-            if (localAvatar) {
-                setAvatarPreview(localAvatar);
-            } else if (currentUser.avatar_url) {
-                setAvatarPreview(currentUser.avatar_url);
-            }
         }
     }, [currentUser]);
 
@@ -79,113 +69,6 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
             ...prev,
             [name]: value,
         }));
-    };
-
-    const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-            toast.error('Please select an image file');
-            return;
-        }
-
-        // Validate file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-            toast.error('File size must be less than 5MB');
-            return;
-        }
-
-        // Create preview
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const result = event.target?.result;
-            if (typeof result === 'string') {
-                setAvatarPreview(result);
-            }
-        };
-        reader.readAsDataURL(file);
-
-        // Upload immediately
-        uploadAvatar(file);
-    };
-
-    const uploadAvatar = async (file: File) => {
-        if (!token || !currentUser) {
-            toast.error('Not authenticated');
-            return;
-        }
-
-        setUploadingAvatar(true);
-        try {
-            // Import compression utility
-            const { compressImage, clearAllAvatars } = await import('../../utils/imageCompression');
-
-            // Check original file size
-            const originalSizeKB = file.size / 1024;
-
-            // Show compression message if file is large
-            if (originalSizeKB > 100) {
-                toast.loading('Image is too large, reducing image size...', { id: 'compress' });
-            }
-
-            // Compress the image to max 100KB
-            const compressedBase64 = await compressImage(file, 100);
-
-            // Dismiss compression toast
-            if (originalSizeKB > 100) {
-                toast.dismiss('compress');
-                toast.success('Image compressed successfully');
-            }
-
-            try {
-                // Try to save to localStorage
-                localStorage.setItem(`avatar_${currentUser.email}`, compressedBase64);
-            } catch (storageError) {
-                // If quota exceeded, clear old avatars and retry
-                if (storageError instanceof Error && storageError.name === 'QuotaExceededError') {
-                    toast.loading('Storage full, clearing old images...', { id: 'clear' });
-                    clearAllAvatars();
-                    toast.dismiss('clear');
-
-                    // Retry saving
-                    try {
-                        localStorage.setItem(`avatar_${currentUser.email}`, compressedBase64);
-                        toast.success('Old images cleared, profile picture saved');
-                    } catch (retryError) {
-                        throw new Error('Storage quota exceeded even after clearing. Image may be too large.');
-                    }
-                } else {
-                    throw storageError;
-                }
-            }
-
-            // Update the user with new avatar URL (which is now a compressed data URI)
-            const updatedUser: UserDto = {
-                ...currentUser,
-                avatar_url: compressedBase64,
-            };
-
-            // Update Zustand store
-            setUser(updatedUser);
-            setAvatarPreview(compressedBase64);
-
-            toast.success('Profile picture updated successfully');
-
-        } catch (error) {
-            console.error('Avatar upload error:', error);
-            toast.error(error instanceof Error ? error.message : 'Failed to save profile picture');
-            // Revert to saved
-            const localAvatar = localStorage.getItem(`avatar_${currentUser.email}`);
-            setAvatarPreview(localAvatar || currentUser?.avatar_url || null);
-        } finally {
-            setUploadingAvatar(false);
-        }
-    };
-
-    const clearAvatar = () => {
-        setAvatarPreview(null);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -450,40 +333,6 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
                                     <option value="aunt">Aunt</option>
                                 </select>
                             </div>
-                        </div>
-                    </div>
-
-                    <div className="update-profile-form__section">
-                        <h2 className="update-profile-form__section-title">Profile Picture</h2>
-                        <div className="update-profile-form__field">
-                            {avatarPreview && (
-                                <div className="update-profile-form__avatar-preview">
-                                    <img src={avatarPreview} alt="Avatar preview" />
-                                    <button
-                                        type="button"
-                                        className="update-profile-form__avatar-remove"
-                                        onClick={clearAvatar}
-                                        disabled={uploadingAvatar}
-                                    >
-                                        <X size={16} />
-                                    </button>
-                                </div>
-                            )}
-                            <label className="update-profile-form__file-label">
-                                <input
-                                    type="file"
-                                    name="avatar"
-                                    accept="image/*"
-                                    onChange={handleAvatarChange}
-                                    disabled={uploadingAvatar}
-                                    className="update-profile-form__file-input"
-                                />
-                                <div className="update-profile-form__file-input-display">
-                                    <Upload size={20} />
-                                    <span>{uploadingAvatar ? 'Uploading...' : 'Click to upload or drag and drop'}</span>
-                                    <p className="update-profile-form__hint">PNG, JPG, GIF up to 5MB</p>
-                                </div>
-                            </label>
                         </div>
                     </div>
 

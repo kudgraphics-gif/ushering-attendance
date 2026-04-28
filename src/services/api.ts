@@ -802,6 +802,64 @@ export const suggestionsAPI = {
     },
 };
 
+// Volunteers API
+export const volunteersAPI = {
+    create: async (payload: {
+        address: string;
+        city: string;
+        country: string;
+        dob: string;
+        email: string;
+        first_name: string;
+        gender: string;
+        last_name: string;
+        local_church: string;
+        password: string;
+        phone: string;
+        role: 'Ksom';
+        state: string;
+        year_joined: string;
+    }): Promise<{ message: string }> => {
+        return apiCall<{ message: string }>('POST', '/volunteers/create', payload);
+    },
+
+    login: async (payload: { email: string; password: string }): Promise<{
+        token: string;
+        volunteer: import('../types').VolunteerDto;
+    }> => {
+        return apiCall<{ token: string; volunteer: import('../types').VolunteerDto }>(
+            'POST', '/volunteers/login', payload
+        );
+    },
+
+    getAll: async (
+        token: string,
+        page?: number,
+        limit?: number,
+        search?: string,
+        is_active?: boolean
+    ): Promise<{
+        items: import('../types').VolunteerDto[];
+        metadata: { num_pages: number; page: number; size: number; total_items: number };
+    }> => {
+        const params = new URLSearchParams();
+        if (page !== undefined) params.append('page', page.toString());
+        if (limit !== undefined) params.append('limit', limit.toString());
+        if (search) params.append('search', search);
+        if (is_active !== undefined) params.append('is_active', is_active.toString());
+        const query = params.toString() ? `?${params.toString()}` : '';
+        return apiCall(`GET`, `/volunteers/admin/get_all${query}`, undefined, token);
+    },
+
+    getById: async (id: string, token: string): Promise<import('../types').VolunteerDto> => {
+        return apiCall<import('../types').VolunteerDto>('GET', `/volunteers/get/${id}`, undefined, token);
+    },
+
+    update: async (id: string, payload: Partial<import('../types').VolunteerDto>, token: string): Promise<{ message: string }> => {
+        return apiCall<{ message: string }>('PATCH', `/volunteers/update/${id}`, payload, token);
+    },
+};
+
 // Halls API
 export const hallsAPI = {
     getAll: async (token: string): Promise<Hall[]> => {

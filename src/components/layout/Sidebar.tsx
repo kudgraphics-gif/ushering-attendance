@@ -14,6 +14,7 @@ import {
     MessageSquare,
     MapPin,
     BarChart2,
+    Heart,
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { useSidebarStore } from '../../stores/sidebarStore';
@@ -24,6 +25,7 @@ const adminNavItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { icon: Calendar, label: 'Events', path: '/events' },
     { icon: Users, label: 'Users', path: '/users' },
+    { icon: Heart, label: 'Volunteers', path: '/volunteers' },
     { icon: ClipboardCheck, label: 'Attendance', path: '/attendance' },
     { icon: DollarSign, label: 'Payments', path: '/payments' },
     { icon: Music, label: 'Koinonia', path: '/koinonia' },

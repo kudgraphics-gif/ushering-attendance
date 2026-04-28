@@ -1,0 +1,272 @@
+.volunteers-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xl);
+    padding: var(--space-xl);
+    min-height: 100%;
+}
+
+.volunteers-page__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+}
+
+.volunteers-page__title {
+    font-size: var(--text-3xl);
+    font-weight: var(--font-weight-bold);
+    margin: 0;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.volunteers-page__subtitle {
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+    margin: 4px 0 0;
+}
+
+.volunteers-page__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.volunteers-page__search-card {
+    padding: var(--space-md) var(--space-lg);
+}
+
+.volunteers-page__search {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.volunteers-page__search-icon {
+    color: var(--color-text-tertiary);
+    flex-shrink: 0;
+}
+
+.volunteers-page__search-input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--color-text-primary);
+    font-size: var(--text-base);
+    font-family: inherit;
+}
+
+.volunteers-page__search-input::placeholder {
+    color: var(--color-text-tertiary);
+}
+
+/* Grid */
+.volunteers-page__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-lg);
+}
+
+/* Loading / Empty */
+.volunteers-page__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    padding: var(--space-3xl);
+    color: var(--color-text-secondary);
+}
+
+.volunteers-page__spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255,255,255,0.1);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.volunteers-page__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    padding: var(--space-3xl);
+    color: var(--color-text-tertiary);
+}
+
+/* Pagination */
+.volunteers-page__pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+}
+
+.volunteers-page__page-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    color: var(--color-text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.volunteers-page__page-btn:hover:not(:disabled) {
+    background: rgba(255,255,255,0.1);
+    border-color: var(--color-primary);
+}
+
+.volunteers-page__page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.volunteers-page__page-info {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+}
+
+/* Volunteer Card */
+.volunteer-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    padding: var(--space-lg) !important;
+    transition: all 0.2s ease;
+}
+
+.volunteer-card__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.volunteer-card__badges {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.volunteer-card__role-badge {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #D4AF37;
+    background: rgba(212, 175, 55, 0.12);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 100px;
+    padding: 2px 8px;
+}
+
+.volunteer-card__content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.volunteer-card__name {
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-semibold);
+    margin: 0;
+    color: var(--color-text-primary);
+}
+
+.volunteer-card__email {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.volunteer-card__reg {
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+    margin: 0;
+    font-family: monospace;
+}
+
+.volunteer-card__details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: var(--space-sm);
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.volunteer-card__detail {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: var(--text-sm);
+}
+
+.volunteer-card__detail-label {
+    color: var(--color-text-tertiary);
+}
+
+.volunteer-card__detail-value {
+    color: var(--color-text-primary);
+    font-weight: 500;
+    max-width: 60%;
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.volunteer-card__actions {
+    display: flex;
+    gap: var(--space-xs);
+    padding-top: var(--space-sm);
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.volunteer-card__action-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.04);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: var(--text-sm);
+}
+
+.volunteer-card__action-btn:hover {
+    background: rgba(255,255,255,0.08);
+    color: var(--color-text-primary);
+    border-color: var(--color-primary);
+}
+
+@media (max-width: 768px) {
+    .volunteers-page {
+        padding: var(--space-md);
+    }
+    .volunteers-page__grid {
+        grid-template-columns: 1fr;
+    }
+}

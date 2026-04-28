@@ -19,9 +19,12 @@ import { GroupsPage } from './pages/GroupsPage';
 import { SuggestionBoxPage } from './pages/SuggestionBoxPage';
 import { ReportsPage } from './pages/ReportsPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
+import { VolunteersPage } from './pages/VolunteersPage';
+import { VolunteerDashboardPage } from './pages/VolunteerDashboardPage';
 import { MainLayout } from './components/layout/MainLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { useAuthStore } from './stores/authStore';
+import { useVolunteerAuthStore } from './stores/volunteerAuthStore';
 import { useEffect } from 'react';
 
 function App() {
@@ -29,6 +32,7 @@ function App() {
   const user = useAuthStore((state) => state.user);
   const updateActivity = useAuthStore((state) => state.updateActivity);
   const checkInactivity = useAuthStore((state) => state.checkInactivity);
+  const isVolunteerAuthenticated = useVolunteerAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
     const handleActivity = () => {
@@ -69,6 +73,12 @@ function App() {
         />
         <Route path="/register-volunteer" element={<RegisterVolunteerPage />} />
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+
+        {/* ── Volunteer routes ── */}
+        <Route
+          path="/volunteer-dashboard"
+          element={isVolunteerAuthenticated ? <VolunteerDashboardPage /> : <Navigate to="/login" replace />}
+        />
 
         {/* ── Protected routes (authenticated users) ── */}
         <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
@@ -116,6 +126,10 @@ function App() {
           <Route
             path="/reports"
             element={<ProtectedRoute allowedRoles={['Admin']}><ReportsPage /></ProtectedRoute>}
+          />
+          <Route
+            path="/volunteers"
+            element={<ProtectedRoute allowedRoles={['Admin']}><VolunteersPage /></ProtectedRoute>}
           />
         </Route>
 

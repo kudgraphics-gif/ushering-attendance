@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Download, Upload, AlertCircle, Grid3x3, List, LogIn, Eye, Trash2, Edit2, UserCheck, UserX, AlertTriangle, Zap } from 'lucide-react';
+import { Plus, Search, Download, Upload, AlertCircle, Grid3x3, List, LogIn, Eye, Trash2, Edit2, UserCheck, UserX, AlertTriangle, Zap, Filter } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -30,6 +30,7 @@ export function UsersPage() {
     const [exporting, setExporting] = useState(false);
     const [importing, setImporting] = useState(false);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [showOnlyStrikes, setShowOnlyStrikes] = useState(false);
     const { token, user: currentUser } = useAuthStore();
 
     useEffect(() => {
@@ -124,9 +125,11 @@ export function UsersPage() {
         }
     };
 
-    const filteredUsers = users.filter(user =>
-        `${user.first_name} ${user.last_name} ${user.email}`.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredUsers = users.filter(user => {
+        const matchesSearch = `${user.first_name} ${user.last_name} ${user.email}`.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesStrike = showOnlyStrikes ? (user.strike && user.strike > 0) : true;
+        return matchesSearch && matchesStrike;
+    });
 
     const handleAddUser = () => {
         setSelectedUser(undefined);
@@ -295,6 +298,16 @@ export function UsersPage() {
                             title="List view"
                         >
                             <List size={20} />
+                        </button>
+                        <button
+                            id="filter-strikes-btn"
+                            className={`users-page__view-btn ${showOnlyStrikes ? 'users-page__view-btn--active users-page__view-btn--strike' : ''}`}
+                            onClick={() => setShowOnlyStrikes(v => !v)}
+                            title={showOnlyStrikes ? 'Show all users' : 'Show only users with strikes'}
+                            style={showOnlyStrikes ? { color: '#ff9500', borderColor: 'rgba(255,149,0,0.4)' } : {}}
+                        >
+                            <Filter size={20} />
+                            {showOnlyStrikes && <span style={{ fontSize: '11px', fontWeight: 600, marginLeft: 2 }}>Strikes</span>}
                         </button>
                     </div>
                     <div className="file-input-wrapper">
