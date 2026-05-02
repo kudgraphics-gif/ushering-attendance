@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit2, Trash2, AlertCircle, Play, Users, UserPlus, Search, X, MapPin } from 'lucide-react';
+import { Plus, Edit2, Trash2, AlertCircle, Play, Users, UserPlus, Search, X, MapPin, Share2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '../components/ui/Card';
@@ -236,6 +236,17 @@ export function RosterManagementPage() {
         }
     };
 
+    const handleShareRoster = async (roster: Roster) => {
+        if (!token) return;
+        try {
+            const res = await rosterAPI.share(roster.id, token);
+            toast.success(res.message || "Roster shared successfully");
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Failed to share roster");
+            console.error(error);
+        }
+    };
+
     const handleViewAssignments = (roster: Roster) => {
         navigate(`/roster/${roster.id}`);
     };
@@ -368,6 +379,14 @@ export function RosterManagementPage() {
                                                 style={roster.is_active ? { color: 'var(--color-success)', borderColor: 'var(--color-success)' } : {}}
                                             >
                                                 <Play size={18} fill={roster.is_active ? "currentColor" : "none"} />
+                                            </button>
+
+                                            <button
+                                                className="roster-card__action-btn"
+                                                title="Share Roster"
+                                                onClick={() => handleShareRoster(roster)}
+                                            >
+                                                <Share2 size={18} />
                                             </button>
 
                                             <button

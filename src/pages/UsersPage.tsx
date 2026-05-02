@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Download, Upload, AlertCircle, Grid3x3, List, LogIn, Eye, Trash2, Edit2, UserCheck, UserX, AlertTriangle, Zap, Filter } from 'lucide-react';
+import { Plus, Search, Download, Upload, AlertCircle, Grid3x3, List, LogIn, Eye, Trash2, Edit2, UserCheck, UserX, AlertTriangle, Zap, Filter, ZapOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -271,6 +271,28 @@ export function UsersPage() {
         }
     };
 
+    const handleRevokeStrike = async (userId: string, userName: string) => {
+        if (!token) {
+            toast.error('Not authenticated');
+            return;
+        }
+
+        const confirmRevoke = window.confirm(
+            `Are you sure you want to revoke a strike from ${userName}?`
+        );
+
+        if (!confirmRevoke) return;
+
+        try {
+            await usersAPI.revokeStrike(userId, token);
+            setUsers(users.map(u => u.id === userId ? { ...u, strike: Math.max(0, (u.strike || 0) - 1) } : u));
+            toast.success(`Strike revoked from ${userName}`);
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Failed to revoke strike');
+            console.error(error);
+        }
+    };
+
     return (
         <motion.div
             className="users-page"
@@ -381,6 +403,7 @@ export function UsersPage() {
                             onDelete={handleDeleteUser}
                             onToggleStatus={handleToggleStatus}
                             onAddStrike={handleAddStrike}
+                            onRevokeStrike={handleRevokeStrike}
                             onViewDetails={handleViewDetails}
                             isCheckingIn={checkingInUser === user.id}
                             isAdmin={currentUser?.role === 'Admin'}
@@ -441,6 +464,7 @@ function UserCard({
     onDelete,
     onToggleStatus,
     onAddStrike,
+    onRevokeStrike,
     onViewDetails,
     isCheckingIn,
     isAdmin,
@@ -453,6 +477,7 @@ function UserCard({
     onDelete: (userId: string, userName: string) => Promise<void>;
     onToggleStatus: (user: UserDto) => Promise<void>;
     onAddStrike: (userId: string, userName: string) => Promise<void>;
+    onRevokeStrike: (userId: string, userName: string) => Promise<void>;
     onViewDetails: (user: UserDto) => void;
     isCheckingIn: boolean;
     isAdmin: boolean;
@@ -549,15 +574,26 @@ function UserCard({
                             {user.is_active ? <UserX size={20} /> : <UserCheck size={20} />}
                         </button>
                     )}
-                    {/* Add Strike Button */}
+                    {/* Add/Revoke Strike Button */}
                     {isAdmin && (
-                        <button
-                            className="user-card__action-btn user-card__action-btn--strike"
-                            title="Add Strike"
-                            onClick={() => onAddStrike(user.id, `${user.first_name} ${user.last_name}`)}
-                        >
-                            <Zap size={20} />
-                        </button>
+                        (user.strike || 0) > 0 ? (
+                            <button
+                                className="user-card__action-btn user-card__action-btn--strike"
+                                title="Revoke Strike"
+                                onClick={() => onRevokeStrike(user.id, `${user.first_name} ${user.last_name}`)}
+                                style={{ color: 'var(--color-warning)' }}
+                            >
+                                <ZapOff size={20} />
+                            </button>
+                        ) : (
+                            <button
+                                className="user-card__action-btn user-card__action-btn--strike"
+                                title="Add Strike"
+                                onClick={() => onAddStrike(user.id, `${user.first_name} ${user.last_name}`)}
+                            >
+                                <Zap size={20} />
+                            </button>
+                        )
                     )}
                     {isAdmin && (
                         <button

@@ -291,6 +291,15 @@ export const usersAPI = {
             token
         );
     },
+
+    revokeStrike: async (userId: string, token: string): Promise<{ message: string; data: null }> => {
+        return apiCall<{ message: string; data: null }>(
+            'PATCH',
+            `/users/admin/revoke-strike/${userId}`,
+            undefined,
+            token
+        );
+    },
 };
 
 // Attendance APIs
@@ -612,6 +621,15 @@ export const rosterAPI = {
         return apiCall<{ message: string }>(
             'PATCH',
             `/roster/activate-gendered/${id}`,
+            undefined,
+            token
+        );
+    },
+
+    share: async (id: string, token: string): Promise<{ message: string }> => {
+        return apiCall<{ message: string }>(
+            'GET',
+            `/roster/share/${id}`,
             undefined,
             token
         );
