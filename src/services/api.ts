@@ -610,7 +610,7 @@ export const rosterAPI = {
 
     activate: async (id: string, token: string): Promise<{ message: string }> => {
         return apiCall<{ message: string }>(
-            'POST',
+            'PATCH',
             `/roster/activate-gendered/${id}`,
             undefined,
             token
@@ -820,7 +820,25 @@ export const volunteersAPI = {
         state: string;
         year_joined: string;
     }): Promise<{ message: string }> => {
-        return apiCall<{ message: string }>('POST', '/volunteers/create', payload);
+        // Ensure only the allowed keys are sent to the API (defensive sanitization)
+        const body = {
+            address: payload.address,
+            city: payload.city,
+            country: payload.country,
+            dob: payload.dob,
+            email: payload.email,
+            first_name: payload.first_name,
+            gender: payload.gender,
+            last_name: payload.last_name,
+            local_church: payload.local_church,
+            password: payload.password,
+            phone: payload.phone,
+            role: payload.role,
+            state: payload.state,
+            year_joined: payload.year_joined,
+        };
+
+        return apiCall<{ message: string }>('POST', '/volunteers/create', body);
     },
 
     login: async (payload: { email: string; password: string }): Promise<{

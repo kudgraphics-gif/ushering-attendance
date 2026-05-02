@@ -76,14 +76,27 @@ export function RegisterVolunteerPage() {
 
     setLoading(true);
     try {
-      // Format dob to ISO if provided
-      let dobISO = formData.dob ? `${formData.dob}T00:00:00.000Z` : new Date().toISOString();
+      // Ensure `dob` is sent as a full ISO timestamp string (YYYY-MM-DDTHH:mm:ss.sssZ).
+      // - If the user already provided a timestamp (contains 'T' or 'Z'), send it unchanged.
+      // - If the user provided a date-only value (YYYY-MM-DD), convert to ISO at UTC midnight.
+      // - If empty, default to current time in ISO format.
+      let dob = '';
+      if (formData.dob) {
+        if (formData.dob.includes('T') || formData.dob.includes('Z')) {
+          dob = formData.dob;
+        } else {
+          // Convert date-only to full ISO (assume UTC midnight for the date)
+          dob = new Date(formData.dob + 'T00:00:00.000Z').toISOString();
+        }
+      } else {
+        dob = new Date().toISOString();
+      }
 
       await volunteersAPI.create({
         address: formData.address,
         city: formData.city,
         country: formData.country,
-        dob: dobISO,
+        dob: dob,
         email: formData.email,
         first_name: formData.first_name,
         gender: formData.gender,
