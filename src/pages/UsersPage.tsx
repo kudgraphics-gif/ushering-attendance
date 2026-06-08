@@ -574,26 +574,29 @@ function UserCard({
                             {user.is_active ? <UserX size={20} /> : <UserCheck size={20} />}
                         </button>
                     )}
-                    {/* Add/Revoke Strike Button */}
+                    {/* Add Strike Button — disabled at max 3 */}
                     {isAdmin && (
-                        (user.strike || 0) > 0 ? (
-                            <button
-                                className="user-card__action-btn user-card__action-btn--strike"
-                                title="Revoke Strike"
-                                onClick={() => onRevokeStrike(user.id, `${user.first_name} ${user.last_name}`)}
-                                style={{ color: 'var(--color-warning)' }}
-                            >
-                                <ZapOff size={20} />
-                            </button>
-                        ) : (
-                            <button
-                                className="user-card__action-btn user-card__action-btn--strike"
-                                title="Add Strike"
-                                onClick={() => onAddStrike(user.id, `${user.first_name} ${user.last_name}`)}
-                            >
-                                <Zap size={20} />
-                            </button>
-                        )
+                        <button
+                            className="user-card__action-btn user-card__action-btn--strike"
+                            title={(user.strike || 0) >= 3 ? 'Max strikes reached (3)' : 'Add Strike'}
+                            onClick={() => onAddStrike(user.id, `${user.first_name} ${user.last_name}`)}
+                            disabled={(user.strike || 0) >= 3}
+                            style={{ opacity: (user.strike || 0) >= 3 ? 0.35 : 1 }}
+                        >
+                            <Zap size={20} />
+                        </button>
+                    )}
+                    {/* Revoke Strike Button — disabled at 0 */}
+                    {isAdmin && (
+                        <button
+                            className="user-card__action-btn user-card__action-btn--strike"
+                            title={(user.strike || 0) === 0 ? 'No strikes to revoke' : 'Revoke Strike'}
+                            onClick={() => onRevokeStrike(user.id, `${user.first_name} ${user.last_name}`)}
+                            disabled={(user.strike || 0) === 0}
+                            style={{ color: (user.strike || 0) > 0 ? 'var(--color-warning)' : undefined, opacity: (user.strike || 0) === 0 ? 0.35 : 1 }}
+                        >
+                            <ZapOff size={20} />
+                        </button>
                     )}
                     {isAdmin && (
                         <button
