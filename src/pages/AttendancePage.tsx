@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import DataTable from 'react-data-table-component';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     Users,
     CheckCircle2,
@@ -11,13 +11,16 @@ import {
     Clock,
     Calendar,
     Activity,
-    LogOut
+    LogOut,
+    ChevronDown,
+    UserCheck,
+    UserX
 } from 'lucide-react';
 import { format, isValid } from 'date-fns';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import toast from 'react-hot-toast';
 
-import { analyticsAPI, usersAPI, attendanceRevokeAPI, usersExportAPI, attendanceAPI } from '../services/api';
+import { analyticsAPI, usersAPI, attendanceRevokeAPI, attendanceAPI } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -34,6 +37,8 @@ export function AttendancePage() {
     const [activeTab, setActiveTab] = useState<'presentees' | 'absentees'>('presentees');
     const [filterText, setFilterText] = useState('');
     const [rowsPerPage] = useState(10);
+    const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
+    const exportDropdownRef = useRef<HTMLDivElement>(null);
     const { token, user } = useAuthStore();
 
     useEffect(() => {
@@ -41,6 +46,17 @@ export function AttendancePage() {
             fetchAttendanceData();
         }
     }, [selectedDate, token]);
+
+    // Close export dropdown on outside click
+    useEffect(() => {
+        const handler = (e: MouseEvent) => {
+            if (exportDropdownRef.current && !exportDropdownRef.current.contains(e.target as Node)) {
+                setExportDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
 
     const fetchAttendanceData = async () => {
         if (!token) return;
@@ -253,22 +269,76 @@ export function AttendancePage() {
         );
     };
 
-    const handleExport = async () => {
-        if (!token) return;
-        try {
-            const blob = await usersExportAPI.exportUsers(token);
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `attendance_export_${new Date().toISOString().split('T')[0]}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-        } catch (error) {
-            console.error(error);
-            toast.error('Failed to export data');
+    const exportToCSV = (type: 'presentees' | 'absentees') => {
+        const data = type === 'presentees' ? presentees : absentees;
+        const label = type === 'presentees' ? 'Presentees' : 'Absentees';
+
+        if (data.length === 0) {
+            toast.error(`No ${label.toLowerCase()} to export for ${selectedDate}`);
+            return;
         }
+
+        // Build CSV rows
+        const headers =
+            type === 'presentees'
+                ? ['S/N', 'First Name', 'Last Name', 'Reg No', 'Email', 'Phone', 'Time In', 'Date', 'Day', 'Attendance Type']
+                : ['S/N', 'First Name', 'Last Name', 'Reg No', 'Email', 'Phone'];
+
+        const rows = data.map((row: any, index: number) => {
+            const timeIn = row.attendance_time_in
+                ? format(new Date(row.attendance_time_in), 'h:mm a')
+                : '';
+            const dateFormatted = row.attendance_date
+                ? format(new Date(row.attendance_date), 'yyyy-MM-dd')
+                : selectedDate;
+
+            if (type === 'presentees') {
+                return [
+                    index + 1,
+                    row.first_name || '',
+                    row.last_name || '',
+                    row.reg_no || '',
+                    row.email || '',
+                    row.phone || '',
+                    timeIn,
+                    dateFormatted,
+                    row.attendance_weekday || '',
+                    row.attendance_type || '',
+                ];
+            } else {
+                return [
+                    index + 1,
+                    row.first_name || '',
+                    row.last_name || '',
+                    row.reg_no || '',
+                    row.email || '',
+                    row.phone || '',
+                ];
+            }
+        });
+
+        const csvContent = [
+            // Title row
+            [`${label} — ${format(new Date(selectedDate), 'EEEE, MMMM d, yyyy')}`],
+            [],
+            headers,
+            ...rows,
+        ]
+            .map(row => row.map((cell: any) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+            .join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${type}_${selectedDate}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        toast.success(`${label} exported successfully (${data.length} records)`);
+        setExportDropdownOpen(false);
     };
 
     // Filter logic
@@ -416,9 +486,95 @@ export function AttendancePage() {
                     <p className="attendance-page__subtitle">Track and manage attendance records</p>
                 </div>
                 <div className="attendance-page__actions">
-                    <Button variant="secondary" icon={<Upload size={20} />} onClick={handleExport}>
-                        Export
-                    </Button>
+                    {/* Export dropdown */}
+                    <div style={{ position: 'relative' }} ref={exportDropdownRef}>
+                        <Button
+                            variant="secondary"
+                            icon={<Upload size={20} />}
+                            onClick={() => setExportDropdownOpen(prev => !prev)}
+                        >
+                            Export <ChevronDown size={16} style={{ marginLeft: '4px', transition: 'transform 0.2s', transform: exportDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+                        </Button>
+                        <AnimatePresence>
+                            {exportDropdownOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                                    transition={{ duration: 0.15 }}
+                                    style={{
+                                        position: 'absolute',
+                                        top: 'calc(100% + 8px)',
+                                        right: 0,
+                                        minWidth: '220px',
+                                        background: 'var(--surface-card, #1a1f2e)',
+                                        border: '1px solid var(--border-color, rgba(255,255,255,0.1))',
+                                        borderRadius: '12px',
+                                        boxShadow: '0 16px 40px rgba(0,0,0,0.4)',
+                                        backdropFilter: 'blur(20px)',
+                                        overflow: 'hidden',
+                                        zIndex: 999,
+                                    }}
+                                >
+                                    <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-color, rgba(255,255,255,0.08))' }}>
+                                        <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.8px', margin: 0 }}>
+                                            Export for {format(new Date(selectedDate), 'MMM d, yyyy')}
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => exportToCSV('presentees')}
+                                        style={{
+                                            width: '100%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '10px',
+                                            padding: '12px 16px',
+                                            background: 'none',
+                                            border: 'none',
+                                            color: 'var(--text-primary, #fff)',
+                                            fontSize: '14px',
+                                            cursor: 'pointer',
+                                            textAlign: 'left',
+                                            transition: 'background 0.15s',
+                                        }}
+                                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)')}
+                                        onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+                                    >
+                                        <UserCheck size={16} style={{ color: '#10B981', flexShrink: 0 }} />
+                                        <div>
+                                            <div style={{ fontWeight: 600 }}>Presentees</div>
+                                            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>{presentees.length} members present</div>
+                                        </div>
+                                    </button>
+                                    <button
+                                        onClick={() => exportToCSV('absentees')}
+                                        style={{
+                                            width: '100%',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '10px',
+                                            padding: '12px 16px',
+                                            background: 'none',
+                                            border: 'none',
+                                            color: 'var(--text-primary, #fff)',
+                                            fontSize: '14px',
+                                            cursor: 'pointer',
+                                            textAlign: 'left',
+                                            transition: 'background 0.15s',
+                                        }}
+                                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)')}
+                                        onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+                                    >
+                                        <UserX size={16} style={{ color: '#EF4444', flexShrink: 0 }} />
+                                        <div>
+                                            <div style={{ fontWeight: 600 }}>Absentees</div>
+                                            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>{absentees.length} members absent</div>
+                                        </div>
+                                    </button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
                     {user?.is_cleaning_day && isCheckoutAvailable() && (
                         <Button
                             variant="secondary"
