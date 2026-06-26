@@ -193,6 +193,52 @@
     border-color: rgba(212, 175, 55, 0.5);
 }
 
+/* ── Export dropdown ──────────────────────────────────────────────── */
+.rp-export-dropdown {
+    position: relative;
+}
+
+.rp-export-dropdown__dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 6px;
+    min-width: 220px;
+    max-width: 90vw;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    z-index: 200;
+}
+
+.rp-export-dropdown__option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 9px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 120ms ease;
+}
+
+.rp-export-dropdown__option:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.rp-export-dropdown__option svg {
+    color: #D4AF37;
+    opacity: 0.85;
+}
+
 /* ── Icon buttons ────────────────────────────────────────────────── */
 .rp-icon-btn {
     display: flex;

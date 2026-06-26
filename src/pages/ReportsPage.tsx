@@ -173,6 +173,10 @@ function ReportsPageContent() {
     const [periodOpen, setPeriodOpen] = useState(false);
     const periodRef = useRef<HTMLDivElement>(null);
 
+    // ── Export state ──
+    const [exportOpen, setExportOpen] = useState(false);
+    const exportRef = useRef<HTMLDivElement>(null);
+
     // ── Data state ──
     const [reportData, setReportData] = useState<ReportData | null>(null);
     const [loading, setLoading] = useState(false);
@@ -222,6 +226,9 @@ function ReportsPageContent() {
         const handler = (e: MouseEvent) => {
             if (periodRef.current && !periodRef.current.contains(e.target as Node)) {
                 setPeriodOpen(false);
+            }
+            if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
+                setExportOpen(false);
             }
         };
         document.addEventListener('mousedown', handler);
@@ -430,40 +437,190 @@ function ReportsPageContent() {
             : <ChevronDown size={14} className="rp-th-sort-icon rp-th-sort-icon--active" />;
     };
 
-    const exportCSV = useCallback(() => {
+    const exportCSV = useCallback((type: 'full' | 'weekly' | 'hall' | 'event') => {
         if (!filteredRows.length) return;
-        const headers = [
-            'Full Name', 'Reg No', 'Role', 'Gender', 'Hall',
-            'Main Service Possible', 'Hall Possible', 'Event Possible',
-            'Main Service Present', 'Hall Present', 'Event Present',
-            'Main Service Absent', 'Hall Absent', 'Event Absent',
-            'Rate (%)',
-        ];
-        const rows = filteredRows.map(r => [
-            `${r.user.first_name} ${r.user.last_name}`,
-            r.user.reg_no,
-            r.user.role,
-            r.user.gender || 'N/A',
-            r.user.current_roster_hall || 'Unassigned',
-            r.total_weekly_possible_attendance,
-            r.total_hall_possible_attendance,
-            r.total_event_possible_attendance,
-            r.total_weekly_attendance_present,
-            r.total_hall_attendance_present,
-            r.total_event_attendance_present,
-            r.total_weekly_attendance_absent,
-            r.total_hall_attendance_absent,
-            r.total_event_attendance_absent,
-            r.attendance_rate.toFixed(1),
-        ]);
+
+        let headers: string[] = [];
+        let rows: (string | number)[][] = [];
+        let filename = '';
+
+        if (type === 'full') {
+            headers = [
+                'Full Name', 'Reg No', 'Role', 'Gender', 'Hall',
+                'Main Service Possible', 'Hall Possible', 'Event Possible',
+                'Main Service Present', 'Hall Present', 'Event Present',
+                'Main Service Absent', 'Hall Absent', 'Event Absent',
+                'Rate (%)',
+            ];
+            rows = filteredRows.map(r => [
+                `"${r.user.first_name} ${r.user.last_name}"`,
+                r.user.reg_no,
+                r.user.role,
+                r.user.gender || 'N/A',
+                r.user.current_roster_hall || 'Unassigned',
+                r.total_weekly_possible_attendance,
+                r.total_hall_possible_attendance,
+                r.total_event_possible_attendance,
+                r.total_weekly_attendance_present,
+                r.total_hall_attendance_present,
+                r.total_event_attendance_present,
+                r.total_weekly_attendance_absent,
+                r.total_hall_attendance_absent,
+                r.total_event_attendance_absent,
+                r.attendance_rate.toFixed(1),
+            ]);
+
+            // Calculate aggregates
+            const totalWeeklyPossible = filteredRows.reduce((s, r) => s + r.total_weekly_possible_attendance, 0);
+            const totalHallPossible = filteredRows.reduce((s, r) => s + r.total_hall_possible_attendance, 0);
+            const totalEventPossible = filteredRows.reduce((s, r) => s + r.total_event_possible_attendance, 0);
+            
+            const totalWeeklyPresent = filteredRows.reduce((s, r) => s + r.total_weekly_attendance_present, 0);
+            const totalHallPresent = filteredRows.reduce((s, r) => s + r.total_hall_attendance_present, 0);
+            const totalEventPresent = filteredRows.reduce((s, r) => s + r.total_event_attendance_present, 0);
+
+            const totalWeeklyAbsent = filteredRows.reduce((s, r) => s + r.total_weekly_attendance_absent, 0);
+            const totalHallAbsent = filteredRows.reduce((s, r) => s + r.total_hall_attendance_absent, 0);
+            const totalEventAbsent = filteredRows.reduce((s, r) => s + r.total_event_attendance_absent, 0);
+
+            const grandTotalPossible = totalWeeklyPossible + totalHallPossible + totalEventPossible;
+            const grandTotalPresent = totalWeeklyPresent + totalHallPresent + totalEventPresent;
+            const grandRate = grandTotalPossible > 0 ? (grandTotalPresent / grandTotalPossible) * 100 : 0.0;
+
+            const summaryRow = [
+                '"Total / Average"', '', '', '', '',
+                totalWeeklyPossible, totalHallPossible, totalEventPossible,
+                totalWeeklyPresent, totalHallPresent, totalEventPresent,
+                totalWeeklyAbsent, totalHallAbsent, totalEventAbsent,
+                grandRate.toFixed(1),
+            ];
+            rows.push(summaryRow);
+            filename = `attendance-report-full-${reportData?.period_label || 'export'}.csv`;
+
+        } else if (type === 'weekly') {
+            headers = [
+                'Full Name', 'Reg No', 'Role', 'Gender', 'Hall',
+                'Main Service Possible', 'Main Service Present', 'Main Service Absent',
+                'Main Service Rate (%)',
+            ];
+            rows = filteredRows.map(r => {
+                const possible = r.total_weekly_possible_attendance;
+                const present = r.total_weekly_attendance_present;
+                const absent = r.total_weekly_attendance_absent;
+                const rate = possible > 0 ? (present / possible) * 100 : 0.0;
+                return [
+                    `"${r.user.first_name} ${r.user.last_name}"`,
+                    r.user.reg_no,
+                    r.user.role,
+                    r.user.gender || 'N/A',
+                    r.user.current_roster_hall || 'Unassigned',
+                    possible,
+                    present,
+                    absent,
+                    rate.toFixed(1),
+                ];
+            });
+
+            // Calculate aggregates
+            const totalPossible = filteredRows.reduce((s, r) => s + r.total_weekly_possible_attendance, 0);
+            const totalPresent = filteredRows.reduce((s, r) => s + r.total_weekly_attendance_present, 0);
+            const totalAbsent = filteredRows.reduce((s, r) => s + r.total_weekly_attendance_absent, 0);
+            const overallRate = totalPossible > 0 ? (totalPresent / totalPossible) * 100 : 0.0;
+
+            const summaryRow = [
+                '"Total / Average"', '', '', '', '',
+                totalPossible, totalPresent, totalAbsent,
+                overallRate.toFixed(1),
+            ];
+            rows.push(summaryRow);
+            filename = `attendance-report-main-services-${reportData?.period_label || 'export'}.csv`;
+
+        } else if (type === 'hall') {
+            headers = [
+                'Full Name', 'Reg No', 'Role', 'Gender', 'Hall',
+                'Hall Cleaning Possible', 'Hall Cleaning Present', 'Hall Cleaning Absent',
+                'Hall Cleaning Rate (%)',
+            ];
+            rows = filteredRows.map(r => {
+                const possible = r.total_hall_possible_attendance;
+                const present = r.total_hall_attendance_present;
+                const absent = r.total_hall_attendance_absent;
+                const rate = possible > 0 ? (present / possible) * 100 : 0.0;
+                return [
+                    `"${r.user.first_name} ${r.user.last_name}"`,
+                    r.user.reg_no,
+                    r.user.role,
+                    r.user.gender || 'N/A',
+                    r.user.current_roster_hall || 'Unassigned',
+                    possible,
+                    present,
+                    absent,
+                    rate.toFixed(1),
+                ];
+            });
+
+            // Calculate aggregates
+            const totalPossible = filteredRows.reduce((s, r) => s + r.total_hall_possible_attendance, 0);
+            const totalPresent = filteredRows.reduce((s, r) => s + r.total_hall_attendance_present, 0);
+            const totalAbsent = filteredRows.reduce((s, r) => s + r.total_hall_attendance_absent, 0);
+            const overallRate = totalPossible > 0 ? (totalPresent / totalPossible) * 100 : 0.0;
+
+            const summaryRow = [
+                '"Total / Average"', '', '', '', '',
+                totalPossible, totalPresent, totalAbsent,
+                overallRate.toFixed(1),
+            ];
+            rows.push(summaryRow);
+            filename = `attendance-report-hall-cleaning-${reportData?.period_label || 'export'}.csv`;
+
+        } else if (type === 'event') {
+            headers = [
+                'Full Name', 'Reg No', 'Role', 'Gender', 'Hall',
+                'Event Possible', 'Event Present', 'Event Absent',
+                'Event Rate (%)',
+            ];
+            rows = filteredRows.map(r => {
+                const possible = r.total_event_possible_attendance;
+                const present = r.total_event_attendance_present;
+                const absent = r.total_event_attendance_absent;
+                const rate = possible > 0 ? (present / possible) * 100 : 0.0;
+                return [
+                    `"${r.user.first_name} ${r.user.last_name}"`,
+                    r.user.reg_no,
+                    r.user.role,
+                    r.user.gender || 'N/A',
+                    r.user.current_roster_hall || 'Unassigned',
+                    possible,
+                    present,
+                    absent,
+                    rate.toFixed(1),
+                ];
+            });
+
+            // Calculate aggregates
+            const totalPossible = filteredRows.reduce((s, r) => s + r.total_event_possible_attendance, 0);
+            const totalPresent = filteredRows.reduce((s, r) => s + r.total_event_attendance_present, 0);
+            const totalAbsent = filteredRows.reduce((s, r) => s + r.total_event_attendance_absent, 0);
+            const overallRate = totalPossible > 0 ? (totalPresent / totalPossible) * 100 : 0.0;
+
+            const summaryRow = [
+                '"Total / Average"', '', '', '', '',
+                totalPossible, totalPresent, totalAbsent,
+                overallRate.toFixed(1),
+            ];
+            rows.push(summaryRow);
+            filename = `attendance-report-events-${reportData?.period_label || 'export'}.csv`;
+        }
+
         const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `attendance-report-${reportData?.period_label || 'export'}.csv`;
+        a.download = filename;
         a.click();
         URL.revokeObjectURL(url);
+        setExportOpen(false);
     }, [filteredRows, reportData]);
 
     // ── Period picker ──
@@ -567,10 +724,58 @@ function ReportsPageContent() {
                     >
                         <RefreshCw size={16} className={loading ? 'rp-spin' : ''} />
                     </button>
-                    <button className="rp-icon-btn rp-icon-btn--gold" onClick={exportCSV} title="Export CSV">
-                        <Download size={16} />
-                        <span>Export</span>
-                    </button>
+                    {/* Export Dropdown */}
+                    <div className="rp-export-dropdown" ref={exportRef}>
+                        <button
+                            className="rp-icon-btn rp-icon-btn--gold"
+                            onClick={() => setExportOpen(o => !o)}
+                            title="Export Options"
+                        >
+                            <Download size={16} />
+                            <span>Export</span>
+                            <ChevronDown size={14} className={exportOpen ? 'rp-chevron--open' : ''} />
+                        </button>
+                        <AnimatePresence>
+                            {exportOpen && (
+                                <motion.div
+                                    className="rp-export-dropdown__dropdown"
+                                    initial={{ opacity: 0, y: -8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -8 }}
+                                    transition={{ duration: 0.18 }}
+                                >
+                                    <button
+                                        className="rp-export-dropdown__option"
+                                        onClick={() => exportCSV('full')}
+                                    >
+                                        <BarChart2 size={14} />
+                                        <span>Full Combined Report</span>
+                                    </button>
+                                    <button
+                                        className="rp-export-dropdown__option"
+                                        onClick={() => exportCSV('weekly')}
+                                    >
+                                        <Users size={14} />
+                                        <span>Main Services Only</span>
+                                    </button>
+                                    <button
+                                        className="rp-export-dropdown__option"
+                                        onClick={() => exportCSV('hall')}
+                                    >
+                                        <Activity size={14} />
+                                        <span>Hall Cleaning Only</span>
+                                    </button>
+                                    <button
+                                        className="rp-export-dropdown__option"
+                                        onClick={() => exportCSV('event')}
+                                    >
+                                        <Target size={14} />
+                                        <span>Events Only</span>
+                                    </button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
                 </div>
             </div>
 
