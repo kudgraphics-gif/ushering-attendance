@@ -628,7 +628,7 @@ export const rosterAPI = {
 
     share: async (id: string, token: string): Promise<{ message: string }> => {
         return apiCall<{ message: string }>(
-            'GET',
+            'PATCH',
             `/roster/share/${id}`,
             undefined,
             token
