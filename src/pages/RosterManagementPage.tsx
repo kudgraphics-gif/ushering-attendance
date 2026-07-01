@@ -161,7 +161,24 @@ export function RosterManagementPage() {
         const finalValue = type === 'number'
             ? (value === '' ? 0 : parseInt(value, 10))
             : value;
-        setFormData(prev => ({ ...prev, [name]: finalValue }));
+        setFormData(prev => {
+            const nextData = { ...prev, [name]: finalValue };
+            
+            // Check if changing male or female number of any hall to update its total
+            if (name.startsWith('num_male_for_') || name.startsWith('num_female_for_')) {
+                const hallSuffix = name.replace('num_male_for_', '').replace('num_female_for_', '');
+                const maleField = `num_male_for_${hallSuffix}` as keyof typeof prev;
+                const femaleField = `num_female_for_${hallSuffix}` as keyof typeof prev;
+                const totalField = `num_for_${hallSuffix}` as keyof typeof prev;
+                
+                const maleVal = Number(name === maleField ? finalValue : prev[maleField]) || 0;
+                const femaleVal = Number(name === femaleField ? finalValue : prev[femaleField]) || 0;
+                
+                (nextData as any)[totalField] = maleVal + femaleVal;
+            }
+            
+            return nextData;
+        });
     };
 
     const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -513,6 +530,7 @@ export function RosterManagementPage() {
                                                         value={(formData[`num_for_${hall.id}` as keyof typeof formData] as number | string) || ''}
                                                         onChange={handleInputChange}
                                                         placeholder="Total"
+                                                        disabled
                                                     />
                                                 </div>
                                             </div>

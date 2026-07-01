@@ -424,7 +424,8 @@
 
 @media (max-width: 640px) {
     .roster-modal__hall-grid {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: var(--space-sm);
     }
 }
 
@@ -458,10 +459,66 @@
 
     .roster-modal__date-grid {
         grid-template-columns: 1fr;
+        gap: var(--space-md);
     }
 
     .roster-modal__grid {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 576px) {
+    .roster-modal-overlay {
+        padding: var(--space-sm);
+    }
+
+    .roster-modal {
+        max-height: 95vh;
+        border-radius: var(--radius-lg);
+    }
+
+    .roster-modal__header {
+        padding: var(--space-md) var(--space-lg);
+    }
+
+    .roster-modal__form {
+        padding: var(--space-md);
+        padding-bottom: var(--space-xl);
+        gap: var(--space-md);
+    }
+
+    .roster-modal__hall-group {
+        padding: var(--space-md);
+        border-radius: var(--radius-md);
+    }
+
+    .roster-modal__hall-group-header {
+        margin-bottom: var(--space-md);
+        font-size: var(--text-sm);
+    }
+
+    .roster-modal__hall-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: var(--space-xs);
+    }
+
+    .roster-modal .input-container {
+        padding: 4px 6px;
+    }
+
+    .roster-modal .input-field {
+        font-size: 13px;
+    }
+
+    .roster-modal__label {
+        font-size: 10px;
+        margin-bottom: 2px;
+        margin-left: 2px;
+    }
+
+    .roster-modal__actions {
+        flex-direction: column-reverse;
+        gap: var(--space-sm);
     }
 }
 

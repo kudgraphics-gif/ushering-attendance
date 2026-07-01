@@ -167,10 +167,14 @@ export function RosterAssignmentsPage() {
     };
 
     const filteredItems = assignments.filter(
-        item => item.first_name.toLowerCase().includes(filterText.toLowerCase()) ||
-            item.last_name.toLowerCase().includes(filterText.toLowerCase()) ||
-            item.reg_no.toLowerCase().includes(filterText.toLowerCase()) ||
-            item.hall.toLowerCase().includes(filterText.toLowerCase())
+        item => {
+            const matchesHall = selectedHall === 'All' || item.hall === selectedHall;
+            const matchesSearch = item.first_name.toLowerCase().includes(filterText.toLowerCase()) ||
+                item.last_name.toLowerCase().includes(filterText.toLowerCase()) ||
+                item.reg_no.toLowerCase().includes(filterText.toLowerCase()) ||
+                item.hall.toLowerCase().includes(filterText.toLowerCase());
+            return matchesHall && matchesSearch;
+        }
     );
 
     const columns = [
