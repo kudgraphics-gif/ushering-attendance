@@ -261,8 +261,7 @@ export function RosterAssignmentsPage() {
                         id: row.user_id,
                         first_name: row.first_name,
                         last_name: row.last_name,
-                        reg_no: row.reg_no,
-                        hall: row.hall
+                        reg_no: row.reg_no
                     })}
                     title="View user details and history"
                 >
