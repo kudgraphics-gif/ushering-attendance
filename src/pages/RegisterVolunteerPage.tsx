@@ -1,8 +1,13 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Heart, Users, Star, CheckCircle, Mail, Phone, Lock, User, Calendar, MapPin, Globe, Church } from 'lucide-react';
+import { 
+  ArrowLeft, Heart, Users, Star, CheckCircle, Mail, Phone, User, Calendar,
+  Bold, Italic, Strikethrough, List, ListOrdered, Quote, Code2, Heading1, Heading2, Undo2, Redo2
+} from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
 import { volunteersAPI } from '../services/api';
 import './RegisterVolunteerPage.css';
 
@@ -39,19 +44,22 @@ export function RegisterVolunteerPage() {
     first_name: '',
     last_name: '',
     email: '',
-    password: '',
     phone: '',
     gender: '',
-    dob: '',
-    address: '',
-    city: '',
-    state: '',
-    country: '',
-    local_church: '',
+    spiritual_journey: '',
     year_joined: new Date().getFullYear().toString(),
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  // Initialize TipTap Editor
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: '',
+    onUpdate: ({ editor }) => {
+      setFormData(prev => ({ ...prev, spiritual_journey: editor.getHTML() }));
+    },
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -65,52 +73,27 @@ export function RegisterVolunteerPage() {
     }
 
     // Basic validation
-    if (!formData.first_name || !formData.last_name || !formData.email || !formData.password) {
+    const hasSpiritualJourney = formData.spiritual_journey && formData.spiritual_journey !== '<p></p>' && formData.spiritual_journey.trim() !== '';
+    if (!formData.first_name || !formData.last_name || !formData.email || !formData.phone || !formData.gender || !hasSpiritualJourney) {
       toast.error('Please fill in all required fields');
-      return;
-    }
-    if (formData.password.length < 6) {
-      toast.error('Password must be at least 6 characters');
       return;
     }
 
     setLoading(true);
     try {
-      // Ensure `dob` is sent as a full ISO timestamp string (YYYY-MM-DDTHH:mm:ss.sssZ).
-      // - If the user already provided a timestamp (contains 'T' or 'Z'), send it unchanged.
-      // - If the user provided a date-only value (YYYY-MM-DD), convert to ISO at UTC midnight.
-      // - If empty, default to current time in ISO format.
-      let dob = '';
-      if (formData.dob) {
-        if (formData.dob.includes('T') || formData.dob.includes('Z')) {
-          dob = formData.dob;
-        } else {
-          // Convert date-only to full ISO (assume UTC midnight for the date)
-          dob = new Date(formData.dob + 'T00:00:00.000Z').toISOString();
-        }
-      } else {
-        dob = new Date().toISOString();
-      }
-
       await volunteersAPI.create({
-        address: formData.address,
-        city: formData.city,
-        country: formData.country,
-        dob: dob,
         email: formData.email,
         first_name: formData.first_name,
         gender: formData.gender,
         last_name: formData.last_name,
-        local_church: formData.local_church,
-        password: formData.password,
         phone: formData.phone,
         role: 'Ksom',
-        state: formData.state,
+        spiritual_journey: formData.spiritual_journey,
         year_joined: formData.year_joined,
       });
 
-      toast.success('Registration successful! You can now log in as a volunteer. 🙏');
-      navigate('/login');
+      toast.success('Registration submitted successfully! 🙏');
+      navigate('/volunteer-success');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Registration failed. Please try again.');
     } finally {
@@ -279,23 +262,6 @@ export function RegisterVolunteerPage() {
               </div>
 
               <div className="volunteer-form__group">
-                <label className="volunteer-form__label">Password *</label>
-                <div className="volunteer-form__input-icon-wrap">
-                  <Lock size={16} className="volunteer-form__input-icon" />
-                  <input
-                    className="volunteer-form__input volunteer-form__input--icon"
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder="Minimum 6 characters"
-                    required
-                    minLength={6}
-                  />
-                </div>
-              </div>
-
-              <div className="volunteer-form__group">
                 <label className="volunteer-form__label">Phone Number *</label>
                 <div className="volunteer-form__input-icon-wrap">
                   <Phone size={16} className="volunteer-form__input-icon" />
@@ -327,22 +293,6 @@ export function RegisterVolunteerPage() {
                   </select>
                 </div>
                 <div className="volunteer-form__group">
-                  <label className="volunteer-form__label">Date of Birth</label>
-                  <div className="volunteer-form__input-icon-wrap">
-                    <Calendar size={16} className="volunteer-form__input-icon" />
-                    <input
-                      className="volunteer-form__input volunteer-form__input--icon"
-                      type="date"
-                      name="dob"
-                      value={formData.dob}
-                      onChange={handleChange}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="volunteer-form__row">
-                <div className="volunteer-form__group">
                   <label className="volunteer-form__label">Year Joined *</label>
                   <div className="volunteer-form__input-icon-wrap">
                     <Calendar size={16} className="volunteer-form__input-icon" />
@@ -359,77 +309,109 @@ export function RegisterVolunteerPage() {
                     />
                   </div>
                 </div>
-                <div className="volunteer-form__group">
-                  <label className="volunteer-form__label">Local Church</label>
-                  <div className="volunteer-form__input-icon-wrap">
-                    <Church size={16} className="volunteer-form__input-icon" />
-                    <input
-                      className="volunteer-form__input volunteer-form__input--icon"
-                      type="text"
-                      name="local_church"
-                      value={formData.local_church}
-                      onChange={handleChange}
-                      placeholder="e.g. Koinonia Abuja"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Location */}
-              <div className="volunteer-form__section-label">Location Information</div>
-
-              <div className="volunteer-form__group">
-                <label className="volunteer-form__label">Address</label>
-                <div className="volunteer-form__input-icon-wrap">
-                  <MapPin size={16} className="volunteer-form__input-icon" />
-                  <input
-                    className="volunteer-form__input volunteer-form__input--icon"
-                    type="text"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    placeholder="Street address"
-                  />
-                </div>
-              </div>
-
-              <div className="volunteer-form__row">
-                <div className="volunteer-form__group">
-                  <label className="volunteer-form__label">City</label>
-                  <input
-                    className="volunteer-form__input"
-                    type="text"
-                    name="city"
-                    value={formData.city}
-                    onChange={handleChange}
-                    placeholder="e.g. Abuja"
-                  />
-                </div>
-                <div className="volunteer-form__group">
-                  <label className="volunteer-form__label">State</label>
-                  <input
-                    className="volunteer-form__input"
-                    type="text"
-                    name="state"
-                    value={formData.state}
-                    onChange={handleChange}
-                    placeholder="e.g. FCT"
-                  />
-                </div>
               </div>
 
               <div className="volunteer-form__group">
-                <label className="volunteer-form__label">Country</label>
-                <div className="volunteer-form__input-icon-wrap">
-                  <Globe size={16} className="volunteer-form__input-icon" />
-                  <input
-                    className="volunteer-form__input volunteer-form__input--icon"
-                    type="text"
-                    name="country"
-                    value={formData.country}
-                    onChange={handleChange}
-                    placeholder="e.g. Nigeria"
-                  />
+                <label className="volunteer-form__label">Spiritual Journey / Testimony *</label>
+                <div className="tiptap-editor">
+                  {editor && (
+                    <div className="tiptap-editor__toolbar">
+                      <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleBold().run()}
+                        className={`tiptap-editor__btn ${editor.isActive('bold') ? 'tiptap-editor__btn--active' : ''}`}
+                        title="Bold"
+                      >
+                        <Bold size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleItalic().run()}
+                        className={`tiptap-editor__btn ${editor.isActive('italic') ? 'tiptap-editor__btn--active' : ''}`}
+                        title="Italic"
+                      >
+                        <Italic size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleStrike().run()}
+                        className={`tiptap-editor__btn ${editor.isActive('strike') ? 'tiptap-editor__btn--active' : ''}`}
+                        title="Strikethrough"
+                      >
+                        <Strikethrough size={14} />
+                      </button>
+                      <span className="tiptap-editor__divider" />
+                      <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+                        className={`tiptap-editor__btn ${editor.isActive('heading', { level: 1 }) ? 'tiptap-editor__btn--active' : ''}`}
+                        title="Heading 1"
+                      >
+                        <Heading1 size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+                        className={`tiptap-editor__btn ${editor.isActive('heading', { level: 2 }) ? 'tiptap-editor__btn--active' : ''}`}
+                        title="Heading 2"
+                      >
+                        <Heading2 size={14} />
+                      </button>
+                      <span className="tiptap-editor__divider" />
+                      <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleBulletList().run()}
+                        className={`tiptap-editor__btn ${editor.isActive('bulletList') ? 'tiptap-editor__btn--active' : ''}`}
+                        title="Bullet List"
+                      >
+                        <List size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                        className={`tiptap-editor__btn ${editor.isActive('orderedList') ? 'tiptap-editor__btn--active' : ''}`}
+                        title="Ordered List"
+                      >
+                        <ListOrdered size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleBlockquote().run()}
+                        className={`tiptap-editor__btn ${editor.isActive('blockquote') ? 'tiptap-editor__btn--active' : ''}`}
+                        title="Blockquote"
+                      >
+                        <Quote size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+                        className={`tiptap-editor__btn ${editor.isActive('codeBlock') ? 'tiptap-editor__btn--active' : ''}`}
+                        title="Code Block"
+                      >
+                        <Code2 size={14} />
+                      </button>
+                      <span className="tiptap-editor__divider" />
+                      <button
+                        type="button"
+                        onClick={() => editor.chain().focus().undo().run()}
+                        disabled={!editor.can().undo()}
+                        className="tiptap-editor__btn"
+                        title="Undo"
+                      >
+                        <Undo2 size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => editor.chain().focus().redo().run()}
+                        disabled={!editor.can().redo()}
+                        className="tiptap-editor__btn"
+                        title="Redo"
+                      >
+                        <Redo2 size={14} />
+                      </button>
+                    </div>
+                  )}
+                  <EditorContent editor={editor} className="tiptap-editor__content" />
                 </div>
               </div>
 

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterVolunteerPage } from './pages/RegisterVolunteerPage';
+import { VolunteerOnboardPage } from './pages/VolunteerOnboardPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { UserDashboardPage } from './pages/UserDashboardPage';
 import { EventsPage } from './pages/EventsPage';
@@ -22,17 +23,18 @@ import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { VolunteersPage } from './pages/VolunteersPage';
 import { VolunteerDashboardPage } from './pages/VolunteerDashboardPage';
 import { MainLayout } from './components/layout/MainLayout';
-import { ProtectedRoute } from './components/ProtectedRoute';
+import { ProtectedRoute, SharedProtectedRoute } from './components/ProtectedRoute';
+import { VolunteerSuccessPage } from './pages/VolunteerSuccessPage';
 import { useAuthStore } from './stores/authStore';
 import { useVolunteerAuthStore } from './stores/volunteerAuthStore';
 import { useEffect } from 'react';
 
 function App() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isVolunteerAuthenticated = useVolunteerAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
   const updateActivity = useAuthStore((state) => state.updateActivity);
   const checkInactivity = useAuthStore((state) => state.checkInactivity);
-  const isVolunteerAuthenticated = useVolunteerAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
     const handleActivity = () => {
@@ -69,27 +71,43 @@ function App() {
         />
         <Route
           path="/login"
-          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LoginPage />}
+          element={
+            isAuthenticated 
+              ? <Navigate to="/dashboard" replace /> 
+              : isVolunteerAuthenticated 
+                ? <Navigate to="/volunteer-dashboard" replace /> 
+                : <LoginPage />
+          }
         />
         <Route path="/register-volunteer" element={<RegisterVolunteerPage />} />
+        <Route path="/onboard/:token" element={<VolunteerOnboardPage />} />
+        <Route path="/volunteer-onboard" element={<VolunteerOnboardPage />} />
+        <Route path="/volunteer-success" element={<VolunteerSuccessPage />} />
         <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
 
-        {/* ── Volunteer routes ── */}
-        <Route
-          path="/volunteer-dashboard"
-          element={isVolunteerAuthenticated ? <VolunteerDashboardPage /> : <Navigate to="/login" replace />}
-        />
-
-        {/* ── Protected routes (authenticated users) ── */}
-        <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+        {/* ── Shared layout (Admins, Leaders, Members, and Volunteers) ── */}
+        <Route element={<SharedProtectedRoute><MainLayout /></SharedProtectedRoute>}>
           <Route
             path="/dashboard"
-            element={user?.role === 'Admin' ? <DashboardPage /> : <UserDashboardPage />}
+            element={
+              isVolunteerAuthenticated 
+                ? <Navigate to="/volunteer-dashboard" replace /> 
+                : user?.role === 'Admin' 
+                  ? <DashboardPage /> 
+                  : <UserDashboardPage />
+            }
+          />
+          <Route
+            path="/volunteer-dashboard"
+            element={isVolunteerAuthenticated ? <VolunteerDashboardPage /> : <Navigate to="/login" replace />}
           />
           <Route path="/events" element={<EventsPage />} />
           <Route path="/payments" element={<PaymentsPage />} />
           <Route path="/koinonia" element={<KoinoniaPage />} />
           <Route path="/kud-sermons" element={<KudSermonsPage />} />
+          <Route path="/profile" element={<SettingsPage />} />
+
+          {/* Admin / Leader specific routes inside the main layout */}
           <Route
             path="/users"
             element={<ProtectedRoute allowedRoles={['Admin']}><UsersPage /></ProtectedRoute>}
@@ -97,10 +115,6 @@ function App() {
           <Route
             path="/attendance"
             element={<ProtectedRoute allowedRoles={['Admin']}><AttendancePage /></ProtectedRoute>}
-          />
-          <Route
-            path="/profile"
-            element={<SettingsPage />}
           />
           <Route
             path="/activity-logs"

@@ -180,7 +180,7 @@ export function LoginPage() {
                             </Button>
 
                             {mode === 'volunteer' && (
-                                <div style={{ textAlign: 'center' }}>
+                                <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                     <Link
                                         to="/register-volunteer"
                                         style={{
@@ -189,10 +189,25 @@ export function LoginPage() {
                                             textDecoration: 'none',
                                             display: 'inline-flex',
                                             alignItems: 'center',
+                                            justifyContent: 'center',
                                             gap: '6px',
                                         }}
                                     >
                                         Not registered yet? <strong>Register as Volunteer →</strong>
+                                    </Link>
+                                    <Link
+                                        to="/volunteer-onboard"
+                                        style={{
+                                            color: 'var(--color-text-secondary)',
+                                            fontSize: '13px',
+                                            textDecoration: 'none',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '6px',
+                                        }}
+                                    >
+                                        First time setup? <strong>Onboard as Volunteer →</strong>
                                     </Link>
                                 </div>
                             )}

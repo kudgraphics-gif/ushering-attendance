@@ -5,17 +5,22 @@ import toast from 'react-hot-toast';
 import { Card } from './Card';
 import { Button } from './Button';
 import { Input } from './Input';
-import { usersAPI } from '../../services/api';
+import { usersAPI, volunteersAPI } from '../../services/api';
 import { useAuthStore } from '../../stores/authStore';
+import { useVolunteerAuthStore } from '../../stores/volunteerAuthStore';
 import type { UserDto } from '../../types';
 import '../../pages/SettingsPage.css';
 
 interface UpdateProfileFormProps {
-    onSuccess?: (user: UserDto) => void;
+    onSuccess?: (user: any) => void;
 }
 
 export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
-    const { user: currentUser, token, setUser } = useAuthStore();
+    const { user: standardUser, token: standardToken, setUser } = useAuthStore();
+    const { volunteer: volunteerUser, token: volunteerToken, setVolunteer, isAuthenticated: isVolunteerAuthenticated } = useVolunteerAuthStore();
+
+    const currentUser = isVolunteerAuthenticated ? volunteerUser : standardUser;
+    const token = isVolunteerAuthenticated ? volunteerToken : standardToken;
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState<Partial<UserDto>>({
         first_name: '',
@@ -54,10 +59,10 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
                 city: currentUser.city || '',
                 state: currentUser.state || '',
                 country: currentUser.country || '',
-                patreon_address: currentUser.patreon_address || '',
-                patreon_name: currentUser.patreon_name || '',
-                patreon_phone: currentUser.patreon_phone || '',
-                patreon_relationship: currentUser.patreon_relationship || '',
+                patreon_address: (currentUser as any).patreon_address || '',
+                patreon_name: (currentUser as any).patreon_name || '',
+                patreon_phone: (currentUser as any).patreon_phone || '',
+                patreon_relationship: (currentUser as any).patreon_relationship || '',
                 local_church: currentUser.local_church || '',
             });
         }
@@ -93,18 +98,30 @@ export function UpdateProfileForm({ onSuccess }: UpdateProfileFormProps) {
                 dob: dobWithTime,
             };
 
-            await usersAPI.update(updatePayload, token);
+            if (isVolunteerAuthenticated) {
+                await volunteersAPI.updateSelf(updatePayload as any, token);
+                
+                const updatedVol = {
+                    ...currentUser,
+                    ...formData,
+                    dob: dobWithTime,
+                };
+                setVolunteer(updatedVol as any);
+                toast.success('Profile updated successfully');
+                onSuccess?.(updatedVol);
+            } else {
+                await usersAPI.update(updatePayload, token);
 
-            // Update the auth store with new user data
-            const updatedUser: UserDto = {
-                ...currentUser,
-                ...formData,
-                dob: dobWithTime,
-            };
-            setUser(updatedUser);
-
-            toast.success('Profile updated successfully');
-            onSuccess?.(updatedUser);
+                // Update the auth store with new user data
+                const updatedUser = {
+                    ...currentUser,
+                    ...formData,
+                    dob: dobWithTime,
+                };
+                setUser(updatedUser as any);
+                toast.success('Profile updated successfully');
+                onSuccess?.(updatedUser);
+            }
         } catch (error) {
             toast.error(error instanceof Error ? error.message : 'Failed to update profile');
         } finally {

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Search, Menu, MapPin, X, LogOut, Settings } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
+import { useVolunteerAuthStore } from '../../stores/volunteerAuthStore';
 import { Avatar } from '../ui/Avatar';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { useNavigate } from 'react-router-dom';
@@ -19,6 +20,15 @@ export function Header({ onMenuClick }: HeaderProps) {
     const user = useAuthStore((state) => state.user);
     const logout = useAuthStore((state) => state.logout);
     const token = useAuthStore((state) => state.token);
+
+    const volunteer = useVolunteerAuthStore((state) => state.volunteer);
+    const logoutVolunteer = useVolunteerAuthStore((state) => state.logoutVolunteer);
+    const volunteerToken = useVolunteerAuthStore((state) => state.token);
+    const isVolunteerAuthenticated = useVolunteerAuthStore((state) => state.isAuthenticated);
+
+    const currentUser = isVolunteerAuthenticated ? volunteer : user;
+    const currentToken = isVolunteerAuthenticated ? volunteerToken : token;
+
     const [searchQuery, setSearchQuery] = useState('');
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [checkInLoading, setCheckInLoading] = useState(false);
@@ -39,10 +49,10 @@ export function Header({ onMenuClick }: HeaderProps) {
 
     // Helper to get the display string
     const getRosterDisplay = () => {
-        if (!user) return '';
-        // Access properties directly (assuming they exist on the user object based on API response)
-        let hall = (user as any).current_roster_hall;
-        let allocation = (user as any).current_roster_allocation;
+        if (!currentUser) return '';
+        // Access properties directly
+        let hall = (currentUser as any).current_roster_hall;
+        let allocation = (currentUser as any).current_roster_allocation;
 
         // Strip quotes if present
         if (hall) hall = hall.replace(/^"|"$/g, '');
@@ -57,17 +67,21 @@ export function Header({ onMenuClick }: HeaderProps) {
     const isPending = rosterStatus === 'Pending';
 
     const handleLogout = () => {
-        logout();
+        if (isVolunteerAuthenticated) {
+            logoutVolunteer();
+        } else {
+            logout();
+        }
         navigate('/login');
     };
 
     const handleAdminCheckIn = async () => {
-        if (!token || !user) {
+        if (!currentToken || !currentUser) {
             toast.error('You must be logged in to check in');
             return;
         }
 
-        if (user.role !== 'Admin') {
+        if (currentUser.role !== 'Admin') {
             toast.error('Only admins can check in from header');
             return;
         }
@@ -89,7 +103,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                             location: { lat: latitude, lng: longitude },
                             device_id: deviceId,
                         },
-                        token
+                        currentToken
                     );
                     toast.success('Check-in successful');
                 } catch (error) {
@@ -118,7 +132,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 <Menu size={24} />
             </button>
 
-            {user?.role === 'Admin' ? (
+            {currentUser?.role === 'Admin' ? (
                 <button
                     className="header__checkin-btn"
                     onClick={handleAdminCheckIn}
@@ -144,7 +158,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 <ThemeToggle />
 
 
-                {user && (
+                {currentUser && (
                     <>
                         {/* Roster Status Badge */}
                         <div
@@ -160,12 +174,14 @@ export function Header({ onMenuClick }: HeaderProps) {
                                 className="header__user"
                                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                             >
-                                <Avatar src={user.avatar_url} alt={user.first_name} size="md" />
+                                <Avatar src={currentUser.avatar_url} alt={currentUser.first_name} size="md" />
                                 <div className="header__user-info">
                                     <span className="header__user-name">
-                                        {user.first_name} {user.last_name}
+                                        {currentUser.first_name} {currentUser.last_name}
                                     </span>
-                                    <span className="header__user-role">{user.role}</span>
+                                    {currentUser.role && (currentUser.role as string) !== 'Ksom' && (currentUser.role as string) !== 'ksom' && (
+                                        <span className="header__user-role">{currentUser.role}</span>
+                                    )}
                                 </div>
                             </button>
 
@@ -190,50 +206,52 @@ export function Header({ onMenuClick }: HeaderProps) {
 
                                         <div className="header__profile-content">
                                             <div className="header__profile-avatar-large">
-                                                <Avatar src={user.avatar_url} alt={user.first_name} size="xl" />
+                                                <Avatar src={currentUser.avatar_url} alt={currentUser.first_name} size="xl" />
                                             </div>
                                             <div className="header__profile-details">
-                                                <h4 className="header__profile-name">{user.first_name} {user.last_name}</h4>
-                                                <span className="header__profile-badge">{user.role}</span>
+                                                <h4 className="header__profile-name">{currentUser.first_name} {currentUser.last_name}</h4>
+                                                {currentUser.role && (currentUser.role as string) !== 'Ksom' && (currentUser.role as string) !== 'ksom' && (
+                                                    <span className="header__profile-badge">{currentUser.role}</span>
+                                                )}
 
                                                 <div className="header__profile-info-grid">
                                                     {/* Phone */}
                                                     <div className="header__profile-info-item">
                                                         <span className="header__profile-label">Phone</span>
-                                                        <span className="header__profile-value">{user.phone || 'N/A'}</span>
+                                                        <span className="header__profile-value">{currentUser.phone || 'N/A'}</span>
                                                     </div>
 
                                                     {/* Gender/Other info */}
                                                     <div className="header__profile-info-item">
                                                         <span className="header__profile-label">Gender</span>
                                                         <span className="header__profile-value" style={{ textTransform: 'capitalize' }}>
-                                                            {user.gender || 'N/A'}
+                                                            {currentUser.gender || 'N/A'}
                                                         </span>
                                                     </div>
 
                                                     <div className="header__profile-info-item">
                                                         <span className="header__profile-label">DOB</span>
                                                         <span className="header__profile-value">
-                                                            {user.dob ? new Date(user.dob).toLocaleDateString() : 'N/A'}
+                                                            {currentUser.dob ? new Date(currentUser.dob).toLocaleDateString() : 'N/A'}
                                                         </span>
                                                     </div>
 
                                                     <div className="header__profile-info-item">
                                                         <span className="header__profile-label">Country</span>
-                                                        <span className="header__profile-value">{user.country || 'N/A'}</span>
+                                                        <span className="header__profile-value">{currentUser.country || 'N/A'}</span>
                                                     </div>
 
                                                     <div className="header__profile-info-item header__profile-info-item--full">
                                                         <span className="header__profile-label">Address</span>
                                                         <span className="header__profile-value">
-                                                            {[user.address, user.city, user.state].filter(Boolean).join(', ') || 'N/A'}
+                                                            {[currentUser.address, currentUser.city, currentUser.state].filter(Boolean).join(', ') || 'N/A'}
                                                         </span>
                                                     </div>
 
                                                     {/* Email (Full Width) */}
                                                     <div className="header__profile-info-item header__profile-info-item--full">
                                                         <span className="header__profile-label">Email</span>
-                                                        <span className="header__profile-value">{user.email}</span>
+                                                        <span className="header__profile-value">{currentUser.email}</span>
                                                     </div>
                                                 </div>
                                             </div>

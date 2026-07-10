@@ -29,6 +29,11 @@ async function apiCall<T>(
     data?: unknown,
     token?: string
 ): Promise<T> {
+    if (endpoint.startsWith('/volunteers') || endpoint.startsWith('/volunteer-events')) {
+        const separator = endpoint.includes('?') ? '&' : '?';
+        endpoint = `${endpoint}${separator}set_cookie=true`;
+    }
+
     const headers: HeadersInit = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -709,6 +714,14 @@ export const rosterAPI = {
             token
         );
     },
+
+    getOutliers: async (id: string, token: string): Promise<any[]> => {
+        return apiCall<any[]>('GET', `/roster/outliers/${id}`, undefined, token);
+    },
+
+    getUserHistory: async (userId: string, token: string): Promise<any[]> => {
+        return apiCall<any[]>('GET', `/roster/history/${userId}`, undefined, token);
+    },
 };
 
 // Attendance Revoke API
@@ -823,40 +836,16 @@ export const suggestionsAPI = {
 // Volunteers API
 export const volunteersAPI = {
     create: async (payload: {
-        address: string;
-        city: string;
-        country: string;
-        dob: string;
         email: string;
         first_name: string;
         gender: string;
         last_name: string;
-        local_church: string;
-        password: string;
         phone: string;
         role: 'Ksom';
-        state: string;
+        spiritual_journey: string;
         year_joined: string;
     }): Promise<{ message: string }> => {
-        // Ensure only the allowed keys are sent to the API (defensive sanitization)
-        const body = {
-            address: payload.address,
-            city: payload.city,
-            country: payload.country,
-            dob: payload.dob,
-            email: payload.email,
-            first_name: payload.first_name,
-            gender: payload.gender,
-            last_name: payload.last_name,
-            local_church: payload.local_church,
-            password: payload.password,
-            phone: payload.phone,
-            role: payload.role,
-            state: payload.state,
-            year_joined: payload.year_joined,
-        };
-
-        return apiCall<{ message: string }>('POST', '/volunteers/create', body);
+        return apiCall<{ message: string }>('POST', '/volunteers/create', payload);
     },
 
     login: async (payload: { email: string; password: string }): Promise<{
@@ -866,6 +855,39 @@ export const volunteersAPI = {
         return apiCall<{ token: string; volunteer: import('../types').VolunteerDto }>(
             'POST', '/volunteers/login', payload
         );
+    },
+
+    onboard: async (payload: {
+        token: string;
+        password: string;
+        dob?: string;
+        address?: string;
+        city?: string;
+        state?: string;
+        country?: string;
+    }): Promise<{ message: string }> => {
+        return apiCall<{ message: string }>('POST', '/volunteers/onboard', payload);
+    },
+
+    markAttendance: async (payload: {
+        device_id: string;
+        location: { lat: number; lng: number };
+    }, token: string): Promise<{ message: string }> => {
+        return apiCall<{ message: string }>('PATCH', '/volunteers/mark-attendance', payload, token);
+    },
+
+    getAdminDashboard: async (token: string): Promise<{
+        num_of_volunteers: number;
+        num_of_volunteers_accepted: number;
+        num_of_volunteers_rejected: number;
+        num_of_volunteer_unprocessed: number;
+    }> => {
+        return apiCall<{
+            num_of_volunteers: number;
+            num_of_volunteers_accepted: number;
+            num_of_volunteers_rejected: number;
+            num_of_volunteer_unprocessed: number;
+        }>('GET', '/volunteers/admin/dashboard', undefined, token);
     },
 
     getAll: async (
@@ -892,7 +914,35 @@ export const volunteersAPI = {
     },
 
     update: async (id: string, payload: Partial<import('../types').VolunteerDto>, token: string): Promise<{ message: string }> => {
-        return apiCall<{ message: string }>('PATCH', `/volunteers/update/${id}`, payload, token);
+        return apiCall<{ message: string }>('PATCH', `/volunteers/admin/update/${id}`, payload, token);
+    },
+
+    updateSelf: async (payload: Partial<import('../types').VolunteerDto>, token: string): Promise<{ message: string }> => {
+        return apiCall<{ message: string }>('PATCH', '/volunteers/update', payload, token);
+    },
+
+    activate: async (id: string, token: string): Promise<{ message: string }> => {
+        return apiCall<{ message: string }>('PATCH', `/volunteers/admin/activate/${id}`, undefined, token);
+    },
+
+    deactivate: async (id: string, token: string): Promise<{ message: string }> => {
+        return apiCall<{ message: string }>('PATCH', `/volunteers/admin/deactivate/${id}`, undefined, token);
+    },
+
+    changeState: async (id: string, status: 'Accepted' | 'Rejected' | 'Unprocessed', token: string): Promise<{ message: string }> => {
+        return apiCall<{ message: string }>('PATCH', `/volunteers/admin/change-state/${id}`, { status }, token);
+    },
+
+    resetDevice: async (id: string, token: string): Promise<{ message: string }> => {
+        return apiCall<{ message: string }>('PATCH', `/volunteers/admin/reset-device/${id}`, undefined, token);
+    },
+
+    delete: async (id: string, token: string): Promise<{ message: string }> => {
+        return apiCall<{ message: string }>('DELETE', `/volunteers/admin/delete/${id}`, undefined, token);
+    },
+
+    getAttendance: async (id: string, token: string): Promise<any[]> => {
+        return apiCall<any[]>('GET', `/volunteers/admin/get-attendance/${id}`, undefined, token);
     },
 };
 
@@ -942,5 +992,83 @@ export const hallsAPI = {
 
     getHeadCountHistory: async (hall: string, token: string): Promise<any[]> => {
         return apiCall<any[]>('GET', `/halls/hall/counts/history?hall=${hall}`, undefined, token);
+    },
+};
+
+export const volunteerEventsAPI = {
+    create: async (
+        payload: {
+            title: string;
+            description: string;
+            date: string;
+            time: string;
+            location: string;
+            attendance_type: string;
+            grace_period_in_minutes: number;
+        },
+        token: string
+    ): Promise<any> => {
+        return apiCall<any>('POST', '/volunteer-events/create', payload, token);
+    },
+
+    getAll: async (token: string): Promise<any[]> => {
+        return apiCall<any[]>('GET', '/volunteer-events/', undefined, token);
+    },
+
+    update: async (
+        payload: {
+            event_id: string;
+            title: string;
+            description: string;
+            date: string;
+            time: string;
+            location: string;
+            attendance_type: string;
+            grace_period_in_minutes: number;
+        },
+        token: string
+    ): Promise<any> => {
+        return apiCall<any>('PATCH', '/volunteer-events/update', payload, token);
+    },
+
+    delete: async (eventId: string, token: string): Promise<{ message: string }> => {
+        return apiCall<{ message: string }>('DELETE', `/volunteer-events/delete/${eventId}`, undefined, token);
+    },
+
+    getUpcoming: async (token: string): Promise<any[]> => {
+        return apiCall<any[]>('GET', '/volunteer-events/upcoming', undefined, token);
+    },
+
+    getPast: async (token: string): Promise<any[]> => {
+        return apiCall<any[]>('GET', '/volunteer-events/past', undefined, token);
+    },
+
+    getById: async (eventId: string, token: string): Promise<any> => {
+        return apiCall<any>('GET', `/volunteer-events/get/${eventId}`, undefined, token);
+    },
+
+    checkIn: async (
+        payload: {
+            event_id: string;
+            volunteer_id: string;
+            attendance_type: string;
+            token: string;
+            location: { lat: number; lng: number } | null;
+        },
+        authToken: string
+    ): Promise<{ message: string }> => {
+        return apiCall<{ message: string }>('POST', '/volunteer-events/attendance/check-in', payload, authToken);
+    },
+
+    checkInIdentifier: async (
+        payload: {
+            event_id: string;
+            identifier: string;
+            attendance_type: string;
+            location: { lat: number; lng: number } | null;
+        },
+        authToken: string
+    ): Promise<{ message: string }> => {
+        return apiCall<{ message: string }>('POST', '/volunteer-events/attendance/check-in-identifier', payload, authToken);
     },
 };

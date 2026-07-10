@@ -20,11 +20,17 @@ import { EventFormModal } from '../components/ui/EventFormModal';
 import { EventStatsModal } from '../components/ui/EventStatsModal';
 import { eventsAPI } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
+import { useVolunteerAuthStore } from '../stores/volunteerAuthStore';
+import { VolunteerEventsPage } from './VolunteerEventsPage';
 import type { Event, CreateEventRequest, UpdateEventRequest } from '../types';
 import { format, isSameDay } from 'date-fns';
 import './EventsPage.css';
 
 export function EventsPage() {
+    const { isAuthenticated: isVolunteerAuthenticated } = useVolunteerAuthStore();
+    const { token, user } = useAuthStore();
+    const isAdmin = user?.role === 'Admin';
+    const [viewType, setViewType] = useState<'ushers' | 'volunteers'>('ushers');
     const [activeTab, setActiveTab] = useState<'upcoming' | 'past' | 'all'>('upcoming');
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(false);
@@ -41,9 +47,6 @@ export function EventsPage() {
 
     // Check-in State
     const [checkInLoading, setCheckInLoading] = useState<string | null>(null);
-
-    const { token, user } = useAuthStore();
-    const isAdmin = user?.role === 'Admin';
 
     useEffect(() => {
         fetchEvents();
@@ -180,6 +183,36 @@ export function EventsPage() {
         }
     };
 
+    if (isVolunteerAuthenticated) {
+        return <VolunteerEventsPage />;
+    }
+
+    if (viewType === 'volunteers') {
+        return (
+            <div className="events-page">
+                {isAdmin && (
+                    <div className="events-page__type-selector glass-md" style={{ marginBottom: '24px', display: 'flex', gap: '8px', padding: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', width: 'fit-content' }}>
+                        <button 
+                            className={`selector-btn ${(viewType as string) === 'ushers' ? 'active' : ''}`}
+                            onClick={() => setViewType('ushers')}
+                            style={{ padding: '8px 16px', border: 'none', background: (viewType as string) === 'ushers' ? 'rgba(255,255,255,0.1)' : 'transparent', color: '#fff', borderRadius: '6px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
+                        >
+                            Usher Events
+                        </button>
+                        <button 
+                            className={`selector-btn ${(viewType as string) === 'volunteers' ? 'active' : ''}`}
+                            onClick={() => setViewType('volunteers')}
+                            style={{ padding: '8px 16px', border: 'none', background: (viewType as string) === 'volunteers' ? 'rgba(255,255,255,0.1)' : 'transparent', color: '#fff', borderRadius: '6px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
+                        >
+                            Volunteer Events
+                        </button>
+                    </div>
+                )}
+                <VolunteerEventsPage adminMode />
+            </div>
+        );
+    }
+
     return (
         <motion.div
             className="events-page"
@@ -187,6 +220,24 @@ export function EventsPage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
         >
+            {isAdmin && (
+                <div className="events-page__type-selector glass-md" style={{ marginBottom: '24px', display: 'flex', gap: '8px', padding: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', width: 'fit-content' }}>
+                    <button 
+                        className={`selector-btn ${(viewType as string) === 'ushers' ? 'active' : ''}`}
+                        onClick={() => setViewType('ushers')}
+                        style={{ padding: '8px 16px', border: 'none', background: (viewType as string) === 'ushers' ? 'rgba(255,255,255,0.1)' : 'transparent', color: '#fff', borderRadius: '6px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
+                    >
+                        Usher Events
+                    </button>
+                    <button 
+                        className={`selector-btn ${(viewType as string) === 'volunteers' ? 'active' : ''}`}
+                        onClick={() => setViewType('volunteers')}
+                        style={{ padding: '8px 16px', border: 'none', background: (viewType as string) === 'volunteers' ? 'rgba(255,255,255,0.1)' : 'transparent', color: '#fff', borderRadius: '6px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
+                    >
+                        Volunteer Events
+                    </button>
+                </div>
+            )}
             <div className="events-page__header">
                 <div>
                     <h1 className="events-page__title">Events</h1>

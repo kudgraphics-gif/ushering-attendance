@@ -17,6 +17,7 @@ import {
     Heart,
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
+import { useVolunteerAuthStore } from '../../stores/volunteerAuthStore';
 import { useSidebarStore } from '../../stores/sidebarStore';
 import clsx from 'clsx';
 import './Sidebar.css';
@@ -61,6 +62,15 @@ const userNavItems = [
     { icon: User, label: 'Profile', path: '/profile' },
 ];
 
+const volunteerNavItems = [
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/volunteer-dashboard' },
+    { icon: Calendar, label: 'Events', path: '/events' },
+    { icon: DollarSign, label: 'Payments', path: '/payments' },
+    { icon: Music, label: 'Koinonia', path: '/koinonia' },
+    { icon: Music, label: 'KUD Sermons', path: '/kud-sermons' },
+    { icon: User, label: 'Profile', path: '/profile' },
+];
+
 interface SidebarProps {
     isOpen?: boolean;
     onClose?: () => void;
@@ -70,12 +80,24 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     const navigate = useNavigate();
     const logout = useAuthStore((state) => state.logout);
     const user = useAuthStore((state) => state.user);
+    const isVolunteerAuthenticated = useVolunteerAuthStore((state) => state.isAuthenticated);
+    const logoutVolunteer = useVolunteerAuthStore((state) => state.logoutVolunteer);
     const setOpen = useSidebarStore((state) => state.setOpen);
 
-    const navItems = user?.role === 'Admin' ? adminNavItems : user?.role === 'Leader' ? leaderNavItems : userNavItems;
+    const navItems = isVolunteerAuthenticated
+        ? volunteerNavItems
+        : user?.role === 'Admin'
+            ? adminNavItems
+            : user?.role === 'Leader'
+                ? leaderNavItems
+                : userNavItems;
 
     const handleLogout = () => {
-        logout();
+        if (isVolunteerAuthenticated) {
+            logoutVolunteer();
+        } else {
+            logout();
+        }
         navigate('/login');
     };
 

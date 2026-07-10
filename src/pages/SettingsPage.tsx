@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { User, Lock } from 'lucide-react';
+import { useVolunteerAuthStore } from '../stores/volunteerAuthStore';
 import './SettingsPage.css';
 import { UpdateProfileForm } from '../components/ui/UpdateProfileForm';
 import { PasswordChangeForm } from '../components/ui/PasswordChangeForm';
 
 export function SettingsPage() {
     const [activeTab, setActiveTab] = useState<'profile' | 'security'>('profile');
+    const isVolunteerAuthenticated = useVolunteerAuthStore((state) => state.isAuthenticated);
 
     return (
         <motion.div
@@ -28,13 +30,15 @@ export function SettingsPage() {
                     <User size={20} />
                     <span>Profile</span>
                 </button>
-                <button 
-                    className={`settings-page__tab ${activeTab === 'security' ? 'settings-page__tab--active' : ''}`}
-                    onClick={() => setActiveTab('security')}
-                >
-                    <Lock size={20} />
-                    <span>Security</span>
-                </button>
+                {!isVolunteerAuthenticated && (
+                    <button 
+                        className={`settings-page__tab ${activeTab === 'security' ? 'settings-page__tab--active' : ''}`}
+                        onClick={() => setActiveTab('security')}
+                    >
+                        <Lock size={20} />
+                        <span>Security</span>
+                    </button>
+                )}
             </div>
 
             <div className="settings-page__content">
@@ -48,7 +52,7 @@ export function SettingsPage() {
                     </motion.div>
                 )}
 
-                {activeTab === 'security' && (
+                {!isVolunteerAuthenticated && activeTab === 'security' && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}

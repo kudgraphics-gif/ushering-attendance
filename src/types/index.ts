@@ -413,4 +413,6 @@ export interface VolunteerDto {
     updated_at?: string;
     username?: string;
     year_joined?: string;
+    status?: 'Accepted' | 'Rejected' | 'Unprocessed';
+    spiritual_journey?: string;
 }
