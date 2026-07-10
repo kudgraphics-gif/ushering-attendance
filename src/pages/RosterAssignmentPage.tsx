@@ -7,6 +7,8 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { rosterAPI, type RosterAssignment, type RosterStats } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
+import { UserHistoryModal } from '../components/ui/UserHistoryModal';
+import type { UserDto } from '../types';
 import {
     CheckCircle2,
     Mars,
@@ -50,6 +52,9 @@ export function RosterAssignmentsPage() {
     // Outliers state
     const [outliers, setOutliers] = useState<any[]>([]);
     const [outliersLoading, setOutliersLoading] = useState(false);
+
+    // User details modal state
+    const [selectedUserForDetails, setSelectedUserForDetails] = useState<Partial<UserDto> | null>(null);
 
     // Reassign modal states
     const [reassignModalOpen, setReassignModalOpen] = useState(false);
@@ -250,8 +255,18 @@ export function RosterAssignmentsPage() {
             name: 'User',
             selector: (row: RosterAssignment) => `${row.first_name} ${row.last_name}`,
             cell: (row: RosterAssignment) => (
-                <div style={{ display: 'flex', flexDirection: 'column', padding: '8px 0' }}>
-                    <span style={{ fontWeight: 600 }}>{row.first_name} {row.last_name}</span>
+                <div 
+                    style={{ display: 'flex', flexDirection: 'column', padding: '8px 0', cursor: 'pointer' }}
+                    onClick={() => setSelectedUserForDetails({
+                        id: row.user_id,
+                        first_name: row.first_name,
+                        last_name: row.last_name,
+                        reg_no: row.reg_no,
+                        hall: row.hall
+                    })}
+                    title="View user details and history"
+                >
+                    <span style={{ fontWeight: 600, color: 'var(--color-primary)' }}>{row.first_name} {row.last_name}</span>
                     <span style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>{row.reg_no}</span>
                 </div>
             ),
@@ -926,6 +941,12 @@ export function RosterAssignmentsPage() {
                     </div>
                 )}
             </AnimatePresence>
+
+            <UserHistoryModal
+                isOpen={!!selectedUserForDetails}
+                onClose={() => setSelectedUserForDetails(null)}
+                user={selectedUserForDetails as UserDto}
+            />
         </motion.div>
     );
 }
