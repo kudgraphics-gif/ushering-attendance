@@ -170,21 +170,10 @@
     transition: all 0.15s ease;
 }
 
-.group-card__btn:hover {
-    background: var(--surface-hover);
-    color: var(--text-primary);
-    border-color: var(--color-primary);
-}
-
 .group-card__btn--primary {
     background: rgba(212, 175, 55, 0.12);
     color: var(--color-primary);
     border-color: rgba(212, 175, 55, 0.3);
-}
-
-.group-card__btn--primary:hover {
-    background: rgba(212, 175, 55, 0.22);
-    border-color: var(--color-primary);
 }
 
 .group-card__btn--danger {
@@ -193,8 +182,21 @@
     border-color: rgba(239, 68, 68, 0.25);
 }
 
-.group-card__btn--danger:hover {
-    background: rgba(239, 68, 68, 0.2);
+@media (hover: hover) {
+    .group-card__btn:hover {
+        background: var(--surface-hover);
+        color: var(--text-primary);
+        border-color: var(--color-primary);
+    }
+
+    .group-card__btn--primary:hover {
+        background: rgba(212, 175, 55, 0.22);
+        border-color: var(--color-primary);
+    }
+
+    .group-card__btn--danger:hover {
+        background: rgba(239, 68, 68, 0.2);
+    }
 }
 
 /* ===========================
@@ -311,9 +313,11 @@
     border-color: rgba(212, 175, 55, 0.4);
 }
 
-.group-detail__tab:hover:not(.group-detail__tab--active) {
-    background: var(--surface-hover);
-    color: var(--text-primary);
+@media (hover: hover) {
+    .group-detail__tab:hover:not(.group-detail__tab--active) {
+        background: var(--surface-hover);
+        color: var(--text-primary);
+    }
 }
 
 /* Member row */
@@ -454,9 +458,11 @@
     background: var(--surface-glass);
 }
 
-.history-item:hover {
-    border-color: var(--color-primary);
-    background: rgba(212, 175, 55, 0.05);
+@media (hover: hover) {
+    .history-item:hover {
+        border-color: var(--color-primary);
+        background: rgba(212, 175, 55, 0.05);
+    }
 }
 
 .history-item__date {
@@ -618,13 +624,15 @@
     border-bottom: none;
 }
 
-.groups-modal__user-item:hover,
-.groups-modal__user-item--selected {
-    background: rgba(212, 175, 55, 0.08);
+@media (hover: hover) {
+    .groups-modal__user-item:hover {
+        background: rgba(212, 175, 55, 0.08);
+    }
 }
 
 .groups-modal__user-item--selected {
     color: var(--color-primary);
+    background: rgba(212, 175, 55, 0.08);
 }
 
 .groups-modal__selected-user {

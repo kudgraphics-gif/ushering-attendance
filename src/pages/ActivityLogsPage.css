@@ -51,6 +51,7 @@
     position: absolute;
     left: var(--space-md);
     color: var(--color-text-secondary);
+    pointer-events: none;
 }
 
 .activity-logs-page__search-input {
@@ -114,9 +115,11 @@
     transition: all var(--transition-base);
 }
 
-.activity-log-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.15);
+@media (hover: hover) {
+    .activity-log-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
 }
 
 .activity-log-item__indicator {
@@ -184,8 +187,10 @@
     text-decoration: underline;
 }
 
-.activity-log-item__view-user-logs:hover {
-    color: var(--color-accent-blue);
+@media (hover: hover) {
+    .activity-log-item__view-user-logs:hover {
+        color: var(--color-accent-blue);
+    }
 }
 
 .activity-logs-page__pagination {
@@ -211,9 +216,11 @@
     transition: all var(--transition-fast);
 }
 
-.activity-logs-page__pagination-btn:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: var(--color-primary);
+@media (hover: hover) {
+    .activity-logs-page__pagination-btn:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--color-primary);
+    }
 }
 
 .activity-logs-page__pagination-btn:disabled {

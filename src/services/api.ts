@@ -188,7 +188,7 @@ export const usersAPI = {
 
     changePassword: async (email: string, password: string, token: string): Promise<{ message: string }> => {
         return apiCall<{ message: string }>(
-            'POST',
+            'PATCH',
             '/users/change-password',
             { email, password },
             token

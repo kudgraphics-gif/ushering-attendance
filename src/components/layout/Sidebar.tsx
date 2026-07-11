@@ -71,6 +71,19 @@ const volunteerNavItems = [
     { icon: User, label: 'Profile', path: '/profile' },
 ];
 
+const technicalNavItems = [
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+    { icon: Calendar, label: 'Events', path: '/events' },
+    { icon: Users, label: 'Users', path: '/users' },
+    { icon: ClipboardCheck, label: 'Attendance', path: '/attendance' },
+    { icon: DollarSign, label: 'Payments', path: '/payments' },
+    { icon: Music, label: 'Koinonia Sermons', path: '/koinonia' },
+    { icon: Music, label: 'KUD Sermons', path: '/kud-sermons' },
+    { icon: Eye, label: 'Activity Logs', path: '/activity-logs' },
+    { icon: MessageSquare, label: 'Suggestion Box', path: '/suggestion-box' },
+    { icon: User, label: 'Profile', path: '/profile' },
+];
+
 interface SidebarProps {
     isOpen?: boolean;
     onClose?: () => void;
@@ -80,6 +93,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     const navigate = useNavigate();
     const logout = useAuthStore((state) => state.logout);
     const user = useAuthStore((state) => state.user);
+    const isAdminView = useAuthStore((state) => state.isAdminView);
     const isVolunteerAuthenticated = useVolunteerAuthStore((state) => state.isAuthenticated);
     const logoutVolunteer = useVolunteerAuthStore((state) => state.logoutVolunteer);
     const setOpen = useSidebarStore((state) => state.setOpen);
@@ -87,10 +101,12 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     const navItems = isVolunteerAuthenticated
         ? volunteerNavItems
         : user?.role === 'Admin'
-            ? adminNavItems
+            ? (isAdminView ? adminNavItems : userNavItems)
             : user?.role === 'Leader'
                 ? leaderNavItems
-                : userNavItems;
+                : user?.role === 'Technical'
+                    ? technicalNavItems
+                    : userNavItems;
 
     const handleLogout = () => {
         if (isVolunteerAuthenticated) {

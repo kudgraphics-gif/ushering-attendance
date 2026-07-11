@@ -10,14 +10,16 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-    const { isAuthenticated, user } = useAuthStore();
+    const { isAuthenticated, user, isAdminView } = useAuthStore();
     const location = useLocation();
 
     if (!isAuthenticated) {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+    const effectiveRole = (user && user.role === 'Admin' && !isAdminView) ? 'User' as Role : user?.role;
+
+    if (allowedRoles && effectiveRole && !allowedRoles.includes(effectiveRole)) {
         return <Navigate to="/dashboard" replace />;
     }
 

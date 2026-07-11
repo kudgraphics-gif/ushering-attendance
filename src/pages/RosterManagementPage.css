@@ -673,9 +673,11 @@ html.light .roster-modal__actions {
     white-space: nowrap;
 }
 
-.roster-stats__tab:hover {
-    color: var(--color-text-primary);
-    background: rgba(255, 255, 255, 0.05);
+@media (hover: hover) {
+    .roster-stats__tab:hover {
+        color: var(--color-text-primary);
+        background: rgba(255, 255, 255, 0.05);
+    }
 }
 
 .roster-stats__tab--active {
@@ -760,8 +762,10 @@ html.light .roster-stats__hall-tabs {
     border-color: rgba(0, 0, 0, 0.05);
 }
 
-html.light .roster-stats__tab:hover {
-    background: rgba(0, 0, 0, 0.05);
+@media (hover: hover) {
+    html.light .roster-stats__tab:hover {
+        background: rgba(0, 0, 0, 0.05);
+    }
 }
 
 /* User Enrichment Modal Styles */
@@ -780,6 +784,7 @@ html.light .roster-stats__tab:hover {
     transform: translateY(-50%);
     opacity: 0.4;
     color: var(--color-text-primary);
+    pointer-events: none;
 }
 
 .roster-modal__user-list {
@@ -839,10 +844,12 @@ html.light .roster-stats__tab:hover {
     transition: all 0.2s ease !important;
 }
 
-.roster-modal__hall-btn:hover:not(:disabled) {
-    background: rgba(10, 132, 255, 0.2) !important;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(10, 132, 255, 0.1);
+@media (hover: hover) {
+    .roster-modal__hall-btn:hover:not(:disabled) {
+        background: rgba(10, 132, 255, 0.2) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(10, 132, 255, 0.1);
+    }
 }
 
 .roster-modal__hall-btn:active:not(:disabled) {

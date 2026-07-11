@@ -33,6 +33,7 @@ function App() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isVolunteerAuthenticated = useVolunteerAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
+  const isAdminView = useAuthStore((state) => state.isAdminView);
   const updateActivity = useAuthStore((state) => state.updateActivity);
   const checkInactivity = useAuthStore((state) => state.checkInactivity);
 
@@ -92,7 +93,7 @@ function App() {
             element={
               isVolunteerAuthenticated 
                 ? <Navigate to="/volunteer-dashboard" replace /> 
-                : user?.role === 'Admin' 
+                : (user?.role === 'Admin' && isAdminView)
                   ? <DashboardPage /> 
                   : <UserDashboardPage />
             }
@@ -110,15 +111,15 @@ function App() {
           {/* Admin / Leader specific routes inside the main layout */}
           <Route
             path="/users"
-            element={<ProtectedRoute allowedRoles={['Admin']}><UsersPage /></ProtectedRoute>}
+            element={<ProtectedRoute allowedRoles={['Admin', 'Technical']}><UsersPage /></ProtectedRoute>}
           />
           <Route
             path="/attendance"
-            element={<ProtectedRoute allowedRoles={['Admin']}><AttendancePage /></ProtectedRoute>}
+            element={<ProtectedRoute allowedRoles={['Admin', 'Technical']}><AttendancePage /></ProtectedRoute>}
           />
           <Route
             path="/activity-logs"
-            element={<ProtectedRoute allowedRoles={['Admin']}><ActivityLogsPage /></ProtectedRoute>}
+            element={<ProtectedRoute allowedRoles={['Admin', 'Technical']}><ActivityLogsPage /></ProtectedRoute>}
           />
           <Route
             path="/roster-management"

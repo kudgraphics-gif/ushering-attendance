@@ -17,6 +17,8 @@ interface AuthState {
     lastActivity: number; // Timestamp of last user activity
     updateActivity: () => void;
     checkInactivity: () => void;
+    isAdminView: boolean;
+    toggleAdminView: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -28,6 +30,11 @@ export const useAuthStore = create<AuthState>()(
             error: null,
             token: null,
             lastActivity: Date.now(),
+            isAdminView: true,
+
+            toggleAdminView: () => {
+                set((state) => ({ isAdminView: !state.isAdminView }));
+            },
 
             updateActivity: () => {
                 set({ lastActivity: Date.now() });
@@ -77,6 +84,7 @@ export const useAuthStore = create<AuthState>()(
                             isAuthenticated: true,
                             token,
                             loading: false,
+                            isAdminView: userData.role === 'Admin',
                         });
                     } catch (persistError) {
                         // If Zustand persist fails due to quota, clear everything and retry
@@ -105,6 +113,7 @@ export const useAuthStore = create<AuthState>()(
                                 isAuthenticated: true,
                                 token,
                                 loading: false,
+                                isAdminView: userData.role === 'Admin',
                             });
                         } else {
                             throw persistError;
@@ -123,7 +132,7 @@ export const useAuthStore = create<AuthState>()(
             },
 
             logout: () => {
-                set({ user: null, isAuthenticated: false, token: null, error: null });
+                set({ user: null, isAuthenticated: false, token: null, error: null, isAdminView: true });
                 // Note: No need to manually localStorage.removeItem
             },
 
@@ -203,7 +212,8 @@ export const useAuthStore = create<AuthState>()(
                 user: state.user,
                 token: state.token,
                 isAuthenticated: state.isAuthenticated,
-                lastActivity: state.lastActivity
+                lastActivity: state.lastActivity,
+                isAdminView: state.isAdminView,
             }),
         }
     )

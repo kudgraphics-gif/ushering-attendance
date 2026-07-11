@@ -135,6 +135,7 @@
 
 .volunteers-search-icon {
     color: var(--color-text-tertiary);
+    pointer-events: none;
 }
 
 .volunteers-search-input {
@@ -217,8 +218,10 @@
     vertical-align: middle;
 }
 
-.volunteers-table__row:hover {
-    background: rgba(255, 255, 255, 0.015);
+@media (hover: hover) {
+    .volunteers-table__row:hover {
+        background: rgba(255, 255, 255, 0.015);
+    }
 }
 
 .volunteers-table__user-cell {
@@ -310,10 +313,12 @@
     transition: all 0.2s ease;
 }
 
-.volunteers-action-icon:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: var(--color-text-primary);
-    border-color: var(--color-primary);
+@media (hover: hover) {
+    .volunteers-action-icon:hover {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--color-text-primary);
+        border-color: var(--color-primary);
+    }
 }
 
 .border-radius-sm {
@@ -362,9 +367,11 @@
     transition: background 0.15s ease, color 0.15s ease;
 }
 
-.volunteers-actions-popover button:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--color-text-primary);
+@media (hover: hover) {
+    .volunteers-actions-popover button:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--color-text-primary);
+    }
 }
 
 .volunteers-actions-popover hr {
@@ -525,9 +532,11 @@
     transition: all 0.2s ease;
 }
 
-.volunteers-page__page-btn:hover:not(:disabled) {
-    background: rgba(255,255,255,0.1);
-    border-color: var(--color-primary);
+@media (hover: hover) {
+    .volunteers-page__page-btn:hover:not(:disabled) {
+        background: rgba(255,255,255,0.1);
+        border-color: var(--color-primary);
+    }
 }
 
 .volunteers-page__page-btn:disabled {

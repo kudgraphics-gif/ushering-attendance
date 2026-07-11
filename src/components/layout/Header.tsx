@@ -4,6 +4,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { useVolunteerAuthStore } from '../../stores/volunteerAuthStore';
 import { Avatar } from '../ui/Avatar';
 import { ThemeToggle } from '../ui/ThemeToggle';
+import { ViewModeToggle } from '../ui/ViewModeToggle';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -20,6 +21,7 @@ export function Header({ onMenuClick }: HeaderProps) {
     const user = useAuthStore((state) => state.user);
     const logout = useAuthStore((state) => state.logout);
     const token = useAuthStore((state) => state.token);
+    const isAdminView = useAuthStore((state) => state.isAdminView);
 
     const volunteer = useVolunteerAuthStore((state) => state.volunteer);
     const logoutVolunteer = useVolunteerAuthStore((state) => state.logoutVolunteer);
@@ -132,7 +134,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 <Menu size={24} />
             </button>
 
-            {currentUser?.role === 'Admin' ? (
+            {(currentUser?.role === 'Admin' && isAdminView) ? (
                 <button
                     className="header__checkin-btn"
                     onClick={handleAdminCheckIn}
@@ -155,6 +157,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             )}
 
             <div className="header__actions">
+                {user?.role === 'Admin' && <ViewModeToggle />}
                 <ThemeToggle />
 
 

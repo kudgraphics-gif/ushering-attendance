@@ -268,3 +268,16 @@ p {
     opacity: 1;
   }
 }
+
+/* Disable double-tap zoom delay on mobile devices for click responsiveness */
+button,
+a,
+input,
+select,
+textarea,
+[role="button"],
+.users-page__view-btn,
+.roster-stats__tab,
+.roster-modal__hall-btn {
+  touch-action: manipulation;
+}

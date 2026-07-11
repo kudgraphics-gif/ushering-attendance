@@ -26,8 +26,10 @@
   cursor: pointer;
 }
 
-.card--hover:hover {
-  transform: translateY(-4px);
+@media (hover: hover) {
+  .card--hover:hover {
+    transform: translateY(-4px);
+  }
 }
 
 .card--clickable {

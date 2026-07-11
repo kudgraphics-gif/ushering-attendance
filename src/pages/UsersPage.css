@@ -54,9 +54,11 @@
   justify-content: center;
 }
 
-.users-page__view-btn:hover {
-  color: var(--color-text-primary);
-  background: rgba(255, 255, 255, 0.05);
+@media (hover: hover) {
+  .users-page__view-btn:hover {
+    color: var(--color-text-primary);
+    background: rgba(255, 255, 255, 0.05);
+  }
 }
 
 .users-page__view-btn--active {
@@ -80,6 +82,7 @@
   position: absolute;
   left: var(--space-md);
   color: var(--color-text-secondary);
+  pointer-events: none;
 }
 
 .users-page__search-input {
@@ -256,13 +259,6 @@
   flex-shrink: 0;
 }
 
-.user-card__action-btn:hover:not(:disabled) {
-  background: rgba(0, 217, 255, 0.2);
-  border-color: var(--color-accent-blue);
-  color: var(--color-accent-blue);
-  transform: translateY(-2px);
-}
-
 .user-card__action-btn:active:not(:disabled) {
   transform: translateY(0);
 }
@@ -278,44 +274,52 @@
   border-color: rgba(245, 158, 11, 0.2);
 }
 
-.user-card__action-btn--strike:hover:not(:disabled) {
-  background: rgba(245, 158, 11, 0.2);
-  color: #F59E0B;
-  border-color: rgba(245, 158, 11, 0.5);
-}
-
 .user-card__action-btn--delete {
   background: rgba(255, 107, 107, 0.1);
   color: var(--text-primary);
 }
 
-.user-card__action-btn--delete:hover:not(:disabled) {
-  background: rgba(255, 107, 107, 0.2);
-  border-color: #ff6b6b;
-  color: #ff6b6b;
-}
-
-/* --- New Activate / Deactivate Button Styles --- */
 .user-card__action-btn--activate {
   background: rgba(48, 209, 88, 0.1);
   color: #30d158;
 }
 
-.user-card__action-btn--activate:hover:not(:disabled) {
-  background: rgba(48, 209, 88, 0.2);
-  border-color: #30d158;
-  color: #30d158;
-}
-
 .user-card__action-btn--deactivate {
   background: rgba(255, 159, 10, 0.1);
-  color: #ff9f0a; /* Orange to distinguish from the Red Delete button */
+  color: #ff9f0a;
 }
 
-.user-card__action-btn--deactivate:hover:not(:disabled) {
-  background: rgba(255, 159, 10, 0.2);
-  border-color: #ff9f0a;
-  color: #ff9f0a;
+@media (hover: hover) {
+  .user-card__action-btn:hover:not(:disabled) {
+    background: rgba(0, 217, 255, 0.2);
+    border-color: var(--color-accent-blue);
+    color: var(--color-accent-blue);
+    transform: translateY(-2px);
+  }
+
+  .user-card__action-btn--strike:hover:not(:disabled) {
+    background: rgba(245, 158, 11, 0.2);
+    color: #F59E0B;
+    border-color: rgba(245, 158, 11, 0.5);
+  }
+
+  .user-card__action-btn--delete:hover:not(:disabled) {
+    background: rgba(255, 107, 107, 0.2);
+    border-color: #ff6b6b;
+    color: #ff6b6b;
+  }
+
+  .user-card__action-btn--activate:hover:not(:disabled) {
+    background: rgba(48, 209, 88, 0.2);
+    border-color: #30d158;
+    color: #30d158;
+  }
+
+  .user-card__action-btn--deactivate:hover:not(:disabled) {
+    background: rgba(255, 159, 10, 0.2);
+    border-color: #ff9f0a;
+    color: #ff9f0a;
+  }
 }
 
 /* Light Theme Overrides */
