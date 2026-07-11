@@ -8,7 +8,7 @@ import { Button } from '../components/ui/Button';
 import { rosterAPI, type RosterAssignment, type RosterStats } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import { UserHistoryModal } from '../components/ui/UserHistoryModal';
-import type { UserDto } from '../types';
+import type { UserDto, Roster } from '../types';
 import {
     CheckCircle2,
     Mars,
@@ -49,6 +49,9 @@ export function RosterAssignmentsPage() {
     const [exportLoading, setExportLoading] = useState(false);
     const [updatingHall, setUpdatingHall] = useState(false);
     
+    // Roster metadata state
+    const [rosterInfo, setRosterInfo] = useState<Roster | null>(null);
+
     // Outliers state
     const [outliers, setOutliers] = useState<any[]>([]);
     const [outliersLoading, setOutliersLoading] = useState(false);
@@ -100,10 +103,20 @@ export function RosterAssignmentsPage() {
         }
     };
 
+    const fetchRosterInfo = async (rosterId: string) => {
+        try {
+            const data = await rosterAPI.getById(rosterId, token!);
+            setRosterInfo(data);
+        } catch (error) {
+            console.error('Failed to load roster info:', error);
+        }
+    };
+
     useEffect(() => {
         if (id && token) {
             fetchAssignments(id);
             fetchStats(id);
+            fetchRosterInfo(id);
         }
     }, [id, token]);
 
@@ -185,6 +198,120 @@ export function RosterAssignmentsPage() {
         if (!id || !token) return;
         setExportLoading(true);
         setExportMenuOpen(false);
+
+        if (type === 'CombinedWithHistory') {
+            const toastId = toast.loading('Preparing to export roster with history...');
+            try {
+                const targets = assignments.length > 0 ? assignments : await rosterAPI.getAssignments(id, token);
+                if (targets.length === 0) {
+                    toast.error('No assignments found to export', { id: toastId });
+                    setExportLoading(false);
+                    return;
+                }
+
+                toast.loading(`Fetching hall history: 0/${targets.length}...`, { id: toastId });
+
+                const results: Array<{ assignment: RosterAssignment; history: any[] }> = [];
+                const batchSize = 10;
+
+                for (let i = 0; i < targets.length; i += batchSize) {
+                    const batch = targets.slice(i, i + batchSize);
+                    const batchPromises = batch.map(async (asg) => {
+                        try {
+                            const history = await rosterAPI.getUserHistory(asg.user_id, token);
+                            return { assignment: asg, history: history || [] };
+                        } catch (err) {
+                            console.error(`Failed to fetch history for ${asg.first_name} ${asg.last_name}:`, err);
+                            return { assignment: asg, history: [] };
+                        }
+                    });
+
+                    const batchResults = await Promise.all(batchPromises);
+                    results.push(...batchResults);
+
+                    const completed = Math.min(i + batchSize, targets.length);
+                    toast.loading(`Fetching hall history: ${completed}/${targets.length}...`, { id: toastId });
+                }
+
+                const escapeCSV = (val: string | null | undefined) => {
+                    if (val === null || val === undefined) return '';
+                    const str = val.toString().replace(/"/g, '""');
+                    if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+                        return `"${str}"`;
+                    }
+                    return str;
+                };
+
+                const rosterTitle = rosterInfo?.name || 'Roster Assignments';
+
+                // Collect all unique previous roster names and associate them with their earliest start date
+                const rosterDateMap: Record<string, string> = {};
+                for (const res of results) {
+                    for (const item of res.history) {
+                        if (item.roster_name) {
+                            const existingDate = rosterDateMap[item.roster_name];
+                            if (!existingDate || (item.start_date && new Date(item.start_date) < new Date(existingDate))) {
+                                rosterDateMap[item.roster_name] = item.start_date || '';
+                            }
+                        }
+                    }
+                }
+
+                // Sort rosters chronologically: newest to oldest (left to right)
+                const uniqueRosterNames = Object.keys(rosterDateMap).sort((a, b) => {
+                    const dateA = rosterDateMap[a];
+                    const dateB = rosterDateMap[b];
+                    if (!dateA) return 1;
+                    if (!dateB) return -1;
+                    return new Date(dateB).getTime() - new Date(dateA).getTime();
+                });
+
+                // Headers include standard fields plus each unique previous roster as a separate column
+                const headers = ['Roster Title', 'Reg No', 'First Name', 'Last Name', 'Assigned Hall', ...uniqueRosterNames];
+                const csvRows = [headers.map(escapeCSV).join(',')];
+
+                for (const res of results) {
+                    const { assignment, history } = res;
+
+                    // Map the hall served for each previous roster column
+                    const historyHalls = uniqueRosterNames.map((rosterName) => {
+                        const match = history.find((h: any) => h.roster_name === rosterName);
+                        return match ? match.hall : '';
+                    });
+
+                    const row = [
+                        rosterTitle,
+                        assignment.reg_no,
+                        assignment.first_name,
+                        assignment.last_name,
+                        assignment.hall,
+                        ...historyHalls
+                    ];
+                    csvRows.push(row.map(escapeCSV).join(','));
+                }
+
+                const csvContent = csvRows.join('\n');
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const filename = `roster_assignments_Combined_With_History_${new Date().toISOString().split('T')[0]}.csv`;
+
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                toast.success('Roster with history exported successfully', { id: toastId });
+            } catch (error) {
+                console.error(error);
+                toast.error('Failed to export data with history', { id: toastId });
+            } finally {
+                setExportLoading(false);
+            }
+            return;
+        }
 
         try {
             let blob: Blob;
@@ -541,9 +668,29 @@ export function RosterAssignmentsPage() {
                                 borderRadius: 'var(--radius-md)',
                                 boxShadow: 'var(--shadow-lg)',
                                 zIndex: 100,
-                                minWidth: '180px',
+                                minWidth: '200px',
                                 overflow: 'hidden'
                             }}>
+                                <button
+                                    onClick={() => handleExport('CombinedWithHistory')}
+                                    style={{
+                                        display: 'block',
+                                        width: '100%',
+                                        padding: '12px 16px',
+                                        textAlign: 'left',
+                                        background: 'transparent',
+                                        border: 'none',
+                                        color: 'var(--color-primary)',
+                                        fontWeight: 600,
+                                        cursor: 'pointer',
+                                        transition: 'background 0.2s',
+                                        borderBottom: '1px solid rgba(255,255,255,0.1)'
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                                >
+                                    Export All with History
+                                </button>
                                 {['Combined', 'MainHall', 'HallOne', 'Gallery', 'Basement', 'Outside'].map((type) => (
                                     <button
                                         key={type}
