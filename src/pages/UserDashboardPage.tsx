@@ -1023,7 +1023,7 @@ export function UserDashboardPage() {
     useEffect(() => {
         const timer = setInterval(() => {
             setScriptureIndex((prev) => (prev + 1) % SCRIPTURES.length);
-        }, 5000);
+        }, 15000);
         return () => clearInterval(timer);
     }, []);
 
