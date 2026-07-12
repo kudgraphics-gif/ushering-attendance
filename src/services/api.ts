@@ -41,7 +41,7 @@ async function apiCall<T>(
     };
 
     if (token) {
-        // headers['Authorization'] = `Bearer ${token}`;
+       // headers['Authorization'] = `Bearer ${token}`;
     }
 
     try {
@@ -1017,7 +1017,7 @@ export const volunteerEventsAPI = {
     },
 
     getAll: async (token: string): Promise<any[]> => {
-        return apiCall<any[]>('GET', '/volunteer-events/', undefined, token);
+        return apiCall<any[]>('GET', '/volunteer-events', undefined, token);
     },
 
     update: async (

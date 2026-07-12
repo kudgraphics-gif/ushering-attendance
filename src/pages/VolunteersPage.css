@@ -85,9 +85,9 @@
 }
 
 .bg-gold-glass {
-    background: rgba(212, 175, 55, 0.12);
-    border: 1px solid rgba(212, 175, 55, 0.3);
-    color: #D4AF37;
+    background: var(--accent-secondary);
+    border: 1px solid var(--accent-glow);
+    color: var(--color-primary);
 }
 
 .bg-green-glass {

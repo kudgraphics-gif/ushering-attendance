@@ -139,7 +139,7 @@ export const useAuthStore = create<AuthState>()(
             },
 
             logout: () => {
-                set({ user: null, isAuthenticated: false, token: null, error: null, isAdminView: true, accentColor: 'gold' });
+                set((state) => ({ user: null, isAuthenticated: false, token: null, error: null, isAdminView: true, accentColor: state.accentColor }));
                 // Note: No need to manually localStorage.removeItem
             },
 
