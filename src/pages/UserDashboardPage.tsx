@@ -3,7 +3,7 @@ import { useAuthStore } from '../stores/authStore';
 import { analyticsAPI, eventsAPI, attendanceAPI } from '../services/api';
 import type { Event, UserDto } from '../types';
 import toast from 'react-hot-toast';
-import { MapPin, Calendar, CheckCircle2, User, Info, Crown, AlertTriangle, ArrowRight, Music, DollarSign, BookOpen, Clock, Trophy, Play, RotateCcw, HelpCircle, X } from 'lucide-react';
+import { MapPin, Calendar, CheckCircle2, User, Info, Crown, AlertTriangle, ArrowRight, Music, DollarSign, BookOpen, Clock, Trophy, Play, RotateCcw, HelpCircle, X, Check } from 'lucide-react';
 import { getNearestVenue } from '../utils/geoCheck';
 import { SuggestionBox } from '../components/ui/SuggestionBox';
 import { LocationWarningModal } from '../components/ui/LocationWarningModal';
@@ -556,7 +556,7 @@ interface CircularProgressProps {
     color?: string;
 }
 
-function CircularProgress({ percentage, size = 68, strokeWidth = 6, color = "#D4AF37" }: CircularProgressProps) {
+function CircularProgress({ percentage, size = 68, strokeWidth = 6, color = "var(--accent-primary)" }: CircularProgressProps) {
     const radius = (size - strokeWidth) / 2;
     const circumference = radius * 2 * Math.PI;
     const strokeDashoffset = circumference - (percentage / 100) * circumference;
@@ -604,7 +604,7 @@ const ConfettiBurst = () => {
                 const x = Math.cos(angle * Math.PI / 180) * distance;
                 const y = Math.sin(angle * Math.PI / 180) * distance;
                 const size = 6 + Math.random() * 10;
-                const colors = ['#D4AF37', '#34C759', '#0A84FF', '#FF2D55', '#AF52DE'];
+                const colors = ['var(--accent-primary)', '#34C759', '#0A84FF', '#FF2D55', '#AF52DE'];
                 const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
                 return (
@@ -656,6 +656,272 @@ function SkeletonDashboard() {
                     <div className="skeleton-card roster-shimmer" />
                     <div className="skeleton-card shortcuts-shimmer" />
                 </div>
+            </div>
+        </div>
+    );
+}
+
+// Custom Monthly Serving Streak Calendar Component
+function StreakCalendar({ history }: { history: AttendanceRecord[] }) {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDayIndex = new Date(year, month, 1).getDay();
+
+    const monthNames = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+
+    const getDayStatus = (dayNum: number) => {
+        const targetDateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+        const record = history.find(r => r.date.split('T')[0] === targetDateStr);
+        if (record) return 'present';
+
+        const dayOfWeek = new Date(year, month, dayNum).getDay();
+        
+        // Remove time comparison to only look at day dates
+        const comparisonToday = new Date(today);
+        comparisonToday.setHours(0, 0, 0, 0);
+        const cellDate = new Date(year, month, dayNum);
+        cellDate.setHours(0,0,0,0);
+        
+        if (cellDate > comparisonToday) return 'future';
+
+        if (dayOfWeek === 0 || dayOfWeek === 3) {
+            return 'absent';
+        }
+        return 'none';
+    };
+
+    const checkInsThisMonth = history.filter(r => {
+        const d = new Date(r.date);
+        return d.getFullYear() === year && d.getMonth() === month;
+    }).length;
+
+    const daysOfWeekHeaders = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+
+    return (
+        <div className="streak-calendar">
+            <div className="streak-calendar__header">
+                <span className="streak-calendar__title">{monthNames[month]} {year}</span>
+                <span className="streak-calendar__badge">
+                    🔥 {checkInsThisMonth} Streak Logs
+                </span>
+            </div>
+            
+            <div className="streak-calendar__days-header">
+                {daysOfWeekHeaders.map((d, i) => (
+                    <div key={i} className="day-header-cell">{d}</div>
+                ))}
+            </div>
+
+            <div className="streak-calendar__grid">
+                {Array.from({ length: firstDayIndex }).map((_, i) => (
+                    <div key={`empty-${i}`} className="calendar-cell empty" />
+                ))}
+                {Array.from({ length: daysInMonth }).map((_, i) => {
+                    const dayNum = i + 1;
+                    const status = getDayStatus(dayNum);
+                    let cellClass = `calendar-cell ${status}`;
+                    if (dayNum === today.getDate()) {
+                        cellClass += ' is-today';
+                    }
+
+                    return (
+                        <div key={dayNum} className={cellClass}>
+                            <span className="day-num">{dayNum}</span>
+                            {status === 'present' && <span className="status-dot present" />}
+                            {status === 'absent' && <span className="status-dot absent" />}
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
+// Real-Time Service Timeline Component
+function RosterTimeline() {
+    const [activeTab, setActiveTab] = useState<'sunday' | 'wednesday'>(() => {
+        const today = new Date().getDay();
+        return today === 3 ? 'wednesday' : 'sunday';
+    });
+
+    const [isKsom, setIsKsom] = useState(true);
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+        return () => clearInterval(timer);
+    }, []);
+
+    const getCountdown = (targetHour: number, targetMin: number) => {
+        const target = new Date(currentTime);
+        target.setHours(targetHour, targetMin, 0, 0);
+
+        const diffMs = target.getTime() - currentTime.getTime();
+        if (diffMs <= 0) return 'Passed';
+
+        const diffSecs = Math.floor(diffMs / 1000);
+        const hours = Math.floor(diffSecs / 3600);
+        const mins = Math.floor((diffSecs % 3600) / 60);
+        const secs = diffSecs % 60;
+
+        const pad = (num: number) => String(num).padStart(2, '0');
+        if (hours > 0) {
+            return `${pad(hours)}h ${pad(mins)}m ${pad(secs)}s`;
+        }
+        return `${pad(mins)}m ${pad(secs)}s`;
+    };
+
+    const isTabToday = (tab: 'sunday' | 'wednesday') => {
+        const today = new Date().getDay();
+        return (tab === 'sunday' && today === 0) || (tab === 'wednesday' && today === 3);
+    };
+
+    return (
+        <div className="roster-timeline glass-sm">
+            <div className="roster-timeline__tabs">
+                <button
+                    className={`timeline-tab-btn ${activeTab === 'sunday' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('sunday')}
+                >
+                    Sunday Schedule {isTabToday('sunday') && <span className="today-badge">Today</span>}
+                </button>
+                <button
+                    className={`timeline-tab-btn ${activeTab === 'wednesday' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('wednesday')}
+                >
+                    Wednesday Schedule {isTabToday('wednesday') && <span className="today-badge">Today</span>}
+                </button>
+            </div>
+
+            {activeTab === 'sunday' && (
+                <div className="timeline-steps">
+                    {/* Resumption */}
+                    <div className="timeline-step">
+                        <div className="timeline-node active">
+                            <span className="node-dot" />
+                            <span className="node-line" />
+                        </div>
+                        <div className="timeline-content">
+                            <div className="timeline-time">9:00 AM</div>
+                            <h4 className="timeline-title">Cleaning & Resumption</h4>
+                            <p className="timeline-desc">Sanctuary preparation check-ins. Closing countdown for cleaning groups:</p>
+                            <div className="timeline-meta">
+                                <span className="countdown-value">{getCountdown(10, 0)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Basement Prayers */}
+                    <div className="timeline-step">
+                        <div className="timeline-node active">
+                            <span className="node-dot" />
+                            <span className="node-line" />
+                        </div>
+                        <div className="timeline-content">
+                            <div className="timeline-time">2:00 PM</div>
+                            <h4 className="timeline-title">Basement Prayers</h4>
+                            <p className="timeline-desc">Intercessory prayers for ushers in the basement. Countdown to completion:</p>
+                            <div className="timeline-meta">
+                                <span className="countdown-value">{getCountdown(15, 0)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Duty Posts */}
+                    <div className="timeline-step last">
+                        <div className="timeline-node">
+                            <span className="node-dot" />
+                        </div>
+                        <div className="timeline-content">
+                            <div className="timeline-time">4:30 PM</div>
+                            <h4 className="timeline-title">Duty Posts</h4>
+                            <p className="timeline-desc">All ushers stationed at allocated positions. Sanctuary doors fully open.</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'wednesday' && (
+                <div className="timeline-steps">
+                    <div className="ksom-toggle-bar">
+                        <span className="ksom-toggle-label">KSOM in Session?</span>
+                        <button 
+                            className={`ksom-toggle-btn ${isKsom ? 'active' : ''}`}
+                            onClick={() => setIsKsom(!isKsom)}
+                        >
+                            {isKsom ? 'Yes (4:30 PM)' : 'No (5:00 PM)'}
+                        </button>
+                    </div>
+
+                    {/* Weekly Meeting */}
+                    <div className="timeline-step">
+                        <div className="timeline-node active">
+                            <span className="node-dot" />
+                            <span className="node-line" />
+                        </div>
+                        <div className="timeline-content">
+                            <div className="timeline-time">{isKsom ? '4:30 PM' : '5:00 PM'}</div>
+                            <h4 className="timeline-title">Weekly Meeting Resumption</h4>
+                            <p className="timeline-desc">Check-in starts. Alignment briefing. Late check-in cutoff countdown:</p>
+                            <div className="timeline-meta">
+                                <span className="countdown-value">{getCountdown(18, 0)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Late Cutoff */}
+                    <div className="timeline-step last">
+                        <div className="timeline-node">
+                            <span className="node-dot" />
+                        </div>
+                        <div className="timeline-content">
+                            <div className="timeline-time">6:00 PM</div>
+                            <h4 className="timeline-title">Late Cutoff</h4>
+                            <p className="timeline-desc">Check-ins closed. Defaults are calculated after this hour.</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+// Accent Color Theme Selector Component
+function ThemeSelector() {
+    const accentColor = useAuthStore((state) => state.accentColor) || 'gold';
+    const setAccentColor = useAuthStore((state) => state.setAccentColor);
+
+    const themes = [
+        { id: 'gold', name: 'Gold', color: '#D4AF37' },
+        { id: 'blue', name: 'Blue', color: '#0A84FF' },
+        { id: 'green', name: 'Green', color: '#34C759' },
+        { id: 'purple', name: 'Purple', color: '#AF52DE' }
+    ];
+
+    return (
+        <div className="theme-selector">
+            <h3 className="theme-selector__title">Custom Theme Accent</h3>
+            <div className="theme-selector__grid">
+                {themes.map((t) => (
+                    <button
+                        key={t.id}
+                        onClick={() => {
+                            setAccentColor(t.id);
+                            toast.success(`Theme switched to ${t.name}!`);
+                        }}
+                        className={`theme-selector__btn theme-selector__btn--${t.id} ${accentColor === t.id ? 'active' : ''}`}
+                    >
+                        <span className="color-dot" style={{ backgroundColor: t.color }} />
+                        <span className="color-name">{t.name}</span>
+                        {accentColor === t.id && <Check size={12} className="check-icon" />}
+                    </button>
+                ))}
             </div>
         </div>
     );
@@ -1076,6 +1342,23 @@ export function UserDashboardPage() {
         );
     };
 
+    const activeTheme = useAuthStore((state) => state.accentColor) || 'gold';
+
+    // Map color variables
+    const accentPalettes = {
+        gold: { primary: '#D4AF37', secondary: 'rgba(212, 175, 55, 0.15)', glow: 'rgba(212, 175, 55, 0.3)' },
+        blue: { primary: '#0A84FF', secondary: 'rgba(10, 132, 255, 0.15)', glow: 'rgba(10, 132, 255, 0.3)' },
+        green: { primary: '#34C759', secondary: 'rgba(52, 199, 89, 0.15)', glow: 'rgba(52, 199, 89, 0.3)' },
+        purple: { primary: '#AF52DE', secondary: 'rgba(175, 82, 222, 0.15)', glow: 'rgba(175, 82, 222, 0.3)' }
+    };
+
+    const colors = accentPalettes[activeTheme as keyof typeof accentPalettes] || accentPalettes.gold;
+    const dynamicVars = {
+        '--accent-primary': colors.primary,
+        '--accent-secondary': colors.secondary,
+        '--accent-glow': colors.glow
+    } as React.CSSProperties;
+
     if (loading) {
         return <SkeletonDashboard />;
     }
@@ -1094,7 +1377,7 @@ export function UserDashboardPage() {
     const isRosterActive = !!rosterHall;
 
     return (
-        <div className="user-dashboard-modern">
+        <div className="user-dashboard-modern" style={dynamicVars}>
             {/* Soft Ambient Background Orbs */}
             <div className="user-dashboard-modern__bg">
                 <div className="user-dashboard-modern__orb user-dashboard-modern__orb--gold" />
@@ -1141,7 +1424,7 @@ export function UserDashboardPage() {
                             <ConfettiBurst />
                             
                             <div className="success-modal__header">
-                                <Trophy size={36} color="#D4AF37" className="success-modal__trophy" />
+                                <Trophy size={36} color="var(--accent-primary)" className="success-modal__trophy" />
                                 <button 
                                     className="success-modal__close-btn"
                                     onClick={() => setCheckInSuccessData(null)}
@@ -1185,7 +1468,7 @@ export function UserDashboardPage() {
             {/* Scripture Banner */}
             <div className="user-dashboard-modern__scripture glass-strong">
                 <div className="user-dashboard-modern__scripture-icon">
-                    <BookOpen size={24} color="#D4AF37" />
+                    <BookOpen size={24} color="var(--accent-primary)" />
                 </div>
                 <div className="user-dashboard-modern__scripture-content">
                     <AnimatePresence mode="wait">
@@ -1209,7 +1492,7 @@ export function UserDashboardPage() {
 
             {/* Layout Grid */}
             <div className="user-dashboard-modern__layout">
-                {/* Left Column: Welcoming Card, Check-In Card, Metrics, Strike */}
+                {/* Left Column: Welcoming Card, Check-In Card, RosterTimeline, Metrics */}
                 <div className="user-dashboard-modern__col">
                     {/* Welcome Card */}
                     <motion.section 
@@ -1277,15 +1560,24 @@ export function UserDashboardPage() {
                         </div>
                     </motion.section>
 
+                    {/* Real-time Serving Timelines */}
+                    <motion.section
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.15 }}
+                    >
+                        <RosterTimeline />
+                    </motion.section>
+
                     {/* Metrics Grid */}
                     <div className="user-dashboard-modern__metrics">
                         <motion.div 
                             className="user-dashboard-modern__metric-card glass"
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.4, delay: 0.15 }}
+                            transition={{ duration: 0.4, delay: 0.2 }}
                         >
-                            <CircularProgress percentage={attendanceRate} color="#D4AF37" />
+                            <CircularProgress percentage={attendanceRate} color="var(--accent-primary)" />
                             <div className="metric-info">
                                 <span className="user-dashboard-modern__metric-lbl">Attendance Rate</span>
                                 <span className="user-dashboard-modern__metric-detail">{daysPresent} of {totalDays} days</span>
@@ -1296,7 +1588,7 @@ export function UserDashboardPage() {
                             className="user-dashboard-modern__metric-card glass"
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            transition={{ duration: 0.4, delay: 0.2 }}
+                            transition={{ duration: 0.4, delay: 0.25 }}
                         >
                             <div className="metric-progress-container">
                                 <div className="metric-progress-header">
@@ -1320,7 +1612,7 @@ export function UserDashboardPage() {
                         className="user-dashboard-modern__strike glass"
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.25 }}
+                        transition={{ duration: 0.5, delay: 0.3 }}
                     >
                         <div className="user-dashboard-modern__strike-main">
                             <div className="user-dashboard-modern__strike-icon">
@@ -1358,7 +1650,7 @@ export function UserDashboardPage() {
                     </motion.div>
                 </div>
 
-                {/* Right Column: Roster, Quick Links, Events, History */}
+                {/* Right Column: Roster, Quick Links, Events, StreakCalendar, ThemeSelector */}
                 <div className="user-dashboard-modern__col">
                     {/* Roster Assignment */}
                     <motion.section 
@@ -1435,13 +1727,35 @@ export function UserDashboardPage() {
                         </div>
                     </motion.section>
 
+                    {/* Custom Streak Calendar Visualizer */}
+                    {attendanceData?.history && (
+                        <motion.section
+                            className="user-dashboard-modern__panel glass"
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.22 }}
+                        >
+                            <StreakCalendar history={attendanceData.history} />
+                        </motion.section>
+                    )}
+
+                    {/* Theme Selector */}
+                    <motion.section
+                        className="user-dashboard-modern__panel glass"
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.24 }}
+                    >
+                        <ThemeSelector />
+                    </motion.section>
+
                     {/* Upcoming Events */}
                     {upcomingEvents.length > 0 && (
                         <motion.section 
                             className="user-dashboard-modern__panel glass"
                             initial={{ opacity: 0, y: 15 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.25 }}
+                            transition={{ duration: 0.5, delay: 0.26 }}
                         >
                             <h2 className="user-dashboard-modern__section-title">Upcoming Events</h2>
                             <div className="user-dashboard-modern__events">
@@ -1467,7 +1781,7 @@ export function UserDashboardPage() {
                             className="user-dashboard-modern__panel glass"
                             initial={{ opacity: 0, y: 15 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.3 }}
+                            transition={{ duration: 0.5, delay: 0.28 }}
                         >
                             <h2 className="user-dashboard-modern__section-title">Recent Check-ins</h2>
                             <div className="user-dashboard-modern__history">
@@ -1495,10 +1809,10 @@ export function UserDashboardPage() {
                 className="user-dashboard-modern__game glass-strong"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.35 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
             >
                 <div className="game-header">
-                    <Trophy size={28} color="#D4AF37" className="game-header__trophy" />
+                    <Trophy size={28} color="var(--accent-primary)" className="game-header__trophy" />
                     <div>
                         <h2 className="game-title">Koinonia Global Quiz</h2>
                         <p className="game-subtitle">Test your knowledge of the ministry & Bible facts! 15 seconds per question.</p>
@@ -1531,7 +1845,7 @@ export function UserDashboardPage() {
                                 className="timer-bar"
                                 style={{ width: `${(timeLeft / 15) * 100}%` }}
                                 animate={{
-                                    backgroundColor: timeLeft <= 5 ? '#EF4444' : '#D4AF37'
+                                    backgroundColor: timeLeft <= 5 ? '#EF4444' : 'var(--accent-primary)'
                                 }}
                                 transition={{ duration: 1, ease: 'linear' }}
                             />

@@ -19,6 +19,8 @@ interface AuthState {
     checkInactivity: () => void;
     isAdminView: boolean;
     toggleAdminView: () => void;
+    accentColor: string;
+    setAccentColor: (color: string) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -31,9 +33,14 @@ export const useAuthStore = create<AuthState>()(
             token: null,
             lastActivity: Date.now(),
             isAdminView: true,
+            accentColor: 'gold',
 
             toggleAdminView: () => {
                 set((state) => ({ isAdminView: !state.isAdminView }));
+            },
+
+            setAccentColor: (color: string) => {
+                set({ accentColor: color });
             },
 
             updateActivity: () => {
@@ -132,7 +139,7 @@ export const useAuthStore = create<AuthState>()(
             },
 
             logout: () => {
-                set({ user: null, isAuthenticated: false, token: null, error: null, isAdminView: true });
+                set({ user: null, isAuthenticated: false, token: null, error: null, isAdminView: true, accentColor: 'gold' });
                 // Note: No need to manually localStorage.removeItem
             },
 
@@ -214,6 +221,7 @@ export const useAuthStore = create<AuthState>()(
                 isAuthenticated: state.isAuthenticated,
                 lastActivity: state.lastActivity,
                 isAdminView: state.isAdminView,
+                accentColor: state.accentColor,
             }),
         }
     )
