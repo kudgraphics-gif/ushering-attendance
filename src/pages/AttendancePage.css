@@ -234,3 +234,58 @@
         flex: 1;
     }
 }
+
+@media (max-width: 768px) {
+    .attendance-page__header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-md);
+        margin-bottom: var(--space-xl);
+    }
+    
+    .attendance-page__actions {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: var(--space-sm);
+    }
+    
+    .attendance-page__actions button {
+        flex: 1;
+        min-width: 120px;
+    }
+}
+
+@media (max-width: 640px) {
+    .attendance-by-date-card__header {
+        gap: var(--space-md);
+        padding: var(--space-md) var(--space-sm);
+    }
+    
+    .attendance-tabs {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        -webkit-overflow-scrolling: touch;
+        display: flex;
+        gap: var(--space-sm);
+    }
+
+    .attendance-tab {
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+    
+    .attendance-by-date-card__controls {
+        flex-direction: column;
+        width: 100%;
+        gap: var(--space-sm);
+    }
+    
+    .attendance-by-date-card__input, 
+    .attendance-by-date-card__search {
+        width: 100%;
+        min-width: unset;
+        flex: unset;
+    }
+}

@@ -9,7 +9,7 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: var(--gradient-gold);
+  background: var(--gradient-primary);
   border: none;
   color: #fff;
   display: flex;
@@ -22,7 +22,7 @@
 
 .suggestion-box__fab:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.6);
+  box-shadow: 0 8px 25px var(--accent-glow);
 }
 
 /* Popup Container */
@@ -60,8 +60,8 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: rgba(212, 175, 55, 0.1);
-  color: #D4AF37;
+  background: var(--accent-secondary);
+  color: var(--accent-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -154,10 +154,10 @@
 
 .sb-bubble--user {
   align-self: flex-end;
-  background: rgba(212, 175, 55, 0.15); /* Gold tint */
+  background: var(--accent-secondary);
   color: #fff;
   border-top-right-radius: 4px;
-  border: 1px solid rgba(212, 175, 55, 0.2);
+  border: 1px solid var(--accent-glow);
 }
 
 .sb-bubble-text {
@@ -189,7 +189,7 @@
 }
 
 .sb-bubble-status--sent {
-  color: #D4AF37; /* Delivered / Received */
+  color: var(--color-primary); /* Delivered / Received */
 }
 
 /* Input Area (User Chat) */
@@ -211,7 +211,7 @@
 }
 
 .sb-input-form:focus-within {
-  border-color: rgba(212, 175, 55, 0.4);
+  border-color: var(--accent-primary);
 }
 
 .sb-input {
@@ -245,7 +245,7 @@
 }
 
 .sb-send-btn.active {
-  background: #D4AF37;
+  background: var(--color-primary);
   color: #000;
 }
 

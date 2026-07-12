@@ -42,7 +42,7 @@ export function AttendancePage() {
     const { token, user } = useAuthStore();
 
     useEffect(() => {
-        if (token && user?.role === 'Admin') {
+        if (token && (user?.role === 'Admin' || user?.role === 'Technical')) {
             fetchAttendanceData();
         }
     }, [selectedDate, token]);
@@ -597,7 +597,7 @@ export function AttendancePage() {
             </div>
 
             {/* Admin Section - Attendance Analytics */}
-            {user?.role === 'Admin' && (
+            {(user?.role === 'Admin' || user?.role === 'Technical') && (
                 <>
                     {/* Attendance Rates - Pie Charts */}
                     <div className="attendance-page__stats-grid">
@@ -704,15 +704,17 @@ export function AttendancePage() {
                                         <p>No activity recorded yet for this date.</p>
                                     </div>
                                 ) : (
-                                    <DataTable
-                                        columns={recentActivityColumns}
-                                        data={recentActivities}
-                                        pagination
-                                        paginationPerPage={5}
-                                        paginationRowsPerPageOptions={[5, 10, 20]}
-                                        customStyles={customTableStyles}
-                                        theme="dark"
-                                    />
+                                    <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                                        <DataTable
+                                            columns={recentActivityColumns}
+                                            data={recentActivities}
+                                            pagination
+                                            paginationPerPage={5}
+                                            paginationRowsPerPageOptions={[5, 10, 20]}
+                                            customStyles={customTableStyles}
+                                            theme="dark"
+                                        />
+                                    </div>
                                 )}
                             </div>
                         </Card>
@@ -768,6 +770,64 @@ export function AttendancePage() {
                                     <p>No presentees found for {selectedDate}</p>
                                 </div>
                             ) : (
+                                <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                                    <DataTable
+                                        columns={[
+                                            {
+                                                name: 'Name',
+                                                selector: (row: any) => `${row.first_name} ${row.last_name}`,
+                                                width: '200px',
+                                            },
+                                            {
+                                                name: 'Reg No',
+                                                selector: (row: any) => row.reg_no,
+                                                sortable: true,
+                                                width: '120px',
+                                            },
+                                            {
+                                                name: 'Time In',
+                                                selector: (row: any) => row.attendance_time_in,
+                                                cell: (row: any) => {
+                                                    const dateObj = row.attendance_time_in ? new Date(row.attendance_time_in) : null;
+                                                    return dateObj && isValid(dateObj) ? format(dateObj, 'h:mm a') : 'N/A';
+                                                },
+                                                sortable: true,
+                                                width: '120px',
+                                            },
+                                            {
+                                                name: 'Email',
+                                                selector: (row: any) => row.email,
+                                                width: '220px',
+                                            },
+                                            {
+                                                name: 'Action',
+                                                cell: (row: any) => (
+                                                    <button
+                                                        className="attendance-table__revoke-btn"
+                                                        onClick={() => handleRevokeAttendance(row.attendance_id, `${row.first_name} ${row.last_name}`)}
+                                                        title="Revoke attendance"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                ),
+                                                width: '100px',
+                                            },
+                                        ]}
+                                        data={filteredPresentees}
+                                        pagination
+                                        paginationPerPage={rowsPerPage}
+                                        customStyles={customTableStyles}
+                                        theme="dark"
+                                    />
+                                </div>
+                            )
+                        ) : filteredAbsentees.length === 0 ? (
+                            <div className="attendance-page__empty">
+                                <CheckCircle2 size={48} />
+                                <p>No absentees found for {selectedDate} - All users attended!</p>
+                            </div>
+                        ) : (
+                            <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
                                 <DataTable
                                     columns={[
                                         {
@@ -782,77 +842,23 @@ export function AttendancePage() {
                                             width: '120px',
                                         },
                                         {
-                                            name: 'Time In',
-                                            selector: (row: any) => row.attendance_time_in,
-                                            cell: (row: any) => {
-                                                const dateObj = row.attendance_time_in ? new Date(row.attendance_time_in) : null;
-                                                return dateObj && isValid(dateObj) ? format(dateObj, 'h:mm a') : 'N/A';
-                                            },
-                                            sortable: true,
-                                            width: '120px',
-                                        },
-                                        {
                                             name: 'Email',
                                             selector: (row: any) => row.email,
                                             width: '220px',
                                         },
                                         {
-                                            name: 'Action',
-                                            cell: (row: any) => (
-                                                <button
-                                                    className="attendance-table__revoke-btn"
-                                                    onClick={() => handleRevokeAttendance(row.attendance_id, `${row.first_name} ${row.last_name}`)}
-                                                    title="Revoke attendance"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            ),
-                                            width: '100px',
+                                            name: 'Phone',
+                                            selector: (row: any) => row.phone || 'N/A',
+                                            width: '140px',
                                         },
                                     ]}
-                                    data={filteredPresentees}
+                                    data={filteredAbsentees}
                                     pagination
                                     paginationPerPage={rowsPerPage}
                                     customStyles={customTableStyles}
                                     theme="dark"
                                 />
-                            )
-                        ) : filteredAbsentees.length === 0 ? (
-                            <div className="attendance-page__empty">
-                                <CheckCircle2 size={48} />
-                                <p>No absentees found for {selectedDate} - All users attended!</p>
                             </div>
-                        ) : (
-                            <DataTable
-                                columns={[
-                                    {
-                                        name: 'Name',
-                                        selector: (row: any) => `${row.first_name} ${row.last_name}`,
-                                        width: '200px',
-                                    },
-                                    {
-                                        name: 'Reg No',
-                                        selector: (row: any) => row.reg_no,
-                                        sortable: true,
-                                        width: '120px',
-                                    },
-                                    {
-                                        name: 'Email',
-                                        selector: (row: any) => row.email,
-                                        width: '220px',
-                                    },
-                                    {
-                                        name: 'Phone',
-                                        selector: (row: any) => row.phone || 'N/A',
-                                        width: '140px',
-                                    },
-                                ]}
-                                data={filteredAbsentees}
-                                pagination
-                                paginationPerPage={rowsPerPage}
-                                customStyles={customTableStyles}
-                                theme="dark"
-                            />
                         )}
                     </Card>
                 </>

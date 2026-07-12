@@ -87,12 +87,12 @@
 .user-details-modal__section-title {
     font-size: 16px;
     font-weight: 500;
-    color: #D4AF37;
+    color: var(--color-primary);
     margin: 0;
     display: flex;
     align-items: center;
     gap: 8px;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    border-bottom: 1px solid var(--border-color);
     padding-bottom: 8px;
 }
 

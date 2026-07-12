@@ -195,6 +195,18 @@ p {
   h2 { font-size: var(--text-3xl); }
   h3 { font-size: var(--text-2xl); }
 }
+
+@media (max-width: 430px) {
+  html {
+    font-size: 13px; /* Scaling down slightly for iPhone 12 / standard mobile width */
+  }
+}
+
+@media (max-width: 380px) {
+  html {
+    font-size: 12px; /* Scaling down further for smaller viewports */
+  }
+}
 /* Empty and Loading States */
 .events-page__empty,
 .users-page__empty,

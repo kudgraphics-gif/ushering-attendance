@@ -36,6 +36,53 @@ function App() {
   const isAdminView = useAuthStore((state) => state.isAdminView);
   const updateActivity = useAuthStore((state) => state.updateActivity);
   const checkInactivity = useAuthStore((state) => state.checkInactivity);
+  const accentColor = useAuthStore((state) => state.accentColor);
+
+  useEffect(() => {
+    const accentPalettes = {
+      gold: {
+        primary: '#D4AF37',
+        secondary: 'rgba(212, 175, 55, 0.15)',
+        glow: 'rgba(212, 175, 55, 0.3)',
+        gradient: 'linear-gradient(135deg, #D4AF37 0%, #AA8C2C 100%)'
+      },
+      blue: {
+        primary: '#0A84FF',
+        secondary: 'rgba(10, 132, 255, 0.15)',
+        glow: 'rgba(10, 132, 255, 0.3)',
+        gradient: 'linear-gradient(135deg, #0A84FF 0%, #0070E0 100%)'
+      },
+      green: {
+        primary: '#34C759',
+        secondary: 'rgba(52, 199, 89, 0.15)',
+        glow: 'rgba(52, 199, 89, 0.3)',
+        gradient: 'linear-gradient(135deg, #34C759 0%, #30B452 100%)'
+      },
+      purple: {
+        primary: '#AF52DE',
+        secondary: 'rgba(175, 82, 222, 0.15)',
+        glow: 'rgba(175, 82, 222, 0.3)',
+        gradient: 'linear-gradient(135deg, #AF52DE 0%, #963EBD 100%)'
+      }
+    };
+
+    const colors = accentPalettes[accentColor as keyof typeof accentPalettes] || accentPalettes.gold;
+    const root = document.documentElement;
+
+    root.style.setProperty('--color-primary', colors.primary);
+    root.style.setProperty('--color-brand-gold', colors.primary);
+    root.style.setProperty('--color-accent-blue', colors.primary);
+    root.style.setProperty('--color-accent-purple', colors.primary);
+    root.style.setProperty('--gradient-primary', colors.gradient);
+    root.style.setProperty('--gradient-gold', colors.gradient);
+    root.style.setProperty('--glow-gold', colors.glow);
+    root.style.setProperty('--glow-blue', colors.glow);
+    root.style.setProperty('--glow-purple', colors.glow);
+    root.style.setProperty('--accent-primary', colors.primary);
+    root.style.setProperty('--accent-secondary', colors.secondary);
+    root.style.setProperty('--accent-glow', colors.glow);
+    root.style.setProperty('--color-bg-input', colors.secondary);
+  }, [accentColor]);
 
   useEffect(() => {
     const handleActivity = () => {

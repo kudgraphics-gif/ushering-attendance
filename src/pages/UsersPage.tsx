@@ -406,7 +406,7 @@ export function UsersPage() {
                             onRevokeStrike={handleRevokeStrike}
                             onViewDetails={handleViewDetails}
                             isCheckingIn={checkingInUser === user.id}
-                            isAdmin={currentUser?.role === 'Admin'}
+                            isAdmin={currentUser?.role === 'Admin' || currentUser?.role === 'Technical'}
                         />
                     ))}
                 </div>
@@ -421,7 +421,7 @@ export function UsersPage() {
                         onResetDeviceId={handleResetDeviceId}
                         onToggleStatus={handleToggleStatus} // Passed down for table view
                         onViewDetails={handleViewDetails}
-                        isAdmin={currentUser?.role === 'Admin'}
+                        isAdmin={currentUser?.role === 'Admin' || currentUser?.role === 'Technical'}
                         isCheckingIn={checkingInUser}
                     />
                 </Card>

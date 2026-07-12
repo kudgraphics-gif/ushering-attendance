@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '../stores/authStore';
-import { analyticsAPI, eventsAPI, attendanceAPI } from '../services/api';
-import type { Event, UserDto } from '../types';
+import { analyticsAPI, eventsAPI, attendanceAPI, usersAPI } from '../services/api';
+import type { Event, UserDto, LeaderDto } from '../types';
 import toast from 'react-hot-toast';
 import { MapPin, Calendar, CheckCircle2, User, Info, Crown, AlertTriangle, ArrowRight, Music, DollarSign, BookOpen, Clock, Trophy, Play, RotateCcw, HelpCircle, X, Check } from 'lucide-react';
 import { getNearestVenue } from '../utils/geoCheck';
@@ -931,6 +931,7 @@ export function UserDashboardPage() {
     const { user, token } = useAuthStore();
     const [attendanceData, setAttendanceData] = useState<UserAttendance | null>(null);
     const [upcomingEvents, setUpcomingEvents] = useState<Event[]>([]);
+    const [leaders, setLeaders] = useState<LeaderDto[]>([]);
     const [loading, setLoading] = useState(true);
     const [checkingIn, setCheckingIn] = useState(false);
     const [checkingOut, setCheckingOut] = useState(false);
@@ -1023,7 +1024,7 @@ export function UserDashboardPage() {
     useEffect(() => {
         const timer = setInterval(() => {
             setScriptureIndex((prev) => (prev + 1) % SCRIPTURES.length);
-        }, 15000);
+        }, 35000);
         return () => clearInterval(timer);
     }, []);
 
@@ -1197,6 +1198,14 @@ export function UserDashboardPage() {
                     setUpcomingEvents(eventsResponse);
                 } catch {
                     setUpcomingEvents([]);
+                }
+
+                try {
+                    const leadersResponse = await usersAPI.getLeaders(token);
+                    setLeaders(leadersResponse);
+                } catch (error) {
+                    console.error('Failed to fetch leaders:', error);
+                    setLeaders([]);
                 }
             } finally {
                 setLoading(false);
@@ -1375,6 +1384,13 @@ export function UserDashboardPage() {
     if (rosterHall) rosterHall = rosterHall.replace(/^"|"$/g, '');
     if (rosterAllocation) rosterAllocation = rosterAllocation.replace(/^"|"$/g, '');
     const isRosterActive = !!rosterHall;
+
+    const matchingLeader = leaders.find(l => {
+        if (!l.current_roster_hall || !rosterHall) return false;
+        const cleanLHall = l.current_roster_hall.replace(/^"|"$/g, '').trim().toLowerCase();
+        const cleanUHall = rosterHall.replace(/^"|"$/g, '').trim().toLowerCase();
+        return cleanLHall === cleanUHall;
+    });
 
     return (
         <div className="user-dashboard-modern" style={dynamicVars}>
@@ -1677,6 +1693,19 @@ export function UserDashboardPage() {
                                             <User size={14} />
                                             <span>{rosterAllocation || 'Member'}</span>
                                         </p>
+                                        {matchingLeader && (
+                                            <div className="user-dashboard-modern__roster-leader" style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '13px' }}>
+                                                    <Crown size={14} style={{ color: 'var(--accent-primary)' }} />
+                                                    <span style={{ fontWeight: 600 }}>Hall Leader:</span>
+                                                    <span>{matchingLeader.first_name} {matchingLeader.last_name}</span>
+                                                </div>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '6px', paddingLeft: '22px', fontSize: '12px', color: 'var(--text-tertiary)' }}>
+                                                    {matchingLeader.phone && <span>📞 {matchingLeader.phone}</span>}
+                                                    {matchingLeader.email && <span>✉️ {matchingLeader.email}</span>}
+                                                </div>
+                                            </div>
+                                        )}
                                     </>
                                 ) : (
                                     <>

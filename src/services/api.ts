@@ -18,6 +18,7 @@ import type {
     SuggestionListResponse,
     Hall,
     HallAttendanceResponse,
+    LeaderDto,
 } from '../types';
 
 const BASE_URL = 'https://api.koinoniaushers.cloud/api/v1';
@@ -304,6 +305,10 @@ export const usersAPI = {
             undefined,
             token
         );
+    },
+
+    getLeaders: async (token: string): Promise<LeaderDto[]> => {
+        return apiCall<LeaderDto[]>('GET', '/users/leaders', undefined, token);
     },
 };
 

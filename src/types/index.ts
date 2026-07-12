@@ -416,3 +416,15 @@ export interface VolunteerDto {
     status?: 'Accepted' | 'Rejected' | 'Unprocessed';
     spiritual_journey?: string;
 }
+
+export interface LeaderDto {
+    current_roster_hall: string;
+    email: string;
+    first_name: string;
+    id: string;
+    last_name: string;
+    phone: string;
+    reg_no: string;
+    role: 'Leader';
+    year_joined: string;
+}
