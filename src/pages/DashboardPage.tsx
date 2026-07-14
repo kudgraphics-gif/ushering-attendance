@@ -6,7 +6,6 @@ import {
     Calendar,
     ArrowUp,
     ArrowDown,
-    Cake,
     UserX
 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
@@ -124,7 +123,6 @@ export function DashboardPage() {
         }
     };
 
-    const recentUsers = allUsers.slice(0, 4);
 
     // Filter birthdays to only show from today onwards (comparing month and day only)
     const today = new Date();
@@ -173,6 +171,20 @@ export function DashboardPage() {
         activeUsers: allUsers.filter(u => u.is_active).length,
         inactiveUsers: allUsers.filter(u => !u.is_active).length,
     };
+
+    // Calculate hall assignment distribution
+    const hallDistribution = allUsers.reduce((acc: Record<string, number>, u) => {
+        let hall = u.current_roster_hall ? u.current_roster_hall.replace(/^"|"$/g, '') : 'Unassigned';
+        if (!hall || hall.trim() === '') hall = 'Unassigned';
+        acc[hall] = (acc[hall] || 0) + 1;
+        return acc;
+    }, {});
+
+    const sortedHalls = Object.entries(hallDistribution)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count);
+
+    const totalUsersWithHall = allUsers.length || 1;
 
     return (
         <motion.div
@@ -299,39 +311,51 @@ export function DashboardPage() {
                     </div>
                 </Card>
 
-                {/* Recent Users */}
-                <Card glass className="dashboard__users-card">
+                {/* Roster Distribution Widget */}
+                <Card glass className="dashboard__halls-card">
                     <div className="dashboard__card-header">
-                        <h2 className="dashboard__card-title">Recent Users</h2>
-                        <p className="dashboard__card-subtitle">Latest activity</p>
+                        <h2 className="dashboard__card-title">Roster Distribution</h2>
+                        <p className="dashboard__card-subtitle">Volunteer coverage by hall</p>
                     </div>
-                    <div className="dashboard__users">
+                    <div className="dashboard__halls" style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '12px' }}>
                         {loading ? (
-                            <p className="dashboard__loading">Loading users...</p>
-                        ) : recentUsers.length === 0 ? (
-                            <p className="dashboard__empty">No users found</p>
+                            <p className="dashboard__loading">Loading distribution...</p>
+                        ) : sortedHalls.length === 0 ? (
+                            <p className="dashboard__empty">No allocations found</p>
                         ) : (
-                            recentUsers.map((user) => (
-                                <div key={user.id} className="dashboard__user">
-                                    <img
-                                        src={user.avatar_url || 'https://i.pravatar.cc/150?img=1'}
-                                        alt={user.first_name}
-                                        className="dashboard__user-avatar"
-                                    />
-                                    <div className="dashboard__user-info">
-                                        <h4 className="dashboard__user-name">
-                                            {user.first_name} {user.last_name}
-                                        </h4>
-                                        <p className="dashboard__user-email">{user.email}</p>
+                            sortedHalls.map((hall) => {
+                                const percentage = Math.round((hall.count / totalUsersWithHall) * 100);
+                                let colorClass = 'blue';
+                                const lowerName = hall.name.toLowerCase();
+                                if (lowerName.includes('main')) colorClass = 'blue';
+                                else if (lowerName.includes('basement')) colorClass = 'green';
+                                else if (lowerName.includes('outside')) colorClass = 'purple';
+                                else if (lowerName.includes('gallery')) colorClass = 'gold';
+                                else if (lowerName.includes('one')) colorClass = 'pink';
+                                else colorClass = 'gray';
+
+                                return (
+                                    <div key={hall.name} className="dashboard__hall-stat" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                        <div className="dashboard__hall-info" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
+                                            <span className="dashboard__hall-name" style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{hall.name}</span>
+                                            <span className="dashboard__hall-count" style={{ color: 'var(--color-text-secondary)' }}>
+                                                <strong>{hall.count}</strong> volunteer{hall.count !== 1 ? 's' : ''} ({percentage}%)
+                                            </span>
+                                        </div>
+                                        <div className="dashboard__hall-progress-bg" style={{ height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '100px', overflow: 'hidden' }}>
+                                            <div 
+                                                className={`dashboard__hall-progress-bar dashboard__hall-progress-bar--${colorClass}`}
+                                                style={{ height: '100%', width: `${percentage}%`, borderRadius: '100px' }}
+                                            />
+                                        </div>
                                     </div>
-                                    <div className={`dashboard__user-status dashboard__user-status--${user.is_active ? 'active' : 'inactive'}`} />
-                                </div>
-                            ))
+                                );
+                            })
                         )}
                     </div>
                 </Card>
 
-                {/* Upcoming Birthdays */}
+                {/* Upcoming Birthdays (Lively Visuals) */}
                 <Card glass className="dashboard__birthdays-card">
                     <div className="dashboard__card-header">
                         <h2 className="dashboard__card-title">Upcoming Birthdays</h2>
@@ -344,12 +368,29 @@ export function DashboardPage() {
                             <p className="dashboard__empty">No upcoming birthdays</p>
                         ) : (
                             filteredBirthdays.map((user) => (
-                                <div
+                                <motion.div
                                     key={user.id}
                                     className={`dashboard__birthday ${isBirthdayToday(user.dob ?? null) ? 'dashboard__birthday--today' : ''}`}
+                                    whileHover={{ scale: 1.02, x: 4 }}
+                                    transition={{ type: 'spring', stiffness: 400, damping: 15 }}
                                 >
-                                    <div className="dashboard__birthday-icon">
-                                        <Cake size={20} />
+                                    <div className="dashboard__birthday-avatar-container">
+                                        {user.avatar_url ? (
+                                            <img
+                                                src={user.avatar_url}
+                                                alt={user.first_name}
+                                                className="dashboard__birthday-avatar"
+                                            />
+                                        ) : (
+                                            <div className="dashboard__birthday-avatar-fallback">
+                                                {user.first_name[0]}{user.last_name[0]}
+                                            </div>
+                                        )}
+                                        {isBirthdayToday(user.dob ?? null) && (
+                                            <span className="dashboard__birthday-hat" role="img" aria-label="party hat">
+                                                👑
+                                            </span>
+                                        )}
                                     </div>
                                     <div className="dashboard__birthday-content">
                                         <h4 className="dashboard__birthday-name">
@@ -360,10 +401,13 @@ export function DashboardPage() {
                                         </p>
                                     </div>
                                     <div className="dashboard__birthday-badge">
-
-                                        {isBirthdayToday(user.dob ?? null) ? '🎉' : '🎂'}
+                                        {isBirthdayToday(user.dob ?? null) ? (
+                                            <span className="dashboard__birthday-today-label">TODAY! 🎊</span>
+                                        ) : (
+                                            '🎂'
+                                        )}
                                     </div>
-                                </div>
+                                </motion.div>
                             ))
                         )}
                     </div>

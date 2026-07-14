@@ -16,6 +16,7 @@ import type { VolunteerDto } from '../types';
 import './VolunteersPage.css';
 import VolunteerDetailsModal from '../components/ui/VolunteerDetailsModal';
 import VolunteerEditModal from '../components/ui/VolunteerEditModal';
+import { Modal } from '../components/ui/Modal';
 
 export function VolunteersPage() {
     const { token } = useAuthStore();
@@ -43,6 +44,11 @@ export function VolunteersPage() {
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
     const [activeRowActionsId, setActiveRowActionsId] = useState<string | null>(null);
+    
+    // Delete Confirmation Modal State
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [volunteerToDelete, setVolunteerToDelete] = useState<VolunteerDto | null>(null);
+    const [deleteLoading, setDeleteLoading] = useState(false);
 
     // Debounce search
     useEffect(() => {
@@ -183,18 +189,26 @@ export function VolunteersPage() {
         }
     };
 
-    const handleDelete = async (volunteer: VolunteerDto) => {
-        if (!token) return;
-        if (!window.confirm(`⚠️ DANGER: Are you sure you want to delete volunteer "${volunteer.first_name} ${volunteer.last_name}"? This action is permanent.`)) return;
+    const handleDeleteClick = (volunteer: VolunteerDto) => {
+        setVolunteerToDelete(volunteer);
+        setDeleteConfirmOpen(true);
+        setActiveRowActionsId(null);
+    };
 
+    const confirmDeleteAction = async () => {
+        if (!volunteerToDelete || !token) return;
+        setDeleteLoading(true);
         try {
-            await volunteersAPI.delete(volunteer.id, token);
+            await volunteersAPI.delete(volunteerToDelete.id, token);
             toast.success('Volunteer record deleted successfully');
-            setVolunteers(prev => prev.filter(v => v.id !== volunteer.id));
+            setVolunteers(prev => prev.filter(v => v.id !== volunteerToDelete.id));
             fetchMetrics();
-            setActiveRowActionsId(null);
+            setDeleteConfirmOpen(false);
+            setVolunteerToDelete(null);
         } catch (error) {
             toast.error(error instanceof Error ? error.message : 'Failed to delete volunteer');
+        } finally {
+            setDeleteLoading(false);
         }
     };
 
@@ -425,7 +439,7 @@ export function VolunteersPage() {
                                                                     Reset Device Session
                                                                 </button>
                                                                 <hr />
-                                                                <button className="btn-delete-popover" onClick={() => handleDelete(vol)}>
+                                                                <button className="btn-delete-popover" onClick={() => handleDeleteClick(vol)}>
                                                                     <Trash2 size={14} />
                                                                     Delete Volunteer
                                                                 </button>
@@ -506,7 +520,7 @@ export function VolunteersPage() {
                                                     <button onClick={() => handleChangeState(vol.id, 'Rejected')}>Reject</button>
                                                     <button onClick={() => handleChangeState(vol.id, 'Unprocessed')}>Reset Status</button>
                                                     <button onClick={() => handleResetDevice(vol.id)}>Reset Device</button>
-                                                    <button className="text-danger" onClick={() => handleDelete(vol)}>Delete</button>
+                                                    <button className="text-danger" onClick={() => handleDeleteClick(vol)}>Delete</button>
                                                 </div>
                                             </>
                                         )}
@@ -560,6 +574,51 @@ export function VolunteersPage() {
                 volunteer={selectedVolunteer}
                 onSuccess={handleEditSuccess}
             />
+
+            {/* Deletion Confirmation Modal */}
+            <Modal
+                isOpen={deleteConfirmOpen}
+                onClose={() => {
+                    if (!deleteLoading) {
+                        setDeleteConfirmOpen(false);
+                        setVolunteerToDelete(null);
+                    }
+                }}
+                title="Confirm Deletion"
+                size="sm"
+            >
+                <div className="delete-confirm-modal" style={{ textAlign: 'center', padding: '10px' }}>
+                    <div className="delete-confirm-modal__icon" style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px', color: 'var(--color-error, #EF4444)' }}>
+                        <Trash2 size={48} />
+                    </div>
+                    <h3 className="delete-confirm-modal__title" style={{ fontSize: '18px', fontWeight: 600, marginBottom: '8px', color: 'var(--color-text-primary)' }}>
+                        Delete Volunteer?
+                    </h3>
+                    <p className="delete-confirm-modal__text" style={{ fontSize: '14px', color: 'var(--color-text-secondary)', lineHeight: 1.5, marginBottom: '24px' }}>
+                        Are you sure you want to delete the record of <strong>{volunteerToDelete?.first_name} {volunteerToDelete?.last_name}</strong>? This action is permanent and cannot be undone.
+                    </p>
+                    <div className="delete-confirm-modal__actions" style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                        <Button
+                            variant="secondary"
+                            onClick={() => {
+                                setDeleteConfirmOpen(false);
+                                setVolunteerToDelete(null);
+                            }}
+                            disabled={deleteLoading}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="danger"
+                            onClick={confirmDeleteAction}
+                            loading={deleteLoading}
+                            style={{ backgroundColor: 'var(--color-error, #EF4444)', borderColor: 'var(--color-error, #EF4444)', color: '#fff' }}
+                        >
+                            Delete Record
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
         </motion.div>
     );
 }

@@ -22,6 +22,7 @@ import { ReportsPage } from './pages/ReportsPage';
 import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { VolunteersPage } from './pages/VolunteersPage';
 import { VolunteerDashboardPage } from './pages/VolunteerDashboardPage';
+import { VolunteerEventsPage } from './pages/VolunteerEventsPage';
 import { MainLayout } from './components/layout/MainLayout';
 import { ProtectedRoute, SharedProtectedRoute } from './components/ProtectedRoute';
 import { VolunteerSuccessPage } from './pages/VolunteerSuccessPage';
@@ -189,9 +190,13 @@ function App() {
             path="/reports"
             element={<ProtectedRoute allowedRoles={['Admin']}><ReportsPage /></ProtectedRoute>}
           />
-          <Route
+           <Route
             path="/volunteers"
             element={<ProtectedRoute allowedRoles={['Admin']}><VolunteersPage /></ProtectedRoute>}
+          />
+          <Route
+            path="/volunteer-events"
+            element={<ProtectedRoute allowedRoles={['Admin']}><VolunteerEventsPage adminMode={true} /></ProtectedRoute>}
           />
         </Route>
 

@@ -27,6 +27,7 @@ const adminNavItems = [
     { icon: Calendar, label: 'Events', path: '/events' },
     { icon: Users, label: 'Users', path: '/users' },
     { icon: Heart, label: 'Volunteers', path: '/volunteers' },
+    { icon: Calendar, label: 'Volunteer Events', path: '/volunteer-events' },
     { icon: ClipboardCheck, label: 'Attendance', path: '/attendance' },
     { icon: DollarSign, label: 'Payments', path: '/payments' },
     { icon: Music, label: 'Koinonia Sermons', path: '/koinonia' },

@@ -318,66 +318,84 @@
   }
 }
 
-/* Users */
-.dashboard__users {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
+/* Roster Distribution Widget */
+.dashboard__halls-card {
+  padding: var(--space-xl);
 }
 
-.dashboard__user {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  padding: var(--space-md);
-  background: var(--surface-hover);
-  border-radius: var(--radius-md);
-  transition: all var(--transition-base);
+.dashboard__hall-progress-bar--blue {
+  background: var(--gradient-cool, #0a84ff);
+}
+.dashboard__hall-progress-bar--green {
+  background: var(--gradient-success, #30d158);
+}
+.dashboard__hall-progress-bar--purple {
+  background: var(--gradient-primary, #bf5af2);
+}
+.dashboard__hall-progress-bar--gold {
+  background: var(--gradient-gold, #d4af37);
+}
+.dashboard__hall-progress-bar--pink {
+  background: var(--gradient-sunset, #ff375f);
+}
+.dashboard__hall-progress-bar--gray {
+  background: #636366;
 }
 
-.dashboard__user:hover {
-  background: var(--surface-active);
-}
-
-.dashboard__user-avatar {
+/* Birthday Custom Lively Avatars & Icons */
+.dashboard__birthday-avatar-container {
+  position: relative;
   width: 44px;
   height: 44px;
-  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.dashboard__birthday-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-full, 50%);
   object-fit: cover;
-  flex-shrink: 0;
+  border: 2px solid rgba(255,255,255,0.1);
 }
 
-.dashboard__user-info {
-  flex: 1;
+.dashboard__birthday-avatar-fallback {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-full, 50%);
+  background: linear-gradient(135deg, var(--color-primary, #d4af37) 0%, rgba(212,175,55,0.2) 100%);
+  color: var(--color-text-primary, #fff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  border: 2px solid var(--color-primary, #d4af37);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
 
-.dashboard__user-name {
-  font-size: var(--text-base);
-  font-weight: var(--font-weight-medium);
-  margin: 0 0 4px 0;
-  color: var(--color-text-primary);
+.dashboard__birthday-hat {
+  position: absolute;
+  top: -8px;
+  right: -6px;
+  font-size: 16px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+  animation: wobble 2s infinite ease-in-out;
 }
 
-.dashboard__user-email {
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  margin: 0;
+.dashboard__birthday-today-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #ff2d55, #ff6d50);
+  padding: 4px 10px;
+  border-radius: 100px;
+  box-shadow: 0 0 12px rgba(255, 45, 85, 0.4);
+  letter-spacing: 0.5px;
 }
 
-.dashboard__user-status {
-  width: 10px;
-  height: 10px;
-  border-radius: var(--radius-full);
-  flex-shrink: 0;
-}
-
-.dashboard__user-status--active {
-  background: var(--color-accent-green);
-  box-shadow: 0 0 8px var(--color-accent-green);
-}
-
-.dashboard__user-status--inactive {
-  background: var(--color-text-tertiary);
+@keyframes wobble {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(15deg) scale(1.1); }
 }
 
 /* Responsive */

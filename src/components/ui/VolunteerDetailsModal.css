@@ -261,8 +261,8 @@
 
 .vol-detail-admin-actions {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 8px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
 }
 
 .btn-admin-action {
@@ -399,6 +399,10 @@
     .vol-detail-modal__body {
         grid-template-columns: 1fr;
         gap: var(--space-lg);
+    }
+    .vol-detail-grid {
+        grid-template-columns: 1fr !important;
+        gap: var(--space-lg) !important;
     }
 }
 

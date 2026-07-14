@@ -17,6 +17,13 @@ import {
 } from '../utils/deviceId';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { 
+    isNotificationSupported, 
+    requestNotificationPermission, 
+    showNotification, 
+    getMsUntilNextReminder,
+    NOTIFICATION_STORAGE_KEY
+} from '../utils/notifications';
 import './UserDashboard.css';
 
 interface AttendanceRecord {
@@ -505,6 +512,522 @@ const QUIZ_QUESTIONS: Question[] = [
         question: "Complete the quote: 'Apostle Joshua Selman: God's power always follows His ___.'",
         options: ["will", "command", "presence", "grace"],
         answer: 2
+    },
+    // --- 100 Extra Tough, Easy, Fun Bible & Ministry Quiz Questions ---
+    {
+        question: "In the book of Judges, which king of Moab was so obese that Eglon's fat closed over Ehud's sword?",
+        options: ["Eglon", "Balak", "Og", "Sihon"],
+        answer: 0
+    },
+    {
+        question: "Which Judean king was struck with leprosy for attempting to burn incense on the altar of incense in the Temple?",
+        options: ["Uzziah", "Hezekiah", "Josiah", "Manasseh"],
+        answer: 0
+    },
+    {
+        question: "Who was the father of Melchizedek according to the book of Hebrews?",
+        options: ["Shem", "He has no recorded genealogy", "Noah", "Canaan"],
+        answer: 1
+    },
+    {
+        question: "Which of the following is the only woman in the Bible whose age at death is explicitly recorded?",
+        options: ["Sarah", "Rebekah", "Rachel", "Eve"],
+        answer: 0
+    },
+    {
+        question: "In the book of Revelation, what is the name of the star that fell from heaven, making a third of the waters bitter?",
+        options: ["Abaddon", "Wormwood", "Lucifer", "Arcturus"],
+        answer: 1
+    },
+    {
+        question: "What is the name of the scribe who wrote down the book of Jeremiah as the prophet dictated it?",
+        options: ["Baruch", "Ezra", "Seraiah", "Zadok"],
+        answer: 0
+    },
+    {
+        question: "Which of David's sons set himself up as king when David was old, only to be replaced by Solomon?",
+        options: ["Adonijah", "Absalom", "Amnon", "Chileab"],
+        answer: 0
+    },
+    {
+        question: "How many years did Jehoash (Joash) reign as king in Jerusalem?",
+        options: ["40 years", "29 years", "55 years", "8 years"],
+        answer: 0
+    },
+    {
+        question: "According to Leviticus 11, which of these birds is NOT listed as unclean and detestable?",
+        options: ["Ostrich", "Quail", "Falcon", "Raven"],
+        answer: 1
+    },
+    {
+        question: "In Ezekiel's vision, what are the four faces of the living creatures?",
+        options: [
+            "Man, Lion, Ox, Eagle",
+            "Man, Leopard, Bull, Falcon",
+            "Angel, Lion, Ram, Eagle",
+            "Man, Lion, Lamb, Dove"
+        ],
+        answer: 0
+    },
+    {
+        question: "Who killed 800 men in one encounter, according to the list of David's mighty men in 2 Samuel?",
+        options: ["Josheb-Basshebeth", "Eleazar", "Shammah", "Abishai"],
+        answer: 0
+    },
+    {
+        question: "What was the name of the city of refuge located in the territory of the tribe of Reuben?",
+        options: ["Bezer", "Ramoth", "Golan", "Hebron"],
+        answer: 0
+    },
+    {
+        question: "Which Roman governor ordered the execution of the Apostle Paul according to history and tradition?",
+        options: ["Nero", "Claudius", "Domitian", "Caligula"],
+        answer: 0
+    },
+    {
+        question: "Which prophet was told by God to make a yoke out of straps and bars and put it on his neck?",
+        options: ["Jeremiah", "Ezekiel", "Isaiah", "Hosea"],
+        answer: 0
+    },
+    {
+        question: "How many people were aboard Noah's Ark during the Great Flood?",
+        options: ["4", "6", "8", "10"],
+        answer: 2
+    },
+    {
+        question: "Which king of Israel holds the record for the shortest reign of only seven days?",
+        options: ["Zimri", "Shallum", "Zechariah", "Pekahiah"],
+        answer: 0
+    },
+    {
+        question: "What was the original name of the Apostle Peter before Jesus called him?",
+        options: ["Simon", "Saul", "Andrew", "John"],
+        answer: 0
+    },
+    {
+        question: "Who was the mother of Solomon?",
+        options: ["Bathsheba", "Abigail", "Maakah", "Haggith"],
+        answer: 0
+    },
+    {
+        question: "Which New Testament book is addressed to 'the elect lady and her children'?",
+        options: ["2 John", "3 John", "Jude", "Hebrews"],
+        answer: 0
+    },
+    {
+        question: "In the Gospel of John, who is the first person to see the resurrected Jesus?",
+        options: ["Mary Magdalene", "Peter", "John", "Mother Mary"],
+        answer: 0
+    },
+    {
+        question: "What does the name 'Emmanuel' mean?",
+        options: ["God with us", "God is my salvation", "He who prevails with God", "Praise be to God"],
+        answer: 0
+    },
+    {
+        question: "Which book of the Bible contains the verse: 'The joy of the Lord is your strength'?",
+        options: ["Nehemiah", "Ezra", "Psalms", "Proverbs"],
+        answer: 0
+    },
+    {
+        question: "Who was the priest of Midian and father-in-law of Moses?",
+        options: ["Jethro (Reuel)", "Melchizedek", "Balaam", "Aaron"],
+        answer: 0
+    },
+    {
+        question: "What was the name of the servant girl who recognized Peter's voice at the gate after he escaped prison?",
+        options: ["Rhoda", "Tabitha", "Lydia", "Priscilla"],
+        answer: 0
+    },
+    {
+        question: "Which of the following is NOT one of the Synoptic Gospels?",
+        options: ["John", "Matthew", "Mark", "Luke"],
+        answer: 0
+    },
+    {
+        question: "Where did Moses die and get buried by God in an unmarked grave?",
+        options: ["Mount Nebo", "Mount Sinai", "Mount Horeb", "Mount Carmel"],
+        answer: 0
+    },
+    {
+        question: "Who was the youngest king to ascend the throne of Judah, at just seven years old?",
+        options: ["Jehoash (Joash)", "Josiah", "Uzziah", "Manasseh"],
+        answer: 0
+    },
+    {
+        question: "What did the soldiers place on Jesus' head during His trials?",
+        options: ["A crown of thorns", "A gold crown", "A helmet of brass", "A linen turban"],
+        answer: 0
+    },
+    {
+        question: "Which disciple asked Jesus: 'Lord, show us the Father, and that will be enough for us'?",
+        options: ["Philip", "Thomas", "Andrew", "Simon Peter"],
+        answer: 0
+    },
+    {
+        question: "On what day of creation did God create the fish and the birds?",
+        options: ["Fifth Day", "Fourth Day", "Third Day", "Sixth Day"],
+        answer: 0
+    },
+    {
+        question: "How many stones did David pick from the stream before fighting Goliath?",
+        options: ["Five", "Three", "One", "Seven"],
+        answer: 0
+    },
+    {
+        question: "What did Jacob dream of when sleeping with a stone for a pillow at Bethel?",
+        options: ["A ladder reaching to heaven", "Seven thin cows eating fat cows", "Twelve stars bowing to him", "A burning bush"],
+        answer: 0
+    },
+    {
+        question: "What is the longest book in the Bible by chapter count?",
+        options: ["Psalms", "Genesis", "Isaiah", "Jeremiah"],
+        answer: 0
+    },
+    {
+        question: "Who was the mother of John the Baptist?",
+        options: ["Elizabeth", "Mary", "Martha", "Hannah"],
+        answer: 0
+    },
+    {
+        question: "Which sea did the Israelites cross under Moses' leadership to escape the Egyptians?",
+        options: ["Red Sea", "Dead Sea", "Sea of Galilee", "Mediterranean Sea"],
+        answer: 0
+    },
+    {
+        question: "Who was the giant king of Bashan whose iron bed was over 13 feet long?",
+        options: ["Og", "Sihon", "Goliath", "Lahmi"],
+        answer: 0
+    },
+    {
+        question: "What was the name of Abraham's original hometown before he moved to Canaan?",
+        options: ["Ur of the Chaldeans", "Haran", "Babylon", "Nineveh"],
+        answer: 0
+    },
+    {
+        question: "How many times did Joshua and the Israelites march around Jericho on the seventh day?",
+        options: ["7 times", "1 time", "3 times", "12 times"],
+        answer: 0
+    },
+    {
+        question: "Who was the husband of Deborah, the judge of Israel?",
+        options: ["Lappidoth", "Barak", "Heber", "Sisera"],
+        answer: 0
+    },
+    {
+        question: "What was the name of the mountain where Noah's Ark came to rest?",
+        options: ["Mount Ararat", "Mount Sinai", "Mount Olives", "Mount Hermon"],
+        answer: 0
+    },
+    {
+        question: "Which of the Ten Commandments promises long life in the land for keeping it?",
+        options: [
+            "Honor your father and mother",
+            "You shall not commit adultery",
+            "Remember the Sabbath day",
+            "You shall not lie"
+        ],
+        answer: 0
+    },
+    {
+        question: "What food did God provide daily for the Israelites in the wilderness?",
+        options: ["Manna and Quail", "Bread and Fish", "Milk and Honey", "Figs and Dates"],
+        answer: 0
+    },
+    {
+        question: "Who was Jacob's favorite son, who was given a coat of many colors?",
+        options: ["Joseph", "Benjamin", "Reuben", "Judah"],
+        answer: 0
+    },
+    {
+        question: "Which gospel was written by a physician companion of the Apostle Paul?",
+        options: ["Luke", "Mark", "Matthew", "John"],
+        answer: 0
+    },
+    {
+        question: "What did Jesus say is the greatest commandment in the Law?",
+        options: [
+            "Love the Lord your God with all your heart, soul, and mind",
+            "Love your neighbor as yourself",
+            "You shall have no other gods before me",
+            "Do unto others as you would have them do unto you"
+        ],
+        answer: 0
+    },
+    {
+        question: "What town did Jesus grow up in?",
+        options: ["Nazareth", "Bethlehem", "Jerusalem", "Capernaum"],
+        answer: 0
+    },
+    {
+        question: "Who was the father of the twelve tribes of Israel?",
+        options: ["Jacob", "Abraham", "Isaac", "Noah"],
+        answer: 0
+    },
+    {
+        question: "Who was Solomon's mother?",
+        options: ["Bathsheba", "Abigail", "Michal", "Haggith"],
+        answer: 0
+    },
+    {
+        question: "Who was the woman who let the Israelite spies down from the wall of Jericho with a scarlet cord?",
+        options: ["Rahab", "Ruth", "Esther", "Delilah"],
+        answer: 0
+    },
+    {
+        question: "What is the last book of the New Testament?",
+        options: ["Revelation", "Jude", "Hebrews", "Romans"],
+        answer: 0
+    },
+    {
+        question: "Which apostle was known for doubting Jesus' resurrection until he saw the wounds?",
+        options: ["Thomas", "Peter", "Andrew", "Bartholomew"],
+        answer: 0
+    },
+    {
+        question: "What animal spoke to Balaam when he was on his way to curse Israel?",
+        options: ["A donkey", "A sheep", "A camel", "A lion"],
+        answer: 0
+    },
+    {
+        question: "Who was the wife of Moses?",
+        options: ["Zipporah", "Miriam", "Hagar", "Sarah"],
+        answer: 0
+    },
+    {
+        question: "How many days and nights did Jesus fast in the wilderness before His temptation?",
+        options: ["40 days and nights", "7 days and nights", "10 days and nights", "3 days and nights"],
+        answer: 0
+    },
+    {
+        question: "What was the name of the pool where Jesus healed the blind man by sending him to wash?",
+        options: ["Siloam", "Bethesda", "Jordan", "Gihon"],
+        answer: 0
+    },
+    {
+        question: "Which Old Testament prophet was thrown into a muddy cistern (well) and left to die?",
+        options: ["Jeremiah", "Isaiah", "Ezekiel", "Daniel"],
+        answer: 0
+    },
+    {
+        question: "What is the name of the valley where David fought Goliath?",
+        options: ["Valley of Elah", "Valley of Jezreel", "Valley of Kidron", "Valley of Jordan"],
+        answer: 0
+    },
+    {
+        question: "Who was the father of Abraham?",
+        options: ["Terah", "Nahor", "Haran", "Shem"],
+        answer: 0
+    },
+    {
+        question: "Which disciple was a tax collector before answering Jesus' call?",
+        options: ["Matthew", "Peter", "John", "Judas"],
+        answer: 0
+    },
+    {
+        question: "In what language was most of the New Testament originally written?",
+        options: ["Greek", "Hebrew", "Latin", "Aramaic"],
+        answer: 0
+    },
+    {
+        question: "Who is described as the 'friend of God' in the Bible?",
+        options: ["Abraham", "David", "Moses", "Enoch"],
+        answer: 0
+    },
+    {
+        question: "Which book of the Bible contains the story of the writing on the wall at Belshazzar's feast?",
+        options: ["Daniel", "Ezekiel", "Isaiah", "Jeremiah"],
+        answer: 0
+    },
+    {
+        question: "Which king of Israel built the city of Samaria and made it the capital?",
+        options: ["Omri", "Ahab", "Jehu", "Jeroboam"],
+        answer: 0
+    },
+    {
+        question: "What did Jesus say to the wind and the waves during the storm on the Sea of Galilee?",
+        options: ["'Quiet! Be still!'", "'Fear not'", "'Be calm'", "'Receive peace'"],
+        answer: 0
+    },
+    {
+        question: "Who was the first woman judge of Israel?",
+        options: ["Deborah", "Jael", "Miriam", "Athaliah"],
+        answer: 0
+    },
+    {
+        question: "How many loops of blue material were made for the curtains of the Tabernacle?",
+        options: ["50", "30", "100", "12"],
+        answer: 0
+    },
+    {
+        question: "Who was the father of King Saul?",
+        options: ["Kish", "Abner", "Ner", "Zeror"],
+        answer: 0
+    },
+    {
+        question: "In the parable of the Good Samaritan, who was the first person to pass by the injured man?",
+        options: ["A priest", "A Levite", "A soldier", "A merchant"],
+        answer: 0
+    },
+    {
+        question: "What was the name of the city where the followers of Jesus were first called 'Christians'?",
+        options: ["Antioch", "Jerusalem", "Rome", "Ephesus"],
+        answer: 0
+    },
+    {
+        question: "Complete the quote: 'Apostle Joshua Selman: The currency for spiritual transactions is ___.'",
+        options: ["faith", "honor", "prayer", "knowledge"],
+        answer: 0
+    },
+    {
+        question: "Complete the quote: 'Apostle Joshua Selman: God does not reward people for their speed, but for their ___.'",
+        options: ["alignment", "purity", "faithfulness", "prayer life"],
+        answer: 0
+    },
+    {
+        question: "Complete the quote: 'Apostle Joshua Selman: The proof of love is the willingness to ___.'",
+        options: ["sacrifice", "wait", "give", "obey"],
+        answer: 0
+    },
+    {
+        question: "Complete the quote: 'Apostle Joshua Selman: Every dimension of spiritual height is built on the altar of ___.'",
+        options: ["surrender", "intimacy", "prayer", "character"],
+        answer: 0
+    },
+    {
+        question: "Complete the quote: 'Apostle Joshua Selman: Extraordinary results are a product of extraordinary ___.'",
+        options: ["unction", "wisdom", "covenants", "discipline"],
+        answer: 2
+    },
+    {
+        question: "Complete the quote: 'Apostle Joshua Selman: The key that opens the door of financial increase is the covenant of ___.'",
+        options: ["giving", "tithing", "sowing", "labor"],
+        answer: 0
+    },
+    {
+        question: "Complete the quote: 'Apostle Joshua Selman: You do not value people because they are useful; you value them because they are ___.'",
+        options: ["human", "made in God's image", "sent by God", "valuable to Christ"],
+        answer: 1
+    },
+    {
+        question: "Complete the quote: 'Apostle Joshua Selman: True transformation is not just a change of location, but a change of ___.'",
+        options: ["mindset", "heart", "words", "character"],
+        answer: 0
+    },
+    {
+        question: "Complete the quote: 'Apostle Joshua Selman: Your efficiency in the secret place is the key to your authority in the ___.'",
+        options: ["public", "spiritual realm", "ministry", "marketplace"],
+        answer: 0
+    },
+    {
+        question: "Complete the quote: 'Apostle Joshua Selman: Character is the stabilizer of spiritual ___.'",
+        options: ["gifts", "height", "anointing", "speed"],
+        answer: 2
+    },
+    {
+        question: "What is the third core value of the Koinonia Abuja Ushering Department?",
+        options: ["Punctuality", "Excellence", "Integrity", "Humility"],
+        answer: 1
+    },
+    {
+        question: "Which roster hall in Koinonia Abuja is designated for families and overflow attendees?",
+        options: ["Hall One", "Basement", "Outside", "Gallery"],
+        answer: 0
+    },
+    {
+        question: "What is the recommended reporting time for ushers serving on a Friday night Service?",
+        options: ["4:30 PM", "3:30 PM", "5:00 PM", "4:00 PM"],
+        answer: 3
+    },
+    {
+        question: "What is the maximum grace period (in minutes) typically configured for usher roster sign-ins?",
+        options: ["15 minutes", "10 minutes", "20 minutes", "30 minutes"],
+        answer: 0
+    },
+    {
+        question: "Which of the following books is NOT in the Old Testament?",
+        options: ["Hebrews", "Micah", "Obadiah", "Nahum"],
+        answer: 0
+    },
+    {
+        question: "Who was the father of David?",
+        options: ["Jesse", "Saul", "Samuel", "Eliab"],
+        answer: 0
+    },
+    {
+        question: "Which plague was the final one that forced Pharaoh to release the Israelites?",
+        options: ["Death of the firstborn", "Locusts", "Darkness", "Hail"],
+        answer: 0
+    },
+    {
+        question: "Who was Moses' sister?",
+        options: ["Miriam", "Sarah", "Rebekah", "Zipporah"],
+        answer: 0
+    },
+    {
+        question: "What did God use to lead the Israelites by night in the wilderness?",
+        options: ["A pillar of fire", "A pillar of cloud", "The stars", "A great wind"],
+        answer: 0
+    },
+    {
+        question: "How many times did Noah send out the dove from the Ark before it did not return?",
+        options: ["Three times", "Two times", "Four times", "One time"],
+        answer: 0
+    },
+    {
+        question: "Who was thrown into a fiery furnace along with Shadrach and Meshach?",
+        options: ["Abednego", "Daniel", "Ezekiel", "Jeremiah"],
+        answer: 0
+    },
+    {
+        question: "What was the name of the mountain where God tested Abraham by asking him to sacrifice Isaac?",
+        options: ["Mount Moriah", "Mount Sinai", "Mount Nebo", "Mount Ararat"],
+        answer: 0
+    },
+    {
+        question: "Which book of the Bible contains the verse: 'The Lord is my shepherd; I shall not want'?",
+        options: ["Psalm 23", "Psalm 91", "Psalm 121", "Psalm 100"],
+        answer: 0
+    },
+    {
+        question: "Who was the short tax collector who climbed a sycamore tree to see Jesus?",
+        options: ["Zacchaeus", "Levi", "Matthew", "Nicodemus"],
+        answer: 0
+    },
+    {
+        question: "Where did Jesus tell His disciples to wait for the promise of the Holy Spirit?",
+        options: ["Jerusalem", "Galilee", "Nazareth", "Samaria"],
+        answer: 0
+    },
+    {
+        question: "Who wrote the Book of Acts?",
+        options: ["Luke", "Paul", "Peter", "John"],
+        answer: 0
+    },
+    {
+        question: "What did the dry bones in Ezekiel's vision represent?",
+        options: ["The whole house of Israel", "The enemies of God", "The prophets of Baal", "The fallen angels"],
+        answer: 0
+    },
+    {
+        question: "Who was the female judge of Israel who sat under a palm tree?",
+        options: ["Deborah", "Miriam", "Hannah", "Huldah"],
+        answer: 0
+    },
+    {
+        question: "Which of the following is NOT one of the gifts brought to baby Jesus by the wise men?",
+        options: ["Silver", "Gold", "Frankincense", "Myrrh"],
+        answer: 0
+    },
+    {
+        question: "What is the name of the garden where Jesus was betrayed?",
+        options: ["Gethsemane", "Eden", "Siloam", "Zion"],
+        answer: 0
+    },
+    {
+        question: "How many chapters are in the Book of Jude?",
+        options: ["1 chapter", "3 chapters", "5 chapters", "2 chapters"],
+        answer: 0
     }
 ];
 
@@ -935,6 +1458,62 @@ export function UserDashboardPage() {
     const [loading, setLoading] = useState(true);
     const [checkingIn, setCheckingIn] = useState(false);
     const [checkingOut, setCheckingOut] = useState(false);
+
+    // --- Browser Reminders State & Scheduling ---
+    const [remindersEnabled, setRemindersEnabled] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem(NOTIFICATION_STORAGE_KEY) === 'true';
+        }
+        return false;
+    });
+    const reminderTimeoutRef = useRef<any>(null);
+
+    const scheduleNextReminder = () => {
+        if (reminderTimeoutRef.current) {
+            clearTimeout(reminderTimeoutRef.current);
+        }
+
+        if (!remindersEnabled) return;
+
+        const { ms, targetDay } = getMsUntilNextReminder();
+        reminderTimeoutRef.current = setTimeout(() => {
+            showNotification(
+                "🔔 Attendance Check-In!",
+                `It's time to check in for your scheduled ${targetDay} Service! Please sign in prompt.`
+            );
+            scheduleNextReminder();
+        }, ms);
+    };
+
+    useEffect(() => {
+        scheduleNextReminder();
+        return () => {
+            if (reminderTimeoutRef.current) {
+                clearTimeout(reminderTimeoutRef.current);
+            }
+        };
+    }, [remindersEnabled]);
+
+    const handleToggleReminders = async () => {
+        if (remindersEnabled) {
+            setRemindersEnabled(false);
+            localStorage.setItem(NOTIFICATION_STORAGE_KEY, 'false');
+            toast.success('Check-in reminders disabled.');
+        } else {
+            const granted = await requestNotificationPermission();
+            if (granted) {
+                setRemindersEnabled(true);
+                localStorage.setItem(NOTIFICATION_STORAGE_KEY, 'true');
+                toast.success('Reminders enabled!');
+                showNotification(
+                    "🔔 Reminders Enabled!",
+                    "You will receive reminders on Wednesdays at 5:00 PM and Sundays at 4:30 PM."
+                );
+            } else {
+                toast.error('Permission denied! Please enable notifications in your browser settings.');
+            }
+        }
+    };
     const [scriptureIndex, setScriptureIndex] = useState(0);
     const [showStrikeInfo, setShowStrikeInfo] = useState(false);
     const navigate = useNavigate();
@@ -1693,7 +2272,7 @@ export function UserDashboardPage() {
                                             <User size={14} />
                                             <span>{rosterAllocation || 'Member'}</span>
                                         </p>
-                                        {matchingLeader && (
+                                        {matchingLeader ? (
                                             <div className="user-dashboard-modern__roster-leader" style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '13px' }}>
                                                     <Crown size={14} style={{ color: 'var(--accent-primary)' }} />
@@ -1703,6 +2282,18 @@ export function UserDashboardPage() {
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '6px', paddingLeft: '22px', fontSize: '12px', color: 'var(--text-tertiary)' }}>
                                                     {matchingLeader.phone && <span>📞 {matchingLeader.phone}</span>}
                                                     {matchingLeader.email && <span>✉️ {matchingLeader.email}</span>}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="user-dashboard-modern__roster-leader" style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '13px' }}>
+                                                    <Crown size={14} style={{ color: 'var(--accent-primary)' }} />
+                                                    <span style={{ fontWeight: 600 }}>Hall Leader:</span>
+                                                    <span>Maxwell Daniel</span>
+                                                </div>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '6px', paddingLeft: '22px', fontSize: '12px', color: 'var(--text-tertiary)' }}>
+                                                    <span>📞 08135327200</span>
+                                                    <span>✉️ adanmax.3532@gmail.com</span>
                                                 </div>
                                             </div>
                                         )}
@@ -1718,6 +2309,57 @@ export function UserDashboardPage() {
                             </div>
                         </div>
                     </motion.section>
+
+                    {/* Check-In Reminders Panel */}
+                    {isNotificationSupported() && (
+                        <motion.section 
+                            className="user-dashboard-modern__panel glass"
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.15 }}
+                        >
+                            <h2 className="user-dashboard-modern__section-title">Check-in Reminders</h2>
+                            <div className="user-dashboard-modern__notifications-card" style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <HelpCircle size={20} className="text-secondary" style={{ color: 'var(--accent-primary)' }} />
+                                    <span style={{ fontWeight: 600, fontSize: '14px', color: 'var(--text-primary)' }}>Stay Prompt & Faithful</span>
+                                </div>
+                                <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>
+                                    Enable desktop reminders to get notified at <strong>Wednesdays (5:00 PM)</strong> and <strong>Sundays (4:30 PM)</strong> so you never miss a sign-in.
+                                </p>
+                                <button
+                                    onClick={handleToggleReminders}
+                                    className="btn-reminders"
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px',
+                                        width: '100%',
+                                        padding: '10px',
+                                        borderRadius: '8px',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        background: remindersEnabled ? 'rgba(52, 199, 89, 0.12)' : 'rgba(255, 255, 255, 0.05)',
+                                        color: remindersEnabled ? '#30D158' : 'var(--color-text-primary)',
+                                        borderColor: remindersEnabled ? 'rgba(52, 199, 89, 0.3)' : 'rgba(255, 255, 255, 0.1)',
+                                        cursor: 'pointer',
+                                        fontWeight: 600,
+                                        fontSize: '12px',
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                >
+                                    {remindersEnabled ? (
+                                        <>
+                                            <Check size={16} />
+                                            <span>Reminders Enabled</span>
+                                        </>
+                                    ) : (
+                                        <span>Enable Browser Reminders</span>
+                                    )}
+                                </button>
+                            </div>
+                        </motion.section>
+                    )}
 
                     {/* Quick portal shortcut links */}
                     <motion.section 

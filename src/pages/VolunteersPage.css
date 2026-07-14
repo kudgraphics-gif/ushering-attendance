@@ -339,8 +339,8 @@
 .volunteers-actions-popover {
     position: absolute;
     right: 0;
-    top: 100%;
-    margin-top: 6px;
+    bottom: 100%;
+    margin-bottom: 6px;
     width: 190px;
     border-radius: var(--radius-md);
     border: 1px solid rgba(255, 255, 255, 0.09);
