@@ -60,7 +60,7 @@ export function VolunteerOnboardPage() {
     try {
       let dob = '';
       if (formData.dob) {
-        dob = new Date(formData.dob + 'T00:00:00.000Z').toISOString();
+        dob = `${formData.dob}T18:00:00`;
       }
 
       await volunteersAPI.onboard({

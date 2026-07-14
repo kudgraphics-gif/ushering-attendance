@@ -28,7 +28,7 @@ async function apiCall<T>(
     method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     endpoint: string,
     data?: unknown,
-    token?: string
+    _token?: string
 ): Promise<T> {
     if (endpoint.startsWith('/volunteers') || endpoint.startsWith('/volunteer-events')) {
         const separator = endpoint.includes('?') ? '&' : '?';
@@ -40,9 +40,6 @@ async function apiCall<T>(
         'Accept': 'application/json',
     };
 
-    if (token) {
-       // headers['Authorization'] = `Bearer ${token}`;
-    }
 
     try {
         console.log(`[API] ${method} ${BASE_URL}${endpoint}`, data);

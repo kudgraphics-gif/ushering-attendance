@@ -312,7 +312,8 @@ export function RegisterVolunteerPage() {
               </div>
 
               <div className="volunteer-form__group">
-                <label className="volunteer-form__label">Spiritual Journey / Testimony *</label>
+                <label className="volunteer-form__label">Your spiritual journey
+Experience in service (if any)</label>
                 <div className="tiptap-editor">
                   {editor && (
                     <div className="tiptap-editor__toolbar">

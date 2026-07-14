@@ -23,6 +23,7 @@ import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { VolunteersPage } from './pages/VolunteersPage';
 import { VolunteerDashboardPage } from './pages/VolunteerDashboardPage';
 import { VolunteerEventsPage } from './pages/VolunteerEventsPage';
+import { PermissionsPage } from './pages/PermissionsPage';
 import { MainLayout } from './components/layout/MainLayout';
 import { ProtectedRoute, SharedProtectedRoute } from './components/ProtectedRoute';
 import { VolunteerSuccessPage } from './pages/VolunteerSuccessPage';
@@ -186,6 +187,7 @@ function App() {
             element={<ProtectedRoute allowedRoles={['Admin', 'Leader']}><GroupsPage /></ProtectedRoute>}
           />
           <Route path="/suggestion-box" element={<SuggestionBoxPage />} />
+          <Route path="/permissions" element={<PermissionsPage />} />
           <Route
             path="/reports"
             element={<ProtectedRoute allowedRoles={['Admin']}><ReportsPage /></ProtectedRoute>}

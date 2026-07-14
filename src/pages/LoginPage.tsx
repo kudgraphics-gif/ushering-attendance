@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, LogIn, Users } from 'lucide-react';
+import { Mail, Lock, LogIn, Users, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../stores/authStore';
 import { useVolunteerAuthStore } from '../stores/volunteerAuthStore';
@@ -94,6 +94,30 @@ export function LoginPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
             >
+                {/* Back to home page link */}
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 24px 0', marginBottom: '16px' }}>
+                    <Link
+                        to="/"
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            color: 'var(--color-text-secondary)',
+                            textDecoration: 'none',
+                            fontSize: '13px',
+                            fontWeight: 500,
+                            padding: '6px 12px',
+                            borderRadius: '8px',
+                            background: 'rgba(255,255,255,0.03)',
+                            border: '1px solid rgba(255,255,255,0.08)',
+                            transition: 'all 0.18s ease',
+                        }}
+                    >
+                        <ArrowLeft size={14} />
+                        <span>Go to Home Page</span>
+                    </Link>
+                </div>
+
                 {/* Mode tabs */}
                 <div className="login-page__tabs">
                     <button

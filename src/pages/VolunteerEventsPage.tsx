@@ -65,16 +65,16 @@ export function VolunteerEventsPage({ adminMode = false }: VolunteerEventsPagePr
     }, [activeTab, adminMode]);
 
     const fetchEvents = async () => {
-        if (!token) return;
+        if (adminMode && !token) return;
         setLoading(true);
         try {
             let data: VolunteerEvent[] = [];
             if (adminMode || activeTab === 'all') {
-                data = await volunteerEventsAPI.getAll(token);
+                data = await volunteerEventsAPI.getAll(token || '');
             } else if (activeTab === 'upcoming') {
-                data = await volunteerEventsAPI.getUpcoming(token);
+                data = await volunteerEventsAPI.getUpcoming(token || '');
             } else {
-                data = await volunteerEventsAPI.getPast(token);
+                data = await volunteerEventsAPI.getPast(token || '');
             }
             setEvents(data || []);
         } catch (error) {
@@ -102,7 +102,7 @@ export function VolunteerEventsPage({ adminMode = false }: VolunteerEventsPagePr
         setTitle(event.title);
         setDescription(event.description);
         setDate(event.date.split('T')[0]);
-        setTime(event.time.slice(0, 5));
+        setTime((event.time || '').slice(0, 5));
         setLocation(event.location);
         setAttendanceType(event.attendance_type);
         setGracePeriod(event.grace_period_in_minutes);
@@ -322,7 +322,7 @@ export function VolunteerEventsPage({ adminMode = false }: VolunteerEventsPagePr
                                         <tr key={event.id}>
                                             <td style={{ fontWeight: 600 }}>{event.title}</td>
                                             <td>{new Date(event.date).toLocaleDateString(undefined, { dateStyle: 'medium' })}</td>
-                                            <td>{event.time.slice(0, 5)}</td>
+                                            <td>{(event.time || '').slice(0, 5)}</td>
                                             <td>{event.location}</td>
                                             <td>
                                                 <Badge variant={event.attendance_type === 'Mandatory' ? 'danger' : 'primary'} size="sm">
@@ -376,7 +376,7 @@ export function VolunteerEventsPage({ adminMode = false }: VolunteerEventsPagePr
                                         </div>
                                         <div className="vol-events__meta-item">
                                             <Clock size={14} />
-                                            <span>{event.time.slice(0, 5)}</span>
+                                            <span>{(event.time || '').slice(0, 5)}</span>
                                         </div>
                                         <div className="vol-events__meta-item">
                                             <MapPin size={14} />
@@ -532,7 +532,7 @@ export function VolunteerEventsPage({ adminMode = false }: VolunteerEventsPagePr
                                     </div>
                                     <div className="vol-events__details-item">
                                         <span className="lbl">Time</span>
-                                        <span className="val">{detailsEvent.time.slice(0, 5)}</span>
+                                        <span className="val">{(detailsEvent.time || '').slice(0, 5)}</span>
                                     </div>
                                     <div className="vol-events__details-item">
                                         <span className="lbl">Location</span>

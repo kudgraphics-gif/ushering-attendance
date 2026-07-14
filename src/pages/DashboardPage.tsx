@@ -172,11 +172,12 @@ export function DashboardPage() {
         inactiveUsers: allUsers.filter(u => !u.is_active).length,
     };
 
-    // Calculate hall assignment distribution
+    // Calculate hall assignment distribution (excluding unassigned ushers for accurate percentages)
     const hallDistribution = allUsers.reduce((acc: Record<string, number>, u) => {
-        let hall = u.current_roster_hall ? u.current_roster_hall.replace(/^"|"$/g, '') : 'Unassigned';
-        if (!hall || hall.trim() === '') hall = 'Unassigned';
-        acc[hall] = (acc[hall] || 0) + 1;
+        let hall = u.current_roster_hall ? u.current_roster_hall.replace(/^"|"$/g, '') : '';
+        if (hall && hall.trim() !== '') {
+            acc[hall] = (acc[hall] || 0) + 1;
+        }
         return acc;
     }, {});
 
@@ -184,7 +185,7 @@ export function DashboardPage() {
         .map(([name, count]) => ({ name, count }))
         .sort((a, b) => b.count - a.count);
 
-    const totalUsersWithHall = allUsers.length || 1;
+    const totalUsersWithHall = sortedHalls.reduce((sum, h) => sum + h.count, 0) || 1;
 
     return (
         <motion.div
@@ -315,7 +316,7 @@ export function DashboardPage() {
                 <Card glass className="dashboard__halls-card">
                     <div className="dashboard__card-header">
                         <h2 className="dashboard__card-title">Roster Distribution</h2>
-                        <p className="dashboard__card-subtitle">Volunteer coverage by hall</p>
+                        <p className="dashboard__card-subtitle">Usher coverage by hall</p>
                     </div>
                     <div className="dashboard__halls" style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '12px' }}>
                         {loading ? (
@@ -339,7 +340,7 @@ export function DashboardPage() {
                                         <div className="dashboard__hall-info" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
                                             <span className="dashboard__hall-name" style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{hall.name}</span>
                                             <span className="dashboard__hall-count" style={{ color: 'var(--color-text-secondary)' }}>
-                                                <strong>{hall.count}</strong> volunteer{hall.count !== 1 ? 's' : ''} ({percentage}%)
+                                                <strong>{hall.count}</strong> usher{hall.count !== 1 ? 's' : ''} ({percentage}%)
                                             </span>
                                         </div>
                                         <div className="dashboard__hall-progress-bg" style={{ height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '100px', overflow: 'hidden' }}>

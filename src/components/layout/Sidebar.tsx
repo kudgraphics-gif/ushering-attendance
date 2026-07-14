@@ -15,6 +15,7 @@ import {
     MapPin,
     BarChart2,
     Heart,
+    ShieldAlert,
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { useVolunteerAuthStore } from '../../stores/volunteerAuthStore';
@@ -27,7 +28,6 @@ const adminNavItems = [
     { icon: Calendar, label: 'Events', path: '/events' },
     { icon: Users, label: 'Users', path: '/users' },
     { icon: Heart, label: 'Volunteers', path: '/volunteers' },
-    { icon: Calendar, label: 'Volunteer Events', path: '/volunteer-events' },
     { icon: ClipboardCheck, label: 'Attendance', path: '/attendance' },
     { icon: DollarSign, label: 'Payments', path: '/payments' },
     { icon: Music, label: 'Koinonia Sermons', path: '/koinonia' },
@@ -37,6 +37,7 @@ const adminNavItems = [
     { icon: MapPin, label: 'Hall Manager', path: '/hall-manager' },
     { icon: Users2, label: 'Groups', path: '/groups' },
     { icon: MessageSquare, label: 'Suggestion Box', path: '/suggestion-box' },
+    { icon: ShieldAlert, label: 'Permissions', path: '/permissions' },
     { icon: BarChart2, label: 'Reports & Analytics', path: '/reports' },
     { icon: User, label: 'Profile', path: '/profile' },
 ];
@@ -50,6 +51,7 @@ const leaderNavItems = [
     { icon: Music, label: 'Koinonia Sermons', path: '/koinonia' },
     { icon: Music, label: 'KUD Sermons', path: '/kud-sermons' },
     { icon: MessageSquare, label: 'Suggestion Box', path: '/suggestion-box' },
+    { icon: ShieldAlert, label: 'Permissions', path: '/permissions' },
     { icon: User, label: 'Profile', path: '/profile' },
 ];
 
@@ -60,6 +62,7 @@ const userNavItems = [
     { icon: Music, label: 'Koinonia Sermons', path: '/koinonia' },
     { icon: Music, label: 'KUD Sermons', path: '/kud-sermons' },
     { icon: MessageSquare, label: 'Suggestion Box', path: '/suggestion-box' },
+    { icon: ShieldAlert, label: 'Permissions', path: '/permissions' },
     { icon: User, label: 'Profile', path: '/profile' },
 ];
 
@@ -82,6 +85,7 @@ const technicalNavItems = [
     { icon: Music, label: 'KUD Sermons', path: '/kud-sermons' },
     { icon: Eye, label: 'Activity Logs', path: '/activity-logs' },
     { icon: MessageSquare, label: 'Suggestion Box', path: '/suggestion-box' },
+    { icon: ShieldAlert, label: 'Permissions', path: '/permissions' },
     { icon: User, label: 'Profile', path: '/profile' },
 ];
 
