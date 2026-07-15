@@ -37,6 +37,9 @@ export function LocationWarningModal({
             ? `${(distanceMeters / 1000).toFixed(1)} km`
             : `${distanceMeters} m`;
 
+    const isWednesday = new Date().getDay() === 3;
+    const venueLabel = isWednesday ? 'DOA' : venueName;
+
     return (
         <div className="security-modal-overlay">
             <motion.div
@@ -45,46 +48,56 @@ export function LocationWarningModal({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.88, y: 24 }}
                 transition={{ type: 'spring', damping: 22, stiffness: 300 }}
+                style={{
+                    margin: '20px',
+                    width: 'calc(100% - 40px)',
+                    maxWidth: '440px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    boxSizing: 'border-box',
+                }}
             >
                 {/* Header */}
-                <div className="security-modal__header security-modal__header--warning">
-                    <div className="security-modal__icon-ring security-modal__icon-ring--warning">
+                <div className="security-modal__header security-modal__header--warning" style={{ padding: '24px 24px 16px' }}>
+                    <div className="security-modal__icon-ring security-modal__icon-ring--warning" style={{ marginRight: '14px' }}>
                         <AlertTriangle size={28} strokeWidth={1.8} />
                     </div>
                     <div>
-                        <h2 className="security-modal__title">Location Verification</h2>
-                        <p className="security-modal__subtitle">You appear to be outside the venue boundary</p>
+                        <h2 className="security-modal__title" style={{ fontSize: '1.25rem', fontWeight: 800, margin: '0 0 4px' }}>
+                            Location Check Failed
+                        </h2>
+                        <p className="security-modal__subtitle" style={{ fontSize: '0.85rem', margin: 0, opacity: 0.8 }}>
+                            You appear to be outside the allowed perimeter
+                        </p>
                     </div>
                 </div>
 
                 {/* Distance Badge */}
-                <div className="security-modal__distance-badge" style={{ marginBottom: '16px' }}>
-                    <MapPin size={16} />
-                    <span>
-                        You are approximately <strong>{formattedDist}</strong> away from{' '}
-                        <strong>{venueName}</strong>.
+                <div className="security-modal__distance-badge" style={{ margin: '12px 24px', padding: '12px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <MapPin size={18} />
+                    <span style={{ fontSize: '0.9rem', fontWeight: 650 }}>
+                        Approximately {formattedDist} away from {venueLabel}
                     </span>
                 </div>
 
                 {/* Body */}
-                <div className="security-modal__body" style={{ padding: '0 0 var(--space-lg)' }}>
-                    <p className="security-modal__intro" style={{ margin: 0, fontSize: '0.88rem', lineHeight: '1.5' }}>
-                        If you are currently inside or near the venue, your device might be reporting an inaccurate GPS location. 
-                        Please ensure your device Location/GPS Services are enabled, toggle Wi-Fi or Mobile Data to refresh your GPS connection, and step near a window or outside if you are deep inside the building.
+                <div className="security-modal__body" style={{ padding: '12px 24px 24px' }}>
+                    <p className="security-modal__intro" style={{ margin: '0 0 16px 0', fontSize: '0.92rem', lineHeight: '1.6', color: 'var(--text-secondary)' }}>
+                        Your device is reading that you're far from <strong>{venueLabel}</strong>. 
+                        Kindly refresh your location, toggle your GPS/Location Services off and on, or step near a window/outside if you are currently deep inside a building to get a stronger signal.
                     </p>
                 </div>
 
                 {/* Footer */}
-                <div className="security-modal__footer">
+                <div className="security-modal__footer" style={{ padding: '16px 24px 24px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                     {dismissCount > 0 && !canForceClose && (
-                        <p className="security-modal__attempt-note">
-                            Still outside the perimeter. One more check remaining.
+                        <p className="security-modal__attempt-note" style={{ margin: '0 0 12px 0', textAlign: 'center', fontSize: '0.82rem', color: 'var(--color-primary)' }}>
+                            Still outside. One re-check attempt remaining.
                         </p>
                     )}
                     {canForceClose && (
-                        <p className="security-modal__attempt-note security-modal__attempt-note--final">
-                            You may dismiss this notice. Please resolve the issue before your next
-                            check-in.
+                        <p className="security-modal__attempt-note security-modal__attempt-note--final" style={{ margin: '0 0 12px 0', textAlign: 'center', fontSize: '0.82rem', color: '#34C759' }}>
+                            Acknowledge warning to proceed. Please resolve this before your next shift.
                         </p>
                     )}
 
@@ -92,18 +105,30 @@ export function LocationWarningModal({
                         className={`security-modal__btn ${canForceClose ? 'security-modal__btn--dismiss' : 'security-modal__btn--recheck'}`}
                         onClick={handleDismiss}
                         disabled={rechecking}
+                        style={{
+                            width: '100%',
+                            padding: '12px',
+                            borderRadius: '12px',
+                            fontWeight: 700,
+                            fontSize: '0.95rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            cursor: 'pointer',
+                        }}
                     >
                         {rechecking ? (
                             <>
-                                <RefreshCw size={16} className="spin" /> Checking location…
+                                <RefreshCw size={16} className="spin" /> Updating Location…
                             </>
                         ) : canForceClose ? (
                             <>
-                                <X size={16} /> Dismiss
+                                <X size={16} /> Acknowledge & Dismiss
                             </>
                         ) : (
                             <>
-                                <RefreshCw size={16} /> I've done this — Re-check my location
+                                <RefreshCw size={16} /> Refresh My Location
                             </>
                         )}
                     </button>

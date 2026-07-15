@@ -1324,7 +1324,7 @@ html.light .success-modal__close-btn:hover {
     inset: 0;
     z-index: 1000;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     justify-content: center;
     padding: 1rem;
     background: rgba(0, 0, 0, 0.55);
