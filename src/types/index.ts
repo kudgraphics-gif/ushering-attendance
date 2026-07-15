@@ -428,3 +428,82 @@ export interface LeaderDto {
     role: 'Leader';
     year_joined: string;
 }
+
+// ─── Permissions Domain ───────────────────────────────────────────────────────
+
+export type PermissionStatus = 'Pending' | 'Approved' | 'Rejected';
+export type PermissionCategory = 'Sickness' | 'Travel' | 'Work' | 'Other';
+
+/** Full permission object returned by the API */
+export interface PermissionItem {
+    id: string;
+    user_id: string;
+    category: PermissionCategory;
+    permission: string; // HTML or plain-text letter body
+    is_range: boolean;
+    start_date: string; // YYYY-MM-DD
+    end_date: string;   // YYYY-MM-DD
+    status: PermissionStatus;
+    review_comment: string | null;
+    reviewed_by: string | null;
+    reviewed_at: string | null;
+    created_at: string;
+    updated_at: string;
+    // Joined fields (present on list/get endpoints)
+    user_first_name?: string;
+    user_last_name?: string;
+}
+
+/** Paginated list response from GET /api/v1/permissions/ */
+export interface PaginatedPermissions {
+    items: PermissionItem[];
+    num_pages: number;
+    page: number;
+    size: number;
+    total_items: number;
+}
+
+/** Query params for listing permissions */
+export interface PermissionListParams {
+    page?: number;
+    size?: number;
+    status?: PermissionStatus | '';
+    category?: PermissionCategory | '';
+    user_id?: string;
+    start_date?: string;
+    end_date?: string;
+}
+
+/** Request body for POST /api/v1/permissions/create */
+export interface CreatePermissionRequest {
+    category: PermissionCategory;
+    permission: string;
+    is_range: boolean;
+    start_date: string;
+    end_date: string;
+}
+
+/** Request body for PATCH /api/v1/permissions/update */
+export interface UpdatePermissionRequest {
+    id: string;
+    category?: PermissionCategory | null;
+    permission?: string;
+    is_range?: boolean;
+    start_date?: string;
+    end_date?: string;
+}
+
+/** Request body for POST /api/v1/permissions/admin/review */
+export interface ReviewPermissionRequest {
+    id: string;
+    review_comment: string;
+    status: PermissionStatus;
+}
+
+/** Response from GET /api/v1/permissions/admin/stats */
+export interface PermissionStats {
+    approved: number;
+    pending: number;
+    rejected: number;
+    total: number;
+}

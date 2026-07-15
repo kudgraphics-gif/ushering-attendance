@@ -19,6 +19,13 @@ import type {
     Hall,
     HallAttendanceResponse,
     LeaderDto,
+    PermissionItem,
+    PaginatedPermissions,
+    PermissionListParams,
+    CreatePermissionRequest,
+    UpdatePermissionRequest,
+    ReviewPermissionRequest,
+    PermissionStats,
 } from '../types';
 
 const BASE_URL = 'https://api.koinoniaushers.cloud/api/v1';
@@ -1072,5 +1079,100 @@ export const volunteerEventsAPI = {
         authToken: string
     ): Promise<{ message: string }> => {
         return apiCall<{ message: string }>('POST', '/volunteer-events/attendance/check-in-identifier', payload, authToken);
+    },
+};
+
+// ─── Permissions API ────────────────────────────────────────────────────
+
+export const permissionsAPI = {
+    /**
+     * GET /api/v1/permissions/
+     * Fetch all permissions with optional filters & pagination.
+     */
+    getAll: async (
+        params: PermissionListParams = {},
+        token: string
+    ): Promise<PaginatedPermissions> => {
+        const query = new URLSearchParams();
+        if (params.page !== undefined) query.append('page', String(params.page));
+        if (params.size !== undefined) query.append('size', String(params.size));
+        if (params.status)     query.append('status',     params.status);
+        if (params.category)   query.append('category',   params.category);
+        if (params.user_id)    query.append('user_id',    params.user_id);
+        if (params.start_date) query.append('start_date', params.start_date);
+        if (params.end_date)   query.append('end_date',   params.end_date);
+        const qs = query.toString();
+        return apiCall<PaginatedPermissions>('GET', `/permissions${qs ? `?${qs}` : ''}`, undefined, token);
+    },
+
+    /**
+     * POST /api/v1/permissions/admin/review
+     * Approve or reject a permission request (admin only).
+     */
+    adminReview: async (
+        payload: ReviewPermissionRequest,
+        token: string
+    ): Promise<PermissionItem> => {
+        return apiCall<PermissionItem>('POST', '/permissions/admin/review', payload, token);
+    },
+
+    /**
+     * GET /api/v1/permissions/admin/stats
+     * Retrieve aggregate counts for the admin dashboard.
+     */
+    getStats: async (token: string): Promise<PermissionStats> => {
+        return apiCall<PermissionStats>('GET', '/permissions/admin/stats', undefined, token);
+    },
+
+    /**
+     * POST /api/v1/permissions/create
+     * Submit a new permission/leave request.
+     */
+    create: async (
+        payload: CreatePermissionRequest,
+        token: string
+    ): Promise<PermissionItem> => {
+        return apiCall<PermissionItem>('POST', '/permissions/create', payload, token);
+    },
+
+    /**
+     * DELETE /api/v1/permissions/delete/{id}
+     * Delete a permission request by ID.
+     */
+    delete: async (
+        id: string,
+        token: string
+    ): Promise<{ data: null; message: string }> => {
+        return apiCall<{ data: null; message: string }>('DELETE', `/permissions/delete/${id}`, undefined, token);
+    },
+
+    /**
+     * GET /api/v1/permissions/get/{id}
+     * Fetch a single permission by UUID.
+     */
+    getById: async (
+        id: string,
+        token: string
+    ): Promise<PermissionItem> => {
+        return apiCall<PermissionItem>('GET', `/permissions/get/${id}`, undefined, token);
+    },
+
+    /**
+     * GET /api/v1/permissions/upcoming
+     * Fetch upcoming (approved, future-dated) permissions for the current user.
+     */
+    getUpcoming: async (token: string): Promise<PermissionItem[]> => {
+        return apiCall<PermissionItem[]>('GET', '/permissions/upcoming', undefined, token);
+    },
+
+    /**
+     * PATCH /api/v1/permissions/update
+     * Update an existing pending permission request.
+     */
+    update: async (
+        payload: UpdatePermissionRequest,
+        token: string
+    ): Promise<PermissionItem> => {
+        return apiCall<PermissionItem>('PATCH', '/permissions/update', payload, token);
     },
 };

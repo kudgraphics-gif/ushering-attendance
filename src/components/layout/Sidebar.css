@@ -180,3 +180,19 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+.sidebar__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+  background-color: var(--color-accent-red, #ff453a);
+  border-radius: 9px;
+  margin-left: auto;
+  line-height: 1;
+}

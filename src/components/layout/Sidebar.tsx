@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard,
@@ -20,6 +21,7 @@ import {
 import { useAuthStore } from '../../stores/authStore';
 import { useVolunteerAuthStore } from '../../stores/volunteerAuthStore';
 import { useSidebarStore } from '../../stores/sidebarStore';
+import { permissionsAPI } from '../../services/api';
 import clsx from 'clsx';
 import './Sidebar.css';
 
@@ -98,10 +100,41 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     const navigate = useNavigate();
     const logout = useAuthStore((state) => state.logout);
     const user = useAuthStore((state) => state.user);
+    const token = useAuthStore((state) => state.token);
     const isAdminView = useAuthStore((state) => state.isAdminView);
     const isVolunteerAuthenticated = useVolunteerAuthStore((state) => state.isAuthenticated);
     const logoutVolunteer = useVolunteerAuthStore((state) => state.logoutVolunteer);
     const setOpen = useSidebarStore((state) => state.setOpen);
+
+    const [badgeCount, setBadgeCount] = useState<number>(0);
+
+    const fetchBadgeCount = useCallback(async () => {
+        if (!user || !token) return;
+        try {
+            if (user.role === 'Admin' && isAdminView) {
+                const stats = await permissionsAPI.getStats(token);
+                setBadgeCount(stats.pending || 0);
+            } else {
+                const result = await permissionsAPI.getAll(
+                    { user_id: user.id, page: 1, size: 100 },
+                    token
+                );
+                const pendingOrApproved = result.items.filter(
+                    (p) => p.status === 'Pending' || p.status === 'Approved'
+                );
+                setBadgeCount(pendingOrApproved.length);
+            }
+        } catch (err) {
+            console.error('Failed to fetch sidebar permissions badge count', err);
+        }
+    }, [user, token, isAdminView]);
+
+    useEffect(() => {
+        fetchBadgeCount();
+        // Poll every 30 seconds to keep it fresh
+        const interval = setInterval(fetchBadgeCount, 30000);
+        return () => clearInterval(interval);
+    }, [fetchBadgeCount]);
 
     const navItems = isVolunteerAuthenticated
         ? volunteerNavItems
@@ -158,6 +191,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                         >
                             <item.icon size={20} />
                             <span>{item.label}</span>
+                            {item.label === 'Permissions' && badgeCount > 0 && (
+                                <span className="sidebar__badge">{badgeCount}</span>
+                            )}
                         </NavLink>
                     ))}
                 </nav>

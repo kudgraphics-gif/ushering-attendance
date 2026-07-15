@@ -6,29 +6,6 @@ interface DeviceIdWarningModalProps {
     dismissCount: number;
 }
 
-const STEPS = [
-    {
-        icon: '🌐',
-        title: 'Use the Right Browser',
-        body: 'Open this attendance app in the same browser you originally used to register or log in for the first time. Your Device ID is tied to that specific browser.',
-    },
-    {
-        icon: '🚫',
-        title: 'Avoid Private / Incognito Mode',
-        body: 'Private browsing generates a new Device ID each session. Switch to a regular browser window.',
-    },
-    {
-        icon: '📱',
-        title: 'Use the Same Device',
-        body: 'If you are on a different phone or laptop from usual, switch back to the device you first used to check in.',
-    },
-    {
-        icon: '🛠️',
-        title: 'Contact an Admin',
-        body: "If your original device is unavailable or you've changed phones, ask an Admin to reset your Device ID for you so you can re-register from your new device.",
-    },
-];
-
 export function DeviceIdWarningModal({ onDismiss, dismissCount }: DeviceIdWarningModalProps) {
     const canForceClose = dismissCount >= 2;
 
@@ -47,38 +24,25 @@ export function DeviceIdWarningModal({ onDismiss, dismissCount }: DeviceIdWarnin
                         <ShieldAlert size={28} strokeWidth={1.8} />
                     </div>
                     <div>
-                        <h2 className="security-modal__title">Device Not Recognised</h2>
-                        <p className="security-modal__subtitle">This device doesn't match your registered browser</p>
+                        <h2 className="security-modal__title">Device Mismatch</h2>
+                        <p className="security-modal__subtitle">This browser doesn't match your registered device</p>
                     </div>
                 </div>
 
                 {/* Info Badge */}
-                <div className="security-modal__distance-badge security-modal__distance-badge--danger">
+                <div className="security-modal__distance-badge security-modal__distance-badge--danger" style={{ marginBottom: '16px' }}>
                     <Smartphone size={16} />
                     <span>
-                        The <strong>Device ID</strong> on this browser does not match the one saved
-                        on your account.
+                        The browser profile you are currently using has a different <strong>Device ID</strong>.
                     </span>
                 </div>
 
                 {/* Body */}
-                <div className="security-modal__body">
-                    <p className="security-modal__intro">
-                        For security, attendance can only be recorded from the browser you first
-                        registered with. Please follow these steps:
+                <div className="security-modal__body" style={{ padding: '0 0 var(--space-lg)' }}>
+                    <p className="security-modal__intro" style={{ margin: 0, fontSize: '0.88rem', lineHeight: '1.5' }}>
+                        To log attendance, please open this app in the browser/device you used when you originally registered. 
+                        If you have changed devices, switched browsers, or are using incognito/private mode, you can request an Admin to reset your bound Device ID.
                     </p>
-
-                    <ol className="security-modal__tips">
-                        {STEPS.map((step, i) => (
-                            <li key={i} className="security-modal__tip">
-                                <span className="security-modal__tip-icon">{step.icon}</span>
-                                <div>
-                                    <strong>{step.title}</strong>
-                                    <p>{step.body}</p>
-                                </div>
-                            </li>
-                        ))}
-                    </ol>
                 </div>
 
                 {/* Footer */}

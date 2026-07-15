@@ -14,39 +14,6 @@ interface LocationWarningModalProps {
     rechecking: boolean;
 }
 
-const TIPS = [
-    {
-        icon: '📍',
-        title: 'Toggle Location Off & On',
-        body: 'Go to your phone settings → Location / GPS, turn it off, wait 5 seconds, then turn it back on.',
-    },
-    {
-        icon: '📶',
-        title: 'Toggle Mobile Data / Wi-Fi',
-        body: 'Turn your data or Wi-Fi off and back on. Sometimes a network refresh gives you a more accurate GPS fix.',
-    },
-    {
-        icon: '🔄',
-        title: 'Log Out and Log In Again',
-        body: 'After toggling location and data, log out of the app and log back in to trigger a fresh location read.',
-    },
-    {
-        icon: '🏢',
-        title: 'Step Outside the Building',
-        body: 'GPS signals are often blocked or reflected indoors. Moving outside — even briefly — usually gives a much more accurate reading.',
-    },
-    {
-        icon: '⏱️',
-        title: 'Wait 30 Seconds',
-        body: 'After enabling location services, wait at least 30 seconds before trying again so your device can lock onto satellites.',
-    },
-    {
-        icon: '🔁',
-        title: 'Refresh the App',
-        body: 'Close this browser tab completely and reopen it to get a clean location request.',
-    },
-];
-
 export function LocationWarningModal({
     distanceMeters,
     venueName,
@@ -61,7 +28,6 @@ export function LocationWarningModal({
         if (canForceClose) {
             onDismiss();
         } else {
-            // Trigger a re-check; parent will decide whether to close
             onRecheck();
         }
     };
@@ -86,38 +52,26 @@ export function LocationWarningModal({
                         <AlertTriangle size={28} strokeWidth={1.8} />
                     </div>
                     <div>
-                        <h2 className="security-modal__title">Location Check</h2>
-                        <p className="security-modal__subtitle">You appear to be outside the venue</p>
+                        <h2 className="security-modal__title">Location Verification</h2>
+                        <p className="security-modal__subtitle">You appear to be outside the venue boundary</p>
                     </div>
                 </div>
 
                 {/* Distance Badge */}
-                <div className="security-modal__distance-badge">
+                <div className="security-modal__distance-badge" style={{ marginBottom: '16px' }}>
                     <MapPin size={16} />
                     <span>
                         You are approximately <strong>{formattedDist}</strong> away from{' '}
-                        <strong>{venueName}</strong>
+                        <strong>{venueName}</strong>.
                     </span>
                 </div>
 
-                {/* Tips */}
-                <div className="security-modal__body">
-                    <p className="security-modal__intro">
-                        If you believe you are actually inside the venue, your device may be reading
-                        the wrong location. Try the following steps:
+                {/* Body */}
+                <div className="security-modal__body" style={{ padding: '0 0 var(--space-lg)' }}>
+                    <p className="security-modal__intro" style={{ margin: 0, fontSize: '0.88rem', lineHeight: '1.5' }}>
+                        If you are currently inside or near the venue, your device might be reporting an inaccurate GPS location. 
+                        Please ensure your device Location/GPS Services are enabled, toggle Wi-Fi or Mobile Data to refresh your GPS connection, and step near a window or outside if you are deep inside the building.
                     </p>
-
-                    <ol className="security-modal__tips">
-                        {TIPS.map((tip, i) => (
-                            <li key={i} className="security-modal__tip">
-                                <span className="security-modal__tip-icon">{tip.icon}</span>
-                                <div>
-                                    <strong>{tip.title}</strong>
-                                    <p>{tip.body}</p>
-                                </div>
-                            </li>
-                        ))}
-                    </ol>
                 </div>
 
                 {/* Footer */}
