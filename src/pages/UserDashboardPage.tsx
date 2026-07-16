@@ -2293,7 +2293,7 @@ export function UserDashboardPage() {
                                                 </div>
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '6px', paddingLeft: '22px', fontSize: '12px', color: 'var(--text-tertiary)' }}>
                                                     <span>📞 08135327200</span>
-                                                    <span>✉️ adanmax.3532@gmail.com</span>
+                                                    <span>✉️ danmax.3532@gmail.com</span>
                                                 </div>
                                             </div>
                                         )}

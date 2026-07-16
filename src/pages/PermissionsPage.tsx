@@ -81,9 +81,9 @@ function buildTemplate(category: PermissionCategory, name: string, startDate: st
         Sickness:
             `<p>Dear HOD &amp; Secretary,</p><p>I am writing to formally request leave of absence from my scheduled ushering duties ${dateStr} due to health challenges. I am currently feeling unwell and am focusing on recovery under medical guidance.</p><p>I kindly seek your permission and approval to be excused from service. I deeply regret any inconvenience my absence might cause to the team setup, and I will be sure to update you once I am fully recovered and fit to resume.</p><p>Thank you for your understanding, prayers, and support.</p><p>Yours faithfully,<br/><strong>${name}</strong></p>`,
         Travel:
-            `<p>Dear HOD &amp; Secretary,</p><p>I am writing to formally request permission to be excused from service ${dateStr}. I will be traveling out of town and will be unavailable to perform my duties during this period.</p><p>I kindly ask for your approval of this leave of absence. I have already informed my team lead so that adequate replacements can be coordinated, ensuring smooth service flow.</p><p>Thank you very much for your kind consideration of my request.</p><p>Yours faithfully,<br/><strong>${name}</strong></p>`,
+            `<p>Dear HOD &amp; Secretary,</p><p>I am writing to formally request permission to be excused from service ${dateStr}. I will be traveling to <strong>[Insert Destination/Where]</strong> for <strong>[State the reason for your travel]</strong>, and will be unavailable to perform my duties during this period.</p><p>I kindly ask for your approval of this leave of absence. I have already informed my team lead so that adequate replacements can be coordinated, ensuring smooth service flow.</p><p>Thank you very much for your kind consideration of my request.</p><p>Yours faithfully,<br/><strong>${name}</strong></p>`,
         Work:
-            `<p>Dear HOD &amp; Secretary,</p><p>I am writing to seek your permission to be absent from my scheduled ushering duties ${dateStr}. This is due to urgent, unavoidable professional and workplace commitments that require my personal attendance.</p><p>I highly value my commitment to the ushering department and apologize for having to request this exemption. I hope for your favorable consideration and look forward to resuming duties immediately upon my return.</p><p>Thank you for your leadership and understanding.</p><p>Yours faithfully,<br/><strong>${name}</strong></p>`,
+            `<p>Dear HOD &amp; Secretary,</p><p>I am writing to seek your permission to be absent from my scheduled ushering duties ${dateStr}. This is due to urgent, unavoidable professional commitments, specifically <strong>[Explain the work reason/what you will be doing]</strong>, which require my personal attendance.</p><p>I highly value my commitment to the ushering department and apologize for having to request this exemption. I hope for your favorable consideration and look forward to resuming duties immediately upon my return.</p><p>Thank you for your leadership and understanding.</p><p>Yours faithfully,<br/><strong>${name}</strong></p>`,
         Other:
             `<p>Dear HOD &amp; Secretary,</p><p>I am writing to request permission to be excused from service ${dateStr} due to personal commitments that require my full attention.</p><p>I kindly ask for your approval of my request. I sincerely apologize for any gap this may create on the team and appreciate your kind consideration.</p><p>Yours faithfully,<br/><strong>${name}</strong></p>`,
     };
@@ -614,7 +614,8 @@ function UserPermissions() {
 // ─── Admin View ───────────────────────────────────────────────────────────────
 
 function AdminPermissions() {
-    const { token } = useAuthStore();
+    const { token, user } = useAuthStore();
+    const isLeader = user?.role === 'Leader';
 
     // List state
     const [permissions, setPermissions] = useState<PermissionItem[]>([]);
@@ -866,13 +867,15 @@ function AdminPermissions() {
                                                 <button className="perms__table-row-btn" onClick={() => openModal(perm)}>
                                                     <Eye size={13} /> View
                                                 </button>
-                                                <button
-                                                    className="perms__table-row-btn perms__table-row-btn--danger"
-                                                    onClick={() => handleDelete(perm.id)}
-                                                    title="Delete request"
-                                                >
-                                                    <Trash2 size={13} /> Delete
-                                                </button>
+                                                {!isLeader && (
+                                                    <button
+                                                        className="perms__table-row-btn perms__table-row-btn--danger"
+                                                        onClick={() => handleDelete(perm.id)}
+                                                        title="Delete request"
+                                                    >
+                                                        <Trash2 size={13} /> Delete
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </motion.tr>
@@ -956,8 +959,28 @@ function AdminPermissions() {
                             <div className="perms__editor-label" style={{ marginBottom: 10 }}>Permission Letter</div>
                             <WYSIWYGEditor content={selected.permission} onChange={() => {}} readOnly />
 
-                            {/* Admin action */}
-                            {selected.status === 'Pending' ? (
+                            {/* Action controls or Leader read-only message */}
+                            {isLeader ? (
+                                <div>
+                                    {selected.status === 'Pending' ? (
+                                        <div style={{ marginTop: 16, padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.05)', fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
+                                            ⏳ This permission request is pending review by HOD/Secretary.
+                                        </div>
+                                    ) : (
+                                        <div className="perms__app-reason" style={{ marginTop: 16, borderColor: selected.status === 'Approved' ? 'rgba(52,199,89,0.2)' : 'rgba(255,69,58,0.2)' }}>
+                                            <strong style={{ color: selected.status === 'Approved' ? '#34C759' : '#FF453A' }}>
+                                                {selected.status === 'Approved' ? '✅ Approved' : '❌ Rejected'}
+                                            </strong>
+                                            {selected.review_comment && `: ${selected.review_comment}`}
+                                            {selected.reviewed_at && (
+                                                <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginLeft: 8 }}>
+                                                    · {fmtTimestamp(selected.reviewed_at)}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            ) : selected.status === 'Pending' ? (
                                 <>
                                     <div className="perms__editor-label" style={{ marginBottom: 8, marginTop: 16 }}>Review Comment (optional)</div>
                                     <textarea
@@ -1034,6 +1057,6 @@ function AdminPermissions() {
 export function PermissionsPage() {
     const { user } = useAuthStore();
     const isAdminView = useAuthStore(state => state.isAdminView);
-    const isAdmin = user?.role === 'Admin' && isAdminView;
+    const isAdmin = (user?.role === 'Admin' && isAdminView) || user?.role === 'Leader';
     return isAdmin ? <AdminPermissions /> : <UserPermissions />;
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { useSidebarStore } from '../../stores/sidebarStore';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
@@ -9,11 +9,18 @@ import { permissionsAPI } from '../../services/api';
 import { Bell } from 'lucide-react';
 import { Button } from '../ui/Button';
 import toast from 'react-hot-toast';
+import { format, parseISO, isValid } from 'date-fns';
 import './MainLayout.css';
+
+function fmtDate(iso: string) {
+    const d = parseISO(iso);
+    return isValid(d) ? format(d, 'MMM d, yyyy') : iso;
+}
 
 export function MainLayout() {
     const sidebarOpen = useSidebarStore((state) => state.isOpen);
     const setSidebarOpen = useSidebarStore((state) => state.setOpen);
+    const navigate = useNavigate();
 
     const user = useAuthStore((state) => state.user);
     const token = useAuthStore((state) => state.token);
@@ -61,12 +68,21 @@ export function MainLayout() {
                     if (stats.pending > 0) {
                         // Toast notification
                         toast((t) => (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
+                            <div 
+                                style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', cursor: 'pointer' }}
+                                onClick={() => {
+                                    toast.dismiss(t.id);
+                                    navigate('/permissions');
+                                }}
+                            >
                                 <span style={{ fontSize: '0.88rem' }}>
                                     🔔 You have <strong>{stats.pending}</strong> unattended permission request{stats.pending > 1 ? 's' : ''} awaiting review.
                                 </span>
                                 <button 
-                                    onClick={() => toast.dismiss(t.id)}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        toast.dismiss(t.id);
+                                    }}
                                     style={{
                                         background: 'rgba(255,255,255,0.08)',
                                         border: '1px solid rgba(255,255,255,0.15)',
@@ -96,10 +112,15 @@ export function MainLayout() {
 
                         // Browser Push notification
                         if ('Notification' in window && Notification.permission === 'granted') {
-                            new Notification("Unattended Permission Requests", {
+                            const notification = new Notification("Unattended Permission Requests", {
                                 body: `There are ${stats.pending} unattended permission requests awaiting review.`,
                                 tag: 'admin-pending-permissions',
                             });
+                            notification.onclick = () => {
+                                window.focus();
+                                navigate('/permissions');
+                                notification.close();
+                            };
                         }
                     }
                 } catch (err) {
@@ -111,6 +132,99 @@ export function MainLayout() {
             return () => clearTimeout(timer);
         }
     }, [user, token, isAdminView]);
+
+    // ── Check User Permissions Decisions (Toast & Push Notification) ──
+    useEffect(() => {
+        if (!user || !token) return;
+
+        const checkPermissionDecisions = async () => {
+            try {
+                // Fetch user's own permissions (up to 50 latest)
+                const result = await permissionsAPI.getAll(
+                    { user_id: user.id, page: 1, size: 50 },
+                    token
+                );
+                
+                // Get cached permissions from localStorage
+                const cacheKey = `perms_cache_${user.id}`;
+                const cachedDataRaw = localStorage.getItem(cacheKey);
+                const cache: Record<string, string> = cachedDataRaw ? JSON.parse(cachedDataRaw) : {};
+                
+                let cacheUpdated = false;
+                const newCache: Record<string, string> = { ...cache };
+
+                result.items.forEach((perm) => {
+                    const prevStatus = cache[perm.id];
+                    
+                    // We only notify if the permission was previously known as 'Pending'
+                    // and has now transitioned to 'Approved' or 'Rejected'
+                    if (prevStatus === 'Pending' && perm.status !== 'Pending') {
+                        const dateStr = perm.is_range && perm.end_date !== perm.start_date
+                            ? `${fmtDate(perm.start_date)} to ${fmtDate(perm.end_date)}`
+                            : fmtDate(perm.start_date);
+                        
+                        const title = perm.status === 'Approved' ? 'Permission Approved ✅' : 'Permission Rejected ❌';
+                        const body = `Your request for ${perm.category} leave (${dateStr}) has been ${perm.status.toLowerCase()}${perm.review_comment ? `: "${perm.review_comment}"` : '.'}`;
+                        
+                        // Show toast
+                        toast((t) => (
+                            <div 
+                                style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '100%', cursor: 'pointer' }} 
+                                onClick={() => {
+                                    toast.dismiss(t.id);
+                                    navigate('/permissions');
+                                }}
+                            >
+                                <div style={{ fontWeight: 'bold', fontSize: '0.88rem', color: perm.status === 'Approved' ? '#34C759' : '#FF453A' }}>
+                                    {title}
+                                </div>
+                                <div style={{ fontSize: '0.82rem', color: 'var(--color-text-secondary)' }}>
+                                    {body}
+                                </div>
+                            </div>
+                        ), {
+                            duration: 8000,
+                            id: `perm-decision-${perm.id}`,
+                        });
+
+                        // Show browser Push Notification
+                        if ('Notification' in window && Notification.permission === 'granted') {
+                            const notification = new Notification(title, {
+                                body,
+                                tag: `perm-decision-${perm.id}`,
+                            });
+                            notification.onclick = () => {
+                                window.focus();
+                                navigate('/permissions');
+                                notification.close();
+                            };
+                        }
+                    }
+
+                    // Update cached status
+                    if (cache[perm.id] !== perm.status) {
+                        newCache[perm.id] = perm.status;
+                        cacheUpdated = true;
+                    }
+                });
+
+                if (cacheUpdated) {
+                    localStorage.setItem(cacheKey, JSON.stringify(newCache));
+                }
+            } catch (err) {
+                console.error('Failed to check permission decisions for notifications', err);
+            }
+        };
+
+        // Run after 4 seconds initial delay, then check every 30 seconds
+        const initialTimer = setTimeout(checkPermissionDecisions, 4000);
+        const interval = setInterval(checkPermissionDecisions, 30000);
+        
+        return () => {
+            clearTimeout(initialTimer);
+            clearInterval(interval);
+        };
+    }, [user, token]);
 
     return (
         <div className={`main-layout ${sidebarOpen ? 'sidebar-open' : 'sidebar-closed'}`}>

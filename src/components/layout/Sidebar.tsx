@@ -119,10 +119,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                     { user_id: user.id, page: 1, size: 100 },
                     token
                 );
-                const pendingOrApproved = result.items.filter(
-                    (p) => p.status === 'Pending' || p.status === 'Approved'
+                const pending = result.items.filter(
+                    (p) => p.status === 'Pending'
                 );
-                setBadgeCount(pendingOrApproved.length);
+                setBadgeCount(pending.length);
             }
         } catch (err) {
             console.error('Failed to fetch sidebar permissions badge count', err);
