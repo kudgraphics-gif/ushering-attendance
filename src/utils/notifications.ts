@@ -5,17 +5,29 @@
 export const NOTIFICATION_STORAGE_KEY = 'attendance_reminders_enabled';
 
 /**
- * Checks if browser notifications are supported in the current environment
+ * Checks if the current environment is an iOS device (iPhone/iPad/iPod)
+ */
+export function isIOSDevice(): boolean {
+    if (typeof window === 'undefined') return false;
+    return (
+        /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    );
+}
+
+/**
+ * Checks if browser notifications are supported or if on iOS environment
  */
 export function isNotificationSupported(): boolean {
-    return typeof window !== 'undefined' && 'Notification' in window;
+    if (typeof window === 'undefined') return false;
+    return ('Notification' in window) || isIOSDevice();
 }
 
 /**
  * Gets the current notification permission state
  */
 export function getNotificationPermission(): NotificationPermission {
-    if (!isNotificationSupported()) return 'denied';
+    if (typeof window === 'undefined' || !('Notification' in window)) return 'default';
     return Notification.permission;
 }
 
@@ -23,15 +35,18 @@ export function getNotificationPermission(): NotificationPermission {
  * Requests browser permission to show desktop notifications
  */
 export async function requestNotificationPermission(): Promise<boolean> {
-    if (!isNotificationSupported()) return false;
+    if (typeof window === 'undefined') return false;
     
-    try {
-        const permission = await Notification.requestPermission();
-        return permission === 'granted';
-    } catch (err) {
-        console.error('Error requesting notification permission:', err);
-        return false;
+    if ('Notification' in window && typeof Notification.requestPermission === 'function') {
+        try {
+            const permission = await Notification.requestPermission();
+            return permission === 'granted';
+        } catch (err) {
+            console.error('Error requesting notification permission:', err);
+            return false;
+        }
     }
+    return false;
 }
 
 /**

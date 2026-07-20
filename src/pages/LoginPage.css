@@ -356,6 +356,7 @@
   gap: 4px;
   padding: 4px;
   background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   margin-bottom: 20px;
 }
@@ -370,9 +371,9 @@
   border-radius: 9px;
   border: none;
   background: none;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.5));
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   font-family: inherit;
   cursor: pointer;
   transition: all 0.22s ease;
@@ -380,12 +381,35 @@
 }
 
 .login-page__tab--active {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  background: var(--gradient-gold, linear-gradient(135deg, #D4AF37 0%, #AA8C2C 100%));
+  color: #FFFFFF !important;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);
 }
 
 .login-page__tab:hover:not(.login-page__tab--active) {
-  color: rgba(255, 255, 255, 0.7);
-  background: rgba(255, 255, 255, 0.04);
+  color: var(--color-text-primary);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Light mode overrides for Login Page */
+html.light .login-page__tabs {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+html.light .login-page__tab {
+  color: var(--color-text-secondary, rgba(60, 60, 67, 0.7));
+}
+
+html.light .login-page__tab:hover:not(.login-page__tab--active) {
+  color: var(--color-text-primary, #000000);
+  background: rgba(0, 0, 0, 0.05);
+}
+
+html.light .login-page__tab--active {
+  background: var(--gradient-gold, linear-gradient(135deg, #D4AF37 0%, #AA8C2C 100%));
+  color: #FFFFFF !important;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.4);
 }

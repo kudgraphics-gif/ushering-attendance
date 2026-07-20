@@ -196,3 +196,14 @@
   margin-left: auto;
   line-height: 1;
 }
+
+/* Light mode overrides */
+html.light .sidebar {
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
+  background: var(--color-bg-secondary, #F5F5F7);
+}
+
+html.light .sidebar__link:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--color-text-primary);
+}

@@ -10,6 +10,7 @@ import { Bell } from 'lucide-react';
 import { Button } from '../ui/Button';
 import toast from 'react-hot-toast';
 import { format, parseISO, isValid } from 'date-fns';
+import { isIOSDevice } from '../../utils/notifications';
 import './MainLayout.css';
 
 function fmtDate(iso: string) {
@@ -32,26 +33,48 @@ export function MainLayout() {
         setSidebarOpen(!sidebarOpen);
     };
 
-    // ── Check Browser Notification Permission ──
+    // ── Check Browser / iOS Notification Permission ──
     useEffect(() => {
-        if ('Notification' in window && Notification.permission === 'default') {
-            // Show prompt modal after 3 seconds
-            const timer = setTimeout(() => setShowPermissionPrompt(true), 3000);
-            return () => clearTimeout(timer);
+        const isIOS = isIOSDevice();
+        const dismissed = localStorage.getItem('notification_prompt_dismissed');
+
+        if (!dismissed) {
+            if (('Notification' in window && Notification.permission === 'default') || isIOS) {
+                // Show prompt modal after 3 seconds for both Android and iPhone users
+                const timer = setTimeout(() => setShowPermissionPrompt(true), 3000);
+                return () => clearTimeout(timer);
+            }
         }
     }, []);
 
     const handleEnableNotifications = async () => {
         try {
-            const permission = await Notification.requestPermission();
-            if (permission === 'granted') {
-                new Notification("Notifications Enabled", {
-                    body: "You will now receive alerts for attendance check-ins and permissions.",
-                });
-                toast.success("Browser notifications enabled successfully!");
-            } else if (permission === 'denied') {
-                toast.error("Notifications were denied. You can enable them manually in browser settings.");
+            if ('Notification' in window && typeof Notification.requestPermission === 'function') {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    if ('serviceWorker' in navigator) {
+                        navigator.serviceWorker.ready.then((registration) => {
+                            registration.showNotification("Notifications Enabled", {
+                                body: "You will now receive alerts for attendance check-ins and permissions.",
+                            });
+                        }).catch(() => {
+                            new Notification("Notifications Enabled", {
+                                body: "You will now receive alerts for attendance check-ins and permissions.",
+                            });
+                        });
+                    } else {
+                        new Notification("Notifications Enabled", {
+                            body: "You will now receive alerts for attendance check-ins and permissions.",
+                        });
+                    }
+                    toast.success("Browser notifications enabled successfully!");
+                } else if (permission === 'denied') {
+                    toast.error("Notifications were denied. You can enable them manually in browser settings.");
+                }
+            } else if (isIOSDevice()) {
+                toast.success("iPhone Setup: Tap Share icon below & select 'Add to Home Screen' for push notifications!");
             }
+            localStorage.setItem('notification_prompt_dismissed', 'true');
             setShowPermissionPrompt(false);
         } catch (err) {
             console.error("Error requesting browser notifications", err);
@@ -262,6 +285,11 @@ export function MainLayout() {
                             <p style={{ fontSize: '0.86rem', color: 'var(--color-text-secondary)', lineHeight: '1.5', margin: 0 }}>
                                 Please enable browser notifications to ensure you receive real-time updates on your permission approvals, roster changes, and check-in windows.
                             </p>
+                            {isIOSDevice() && (
+                                <div style={{ marginTop: '12px', padding: '10px 12px', background: 'rgba(212,175,55,0.08)', border: '1px solid rgba(212,175,55,0.2)', borderRadius: '10px', fontSize: '0.78rem', color: 'var(--color-text-primary)', textAlign: 'left' }}>
+                                    <strong style={{ color: 'var(--color-primary)' }}>📱 iPhone Users:</strong> Tap Safari's <strong>Share</strong> icon (📤) and select <strong>"Add to Home Screen"</strong> to enable instant push notifications!
+                                </div>
+                            )}
                         </div>
 
                         <div className="security-modal__footer" style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: 0, border: 'none', background: 'none' }}>

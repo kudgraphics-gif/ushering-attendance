@@ -71,23 +71,45 @@ function fmtTimestamp(iso: string) {
     return isValid(d) ? format(d, "MMM d, yyyy 'at' h:mm a") : iso;
 }
 
-function buildTemplate(category: PermissionCategory, name: string, startDate: string, endDate?: string, isRange?: boolean): string {
+function buildTemplate(
+    category: PermissionCategory,
+    name: string,
+    startDate: string,
+    endDate?: string,
+    isRange?: boolean,
+    reasonDetails?: string,
+    locationDetails?: string
+): string {
     const isSingle = !isRange || !endDate || startDate === endDate;
     const dateStr = isSingle
         ? `on <strong>${fmtDate(startDate)}</strong>`
         : `from <strong>${fmtDate(startDate)}</strong> to <strong>${fmtDate(endDate)}</strong>`;
 
-    const templates: Record<PermissionCategory, string> = {
-        Sickness:
-            `<p>Dear HOD &amp; Secretary,</p><p>I am writing to formally request leave of absence from my scheduled ushering duties ${dateStr} due to health challenges. I am currently feeling unwell and am focusing on recovery under medical guidance.</p><p>I kindly seek your permission and approval to be excused from service. I deeply regret any inconvenience my absence might cause to the team setup, and I will be sure to update you once I am fully recovered and fit to resume.</p><p>Thank you for your understanding, prayers, and support.</p><p>Yours faithfully,<br/><strong>${name}</strong></p>`,
-        Travel:
-            `<p>Dear HOD &amp; Secretary,</p><p>I am writing to formally request permission to be excused from service ${dateStr}. I will be traveling to <strong>[Insert Destination/Where]</strong> for <strong>[State the reason for your travel]</strong>, and will be unavailable to perform my duties during this period.</p><p>I kindly ask for your approval of this leave of absence. I have already informed my team lead so that adequate replacements can be coordinated, ensuring smooth service flow.</p><p>Thank you very much for your kind consideration of my request.</p><p>Yours faithfully,<br/><strong>${name}</strong></p>`,
-        Work:
-            `<p>Dear HOD &amp; Secretary,</p><p>I am writing to seek your permission to be absent from my scheduled ushering duties ${dateStr}. This is due to urgent, unavoidable professional commitments, specifically <strong>[Explain the work reason/what you will be doing]</strong>, which require my personal attendance.</p><p>I highly value my commitment to the ushering department and apologize for having to request this exemption. I hope for your favorable consideration and look forward to resuming duties immediately upon my return.</p><p>Thank you for your leadership and understanding.</p><p>Yours faithfully,<br/><strong>${name}</strong></p>`,
-        Other:
-            `<p>Dear HOD &amp; Secretary,</p><p>I am writing to request permission to be excused from service ${dateStr} due to personal commitments that require my full attention.</p><p>I kindly ask for your approval of my request. I sincerely apologize for any gap this may create on the team and appreciate your kind consideration.</p><p>Yours faithfully,<br/><strong>${name}</strong></p>`,
-    };
-    return templates[category];
+    const trimmedReason = reasonDetails?.trim();
+    const trimmedLocation = locationDetails?.trim();
+
+    if (category === 'Sickness') {
+        const healthPart = trimmedReason ? ` due to <strong>${trimmedReason}</strong>` : ' due to health challenges';
+        const locPart = trimmedLocation ? ` while at <strong>${trimmedLocation}</strong>` : '';
+        return `<p>Dear HOD &amp; Secretary,</p><p>I am writing to formally request leave of absence from my scheduled ushering duties ${dateStr}${healthPart}${locPart}. I am currently focusing on recovery under medical guidance.</p><p>I kindly seek your permission and approval to be excused from service. I deeply regret any inconvenience my absence might cause to the team setup, and I will be sure to update you once I am fully recovered and fit to resume.</p><p>Thank you for your understanding, prayers, and support.</p><p>Yours faithfully,<br/><strong>${name}</strong></p>`;
+    }
+
+    if (category === 'Travel') {
+        const destPart = trimmedLocation ? `<strong>${trimmedLocation}</strong>` : 'my destination';
+        const purposePart = trimmedReason ? `<strong>${trimmedReason}</strong>` : 'personal reasons';
+        return `<p>Dear HOD &amp; Secretary,</p><p>I am writing to formally request permission to be excused from service ${dateStr}. I will be traveling to ${destPart} for ${purposePart}, and will be unavailable to perform my duties during this period.</p><p>I kindly ask for your approval of this leave of absence. I have already informed my team lead so that adequate replacements can be coordinated, ensuring smooth service flow.</p><p>Thank you very much for your kind consideration of my request.</p><p>Yours faithfully,<br/><strong>${name}</strong></p>`;
+    }
+
+    if (category === 'Work') {
+        const workPart = trimmedReason ? `specifically <strong>${trimmedReason}</strong>` : 'urgent, unavoidable professional commitments';
+        const locPart = trimmedLocation ? ` located at <strong>${trimmedLocation}</strong>` : '';
+        return `<p>Dear HOD &amp; Secretary,</p><p>I am writing to seek your permission to be absent from my scheduled ushering duties ${dateStr}. This is due to ${workPart}${locPart}, which require my personal attendance.</p><p>I highly value my commitment to the ushering department and apologize for having to request this exemption. I hope for your favorable consideration and look forward to resuming duties immediately upon my return.</p><p>Thank you for your leadership and understanding.</p><p>Yours faithfully,<br/><strong>${name}</strong></p>`;
+    }
+
+    // Other
+    const otherPart = trimmedReason ? ` due to <strong>${trimmedReason}</strong>` : ' due to personal commitments that require my full attention';
+    const locPart = trimmedLocation ? ` at <strong>${trimmedLocation}</strong>` : '';
+    return `<p>Dear HOD &amp; Secretary,</p><p>I am writing to request permission to be excused from service ${dateStr}${otherPart}${locPart}.</p><p>I kindly ask for your approval of my request. I sincerely apologize for any gap this may create on the team and appreciate your kind consideration.</p><p>Yours faithfully,<br/><strong>${name}</strong></p>`;
 }
 
 function catEmoji(c: PermissionCategory) {
@@ -207,6 +229,8 @@ function UserPermissions() {
     const [isRange, setIsRange] = useState<boolean | null>(null);
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+    const [reasonDetails, setReasonDetails] = useState('');
+    const [locationDetails, setLocationDetails] = useState('');
     const [letterHtml, setLetterHtml] = useState('');
 
     const today = new Date().toISOString().split('T')[0];
@@ -236,9 +260,19 @@ function UserPermissions() {
     // Auto-fill template when selections change
     useEffect(() => {
         if (category && startDate) {
-            setLetterHtml(buildTemplate(category, userName, startDate, isRange ? endDate : undefined, isRange ?? false));
+            setLetterHtml(
+                buildTemplate(
+                    category,
+                    userName,
+                    startDate,
+                    isRange ? endDate : undefined,
+                    isRange ?? false,
+                    reasonDetails,
+                    locationDetails
+                )
+            );
         }
-    }, [category, startDate, endDate, isRange, userName]);
+    }, [category, startDate, endDate, isRange, userName, reasonDetails, locationDetails]);
 
     const canProceedStep0 = !!category;
     const canProceedStep1 = isRange !== null && !!startDate && (!isRange || !!endDate);
@@ -305,6 +339,8 @@ function UserPermissions() {
         setIsRange(null);
         setStartDate('');
         setEndDate('');
+        setReasonDetails('');
+        setLocationDetails('');
         setLetterHtml('');
         setEditingId(null);
         setSubmitted(false);
@@ -393,36 +429,89 @@ function UserPermissions() {
                                 </div>
 
                                 {isRange !== null && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className={`perms__dates ${!isRange ? 'perms__dates--single' : ''}`}
-                                    >
-                                        <div className="perms__date-group">
-                                            <label className="perms__date-label">
-                                                {!isRange ? 'Absence Date' : 'Start Date'}
-                                            </label>
-                                            <input
-                                                type="date"
-                                                className="perms__date-input"
-                                                value={startDate}
-                                                min={today}
-                                                onChange={e => setStartDate(e.target.value)}
-                                            />
-                                        </div>
-                                        {isRange && (
+                                    <>
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className={`perms__dates ${!isRange ? 'perms__dates--single' : ''}`}
+                                        >
                                             <div className="perms__date-group">
-                                                <label className="perms__date-label">End Date</label>
+                                                <label className="perms__date-label">
+                                                    {!isRange ? 'Absence Date' : 'Start Date'}
+                                                </label>
                                                 <input
                                                     type="date"
                                                     className="perms__date-input"
-                                                    value={endDate}
-                                                    min={startDate || today}
-                                                    onChange={e => setEndDate(e.target.value)}
+                                                    value={startDate}
+                                                    min={today}
+                                                    onChange={e => setStartDate(e.target.value)}
                                                 />
                                             </div>
-                                        )}
-                                    </motion.div>
+                                            {isRange && (
+                                                <div className="perms__date-group">
+                                                    <label className="perms__date-label">End Date</label>
+                                                    <input
+                                                        type="date"
+                                                        className="perms__date-input"
+                                                        value={endDate}
+                                                        min={startDate || today}
+                                                        onChange={e => setEndDate(e.target.value)}
+                                                    />
+                                                </div>
+                                            )}
+                                        </motion.div>
+
+                                        {/* Reason & Location Details Inputs */}
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            style={{
+                                                marginTop: 16,
+                                                display: 'grid',
+                                                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+                                                gap: 14,
+                                            }}
+                                        >
+                                            <div className="perms__date-group">
+                                                <label className="perms__date-label">
+                                                    Reason / Specific Purpose (Optional)
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    className="perms__date-input"
+                                                    placeholder={
+                                                        category === 'Travel'
+                                                            ? 'e.g. Family wedding / Academic exam'
+                                                            : category === 'Sickness'
+                                                            ? 'e.g. Medical treatment / Recovery'
+                                                            : category === 'Work'
+                                                            ? 'e.g. Official company summit'
+                                                            : 'e.g. Personal commitment'
+                                                    }
+                                                    value={reasonDetails}
+                                                    onChange={e => setReasonDetails(e.target.value)}
+                                                />
+                                            </div>
+                                            <div className="perms__date-group">
+                                                <label className="perms__date-label">
+                                                    Location / Destination (Optional)
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    className="perms__date-input"
+                                                    placeholder={
+                                                        category === 'Travel'
+                                                            ? 'e.g. Lagos State'
+                                                            : category === 'Sickness'
+                                                            ? 'e.g. National Hospital Abuja'
+                                                            : 'e.g. Location or City name'
+                                                    }
+                                                    value={locationDetails}
+                                                    onChange={e => setLocationDetails(e.target.value)}
+                                                />
+                                            </div>
+                                        </motion.div>
+                                    </>
                                 )}
 
                                 <div className="perms__actions">

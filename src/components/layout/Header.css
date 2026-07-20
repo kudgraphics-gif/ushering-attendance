@@ -276,3 +276,23 @@
 .header__refresh-spinning {
   animation: spin 1s linear infinite;
 }
+
+/* Light mode overrides */
+html.light .header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+}
+
+html.light .header__search-input {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: var(--color-text-primary);
+}
+
+html.light .header__menu-btn:hover,
+html.light .header__notification-btn:hover,
+html.light .header__user:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+

@@ -19,6 +19,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
     isNotificationSupported, 
+    isIOSDevice,
     requestNotificationPermission, 
     showNotification, 
     getMsUntilNextReminder,
@@ -1509,6 +1510,10 @@ export function UserDashboardPage() {
                     "🔔 Reminders Enabled!",
                     "You will receive reminders on Wednesdays at 5:00 PM and Sundays at 4:30 PM."
                 );
+            } else if (isIOSDevice()) {
+                setRemindersEnabled(true);
+                localStorage.setItem(NOTIFICATION_STORAGE_KEY, 'true');
+                toast.success('iPhone Setup: Tap Share (📤) -> "Add to Home Screen" to receive push notifications!');
             } else {
                 toast.error('Permission denied! Please enable notifications in your browser settings.');
             }

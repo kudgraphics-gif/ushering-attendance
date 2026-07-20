@@ -180,11 +180,11 @@ function App() {
           />
           <Route
             path="/hall-manager"
-            element={<ProtectedRoute allowedRoles={['Admin', 'Leader']}><HallManagerPage /></ProtectedRoute>}
+            element={<ProtectedRoute allowedRoles={['Admin', 'Leader', 'Technical']}><HallManagerPage /></ProtectedRoute>}
           />
           <Route
             path="/groups"
-            element={<ProtectedRoute allowedRoles={['Admin', 'Leader']}><GroupsPage /></ProtectedRoute>}
+            element={<ProtectedRoute allowedRoles={['Admin', 'Leader', 'Technical']}><GroupsPage /></ProtectedRoute>}
           />
           <Route path="/suggestion-box" element={<SuggestionBoxPage />} />
           <Route path="/permissions" element={<PermissionsPage />} />

@@ -1089,3 +1089,217 @@
     font-size: 0.72rem;
   }
 }
+
+/* ─── Light Mode Overrides for Permissions ───────────────────────────────────── */
+html.light .perms__modal-overlay {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+html.light .perms__modal {
+  background: var(--color-bg-elevated, #FFFFFF);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.15);
+  color: var(--color-text-primary, #000000);
+}
+
+html.light .perms__modal-name {
+  color: var(--color-text-primary, #000000);
+}
+
+html.light .perms__modal-meta {
+  color: var(--color-text-secondary, rgba(60, 60, 67, 0.7));
+}
+
+html.light .perms__modal-close {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: var(--color-text-primary, #000000);
+}
+
+html.light .perms__modal-close:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+html.light .perms__modal-letter {
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: var(--color-text-primary, #000000);
+}
+
+html.light .perms__modal-letter strong {
+  color: var(--color-text-primary, #000000);
+}
+
+html.light .perms__modal-reason-input {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  color: var(--color-text-primary, #000000);
+}
+
+html.light .perms__modal-reason-input:focus {
+  border-color: var(--color-primary);
+  background: #FFFFFF;
+}
+
+html.light .perms__editor-wrap {
+  border-color: rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+html.light .perms__editor-toolbar {
+  background: rgba(0, 0, 0, 0.03);
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+html.light .perms__editor-content .tiptap {
+  color: var(--color-text-primary, #000000);
+}
+
+html.light .perms__editor-content .tiptap strong {
+  color: var(--color-text-primary, #000000);
+}
+
+html.light .perms__app-card {
+  background: var(--color-glass-light, rgba(255, 255, 255, 0.7));
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+html.light .perms__app-card:hover {
+  border-color: rgba(0, 0, 0, 0.18);
+  background: #FFFFFF;
+}
+
+html.light .perms__app-reason {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: var(--color-text-primary, #000000);
+}
+
+html.light .perms__table-wrap {
+  border-color: rgba(0, 0, 0, 0.1);
+  background: #FFFFFF;
+}
+
+html.light .perms__table th {
+  background: rgba(0, 0, 0, 0.03);
+  border-bottom-color: rgba(0, 0, 0, 0.1);
+  color: var(--color-text-secondary);
+}
+
+html.light .perms__table td {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+  color: var(--color-text-primary, #000000);
+}
+
+html.light .perms__table tr:hover td {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+html.light .perms__table-row-btn {
+  border-color: rgba(0, 0, 0, 0.15);
+  color: var(--color-text-primary, #000000);
+}
+
+html.light .perms__filter-input,
+html.light .perms__filter-select {
+  background: #FFFFFF;
+  border-color: rgba(0, 0, 0, 0.15);
+  color: var(--color-text-primary, #000000);
+}
+
+html.light .perms__filter-select option {
+  background: #FFFFFF;
+  color: #000000;
+}
+
+/* User Form Light Mode Styles */
+html.light .perms__section {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+html.light .perms__step-bubble {
+  background: #FFFFFF;
+  border-color: rgba(0, 0, 0, 0.15);
+  color: var(--color-text-secondary);
+}
+
+html.light .perms__step-bubble--active {
+  background: var(--gradient-gold, linear-gradient(135deg, #D4AF37 0%, #AA8C2C 100%));
+  color: #FFFFFF !important;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+html.light .perms__step-connector {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+html.light .perms__cat-card {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: var(--color-text-primary);
+}
+
+html.light .perms__cat-card:hover {
+  background: #FFFFFF;
+  border-color: rgba(0, 0, 0, 0.22);
+}
+
+html.light .perms__cat-card--selected {
+  background: rgba(212, 175, 55, 0.12) !important;
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 4px 16px rgba(212, 175, 55, 0.25);
+}
+
+html.light .perms__cat-name {
+  color: var(--color-text-primary);
+}
+
+html.light .perms__cat-desc {
+  color: var(--color-text-secondary);
+}
+
+html.light .perms__dur-btn {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: var(--color-text-primary);
+}
+
+html.light .perms__dur-btn:hover {
+  background: #FFFFFF;
+  border-color: rgba(0, 0, 0, 0.22);
+}
+
+html.light .perms__dur-btn--selected {
+  background: rgba(212, 175, 55, 0.12) !important;
+  border-color: var(--color-primary) !important;
+  color: var(--color-text-primary);
+  box-shadow: 0 4px 16px rgba(212, 175, 55, 0.25);
+}
+
+html.light .perms__dur-sub {
+  color: var(--color-text-secondary);
+}
+
+html.light .perms__date-input {
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  color: var(--color-text-primary);
+}
+
+html.light .perms__date-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--accent-glow, rgba(212, 175, 55, 0.15));
+}
+
+html.light .perms__date-input::-webkit-calendar-picker-indicator {
+  filter: none;
+}
+
+html.light .perms__date-label {
+  color: var(--color-text-secondary);
+}
+
+

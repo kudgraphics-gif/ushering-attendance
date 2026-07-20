@@ -82,6 +82,8 @@ const technicalNavItems = [
     { icon: Calendar, label: 'Events', path: '/events' },
     { icon: Users, label: 'Users', path: '/users' },
     { icon: ClipboardCheck, label: 'Attendance', path: '/attendance' },
+    { icon: MapPin, label: 'Hall Manager', path: '/hall-manager' },
+    { icon: Users2, label: 'Groups', path: '/groups' },
     { icon: DollarSign, label: 'Payments', path: '/payments' },
     { icon: Music, label: 'Koinonia Sermons', path: '/koinonia' },
     { icon: Music, label: 'KUD Sermons', path: '/kud-sermons' },
