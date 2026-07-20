@@ -307,7 +307,7 @@ export function HallManagerPage() {
         );
     }
 
-    if (!currentUser || (currentUser.role !== 'Admin' && currentUser.role !== 'Leader')) {
+    if (!currentUser || (currentUser.role !== 'Admin' && currentUser.role !== 'Leader' && currentUser.role !== 'Technical')) {
         return <div className="hall-manager__unauthorized">Access denied</div>;
     }
 

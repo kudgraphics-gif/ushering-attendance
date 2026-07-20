@@ -187,7 +187,7 @@ function App() {
             element={<ProtectedRoute allowedRoles={['Admin', 'Leader', 'Technical']}><GroupsPage /></ProtectedRoute>}
           />
           <Route path="/suggestion-box" element={<SuggestionBoxPage />} />
-          <Route path="/permissions" element={<PermissionsPage />} />
+          <Route path="/permissions" element={<PermissionsPage /> }  />
           <Route
             path="/reports"
             element={<ProtectedRoute allowedRoles={['Admin']}><ReportsPage /></ProtectedRoute>}
