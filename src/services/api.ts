@@ -640,6 +640,24 @@ export const rosterAPI = {
         );
     },
 
+    deactivate: async (id: string, token: string): Promise<{ message: string }> => {
+        try {
+            return await apiCall<{ message: string }>(
+                'PATCH',
+                `/roster/deactivate/${id}`,
+                undefined,
+                token
+            );
+        } catch {
+            return await apiCall<{ message: string; data: Roster }>(
+                'PATCH',
+                '/roster/update',
+                { id, is_active: false },
+                token
+            );
+        }
+    },
+
     share: async (id: string, token: string): Promise<{ message: string }> => {
         return apiCall<{ message: string }>(
             'PATCH',

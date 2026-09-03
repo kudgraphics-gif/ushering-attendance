@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { Toaster } from 'react-hot-toast'
+import toast, { Toaster, ToastBar } from 'react-hot-toast'
 // Initialize theme immediately (before rendering)
 import './stores/themeStore'
 import './styles/theme.css'
@@ -19,9 +19,10 @@ createRoot(document.getElementById('root')!).render(
                 style: {
                     fontSize: '14px',
                     backdropFilter: 'blur(10px)',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    backgroundColor: 'rgba(22, 24, 30, 0.85)',
                     color: 'var(--color-text-primary)',
                     border: '1px solid rgba(255, 255, 255, 0.2)',
+                    cursor: 'pointer',
                 },
                 success: {
                     style: {
@@ -36,7 +37,49 @@ createRoot(document.getElementById('root')!).render(
                     },
                 },
             }}
-        />
+        >
+            {(t) => (
+                <ToastBar toast={t}>
+                    {({ icon, message }) => (
+                        <div
+                            onClick={() => toast.dismiss(t.id)}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                cursor: 'pointer',
+                                width: '100%',
+                            }}
+                        >
+                            {icon}
+                            <div style={{ flex: 1 }}>{message}</div>
+                            {t.type !== 'loading' && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        toast.dismiss(t.id);
+                                    }}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'inherit',
+                                        opacity: 0.7,
+                                        cursor: 'pointer',
+                                        padding: '0 4px',
+                                        fontSize: '14px',
+                                        fontWeight: 'bold',
+                                        marginLeft: '6px'
+                                    }}
+                                    title="Dismiss notification"
+                                >
+                                    ✕
+                                </button>
+                            )}
+                        </div>
+                    )}
+                </ToastBar>
+            )}
+        </Toaster>
         <App />
     </StrictMode>,
 )

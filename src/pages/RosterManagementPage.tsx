@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Edit2, Trash2, AlertCircle, Play, Users, UserPlus, Search, X, MapPin, Share2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, AlertCircle, Play, Pause, Users, UserPlus, Search, X, MapPin, Share2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '../components/ui/Card';
@@ -222,10 +222,7 @@ export function RosterManagementPage() {
 
         setLoading(true);
         try {
-            // Add the API call here
             await rosterAPI.delete(roster.id, token);
-
-            // If successful, remove it from the UI
             setRosters(rosters.filter(r => r.id !== roster.id));
             toast.success('Roster deleted successfully');
         } catch (error) {
@@ -236,19 +233,20 @@ export function RosterManagementPage() {
         }
     };
 
-    const handleActivateRoster = async (roster: Roster) => {
+    const handleToggleRosterStatus = async (roster: Roster) => {
         if (!token) return;
-        if (roster.is_active) {
-            toast.success("Roster is already active");
-            return;
-        }
 
         try {
-            await rosterAPI.activate(roster.id, token);
-            toast.success(`Activated ${roster.name}`);
+            if (roster.is_active) {
+                await rosterAPI.deactivate(roster.id, token);
+                toast.success(`Deactivated ${roster.name}`);
+            } else {
+                await rosterAPI.activate(roster.id, token);
+                toast.success(`Activated ${roster.name}`);
+            }
             fetchRosters();
         } catch (error) {
-            toast.error("Failed to activate roster");
+            toast.error(error instanceof Error ? error.message : `Failed to ${roster.is_active ? 'deactivate' : 'activate'} roster`);
             console.error(error);
         }
     };
@@ -389,13 +387,16 @@ export function RosterManagementPage() {
                                     <div className="roster-card__footer">
                                         <div className="roster-card__actions">
                                             <button
-                                                className={`roster-card__action-btn ${roster.is_active ? 'text-green-500' : ''}`}
-                                                title={roster.is_active ? "Active" : "Activate"}
-                                                onClick={() => handleActivateRoster(roster)}
-                                                disabled={roster.is_active}
-                                                style={roster.is_active ? { color: 'var(--color-success)', borderColor: 'var(--color-success)' } : {}}
+                                                className={`roster-card__action-btn ${roster.is_active ? 'roster-card__action-btn--active' : ''}`}
+                                                title={roster.is_active ? "Deactivate Roster" : "Activate Roster"}
+                                                onClick={() => handleToggleRosterStatus(roster)}
+                                                style={roster.is_active ? { color: 'var(--color-success)', borderColor: 'var(--color-success)', background: 'rgba(48, 209, 88, 0.12)' } : {}}
                                             >
-                                                <Play size={18} fill={roster.is_active ? "currentColor" : "none"} />
+                                                {roster.is_active ? (
+                                                    <Pause size={18} fill="currentColor" />
+                                                ) : (
+                                                    <Play size={18} />
+                                                )}
                                             </button>
 
                                             <button

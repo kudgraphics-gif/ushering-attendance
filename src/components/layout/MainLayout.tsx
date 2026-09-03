@@ -10,7 +10,7 @@ import { Bell } from 'lucide-react';
 import { Button } from '../ui/Button';
 import toast from 'react-hot-toast';
 import { format, parseISO, isValid } from 'date-fns';
-import { isIOSDevice } from '../../utils/notifications';
+import { isIOSDevice, showNotification } from '../../utils/notifications';
 import './MainLayout.css';
 
 function fmtDate(iso: string) {
@@ -52,21 +52,10 @@ export function MainLayout() {
             if ('Notification' in window && typeof Notification.requestPermission === 'function') {
                 const permission = await Notification.requestPermission();
                 if (permission === 'granted') {
-                    if ('serviceWorker' in navigator) {
-                        navigator.serviceWorker.ready.then((registration) => {
-                            registration.showNotification("Notifications Enabled", {
-                                body: "You will now receive alerts for attendance check-ins and permissions.",
-                            });
-                        }).catch(() => {
-                            new Notification("Notifications Enabled", {
-                                body: "You will now receive alerts for attendance check-ins and permissions.",
-                            });
-                        });
-                    } else {
-                        new Notification("Notifications Enabled", {
-                            body: "You will now receive alerts for attendance check-ins and permissions.",
-                        });
-                    }
+                    showNotification(
+                        "Notifications Enabled",
+                        "You will now receive alerts for attendance check-ins and permissions."
+                    );
                     toast.success("Browser notifications enabled successfully!");
                 } else if (permission === 'denied') {
                     toast.error("Notifications were denied. You can enable them manually in browser settings.");

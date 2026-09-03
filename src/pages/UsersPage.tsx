@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Plus, Search, Download, Upload, AlertCircle, Grid3x3, List, LogIn, Eye, Trash2, Edit2, UserCheck, UserX, AlertTriangle, Zap, Filter, ZapOff } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, Search, Download, Upload, AlertCircle, Grid3x3, List, LogIn, Eye, Trash2, Edit2, UserCheck, UserX, AlertTriangle, Zap, Filter, ZapOff, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -31,6 +31,8 @@ export function UsersPage() {
     const [importing, setImporting] = useState(false);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [showOnlyStrikes, setShowOnlyStrikes] = useState(false);
+    const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+    const [showFilterDropdown, setShowFilterDropdown] = useState(false);
     const { token, user: currentUser } = useAuthStore();
 
     useEffect(() => {
@@ -126,9 +128,14 @@ export function UsersPage() {
     };
 
     const filteredUsers = users.filter(user => {
-        const matchesSearch = `${user.first_name} ${user.last_name} ${user.email}`.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesSearch = `${user.first_name} ${user.last_name} ${user.email} ${user.reg_no || ''}`.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesStrike = showOnlyStrikes ? (user.strike && user.strike > 0) : true;
-        return matchesSearch && matchesStrike;
+        const matchesStatus = statusFilter === 'all'
+            ? true
+            : statusFilter === 'active'
+                ? user.is_active
+                : !user.is_active;
+        return matchesSearch && matchesStrike && matchesStatus;
     });
 
     const handleAddUser = () => {
@@ -321,16 +328,68 @@ export function UsersPage() {
                         >
                             <List size={20} />
                         </button>
-                        <button
-                            id="filter-strikes-btn"
-                            className={`users-page__view-btn ${showOnlyStrikes ? 'users-page__view-btn--active users-page__view-btn--strike' : ''}`}
-                            onClick={() => setShowOnlyStrikes(v => !v)}
-                            title={showOnlyStrikes ? 'Show all users' : 'Show only users with strikes'}
-                            style={showOnlyStrikes ? { color: '#ff9500', borderColor: 'rgba(255,149,0,0.4)' } : {}}
-                        >
-                            <Filter size={20} />
-                            {showOnlyStrikes && <span style={{ fontSize: '11px', fontWeight: 600, marginLeft: 2 }}>Strikes</span>}
-                        </button>
+                        <div style={{ position: 'relative' }}>
+                            <button
+                                id="filter-users-btn"
+                                className={`users-page__view-btn ${(statusFilter !== 'all' || showOnlyStrikes) ? 'users-page__view-btn--active' : ''}`}
+                                onClick={() => setShowFilterDropdown(v => !v)}
+                                title="Filter users"
+                                style={statusFilter === 'inactive' ? { borderColor: 'rgba(255, 159, 10, 0.5)', color: '#ff9f0a' } : {}}
+                            >
+                                <Filter size={20} />
+                                <span style={{ fontSize: '11px', fontWeight: 600, marginLeft: 4 }}>
+                                    {statusFilter === 'inactive' ? 'Inactive' : statusFilter === 'active' ? 'Active' : showOnlyStrikes ? 'Strikes' : 'Filter'}
+                                </span>
+                            </button>
+
+                            <AnimatePresence>
+                                {showFilterDropdown && (
+                                    <motion.div
+                                        className="users-page__filter-dropdown glass"
+                                        initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                                        transition={{ duration: 0.15 }}
+                                    >
+                                        <div className="users-page__filter-section">
+                                            <span className="users-page__filter-label">User Status</span>
+                                            <div className="users-page__filter-options">
+                                                <button
+                                                    className={`users-page__filter-opt ${statusFilter === 'all' ? 'active' : ''}`}
+                                                    onClick={() => setStatusFilter('all')}
+                                                >
+                                                    All
+                                                </button>
+                                                <button
+                                                    className={`users-page__filter-opt ${statusFilter === 'active' ? 'active' : ''}`}
+                                                    onClick={() => setStatusFilter('active')}
+                                                >
+                                                    Active
+                                                </button>
+                                                <button
+                                                    className={`users-page__filter-opt ${statusFilter === 'inactive' ? 'active active--inactive' : ''}`}
+                                                    onClick={() => setStatusFilter('inactive')}
+                                                >
+                                                    Inactive
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="users-page__filter-section" style={{ marginTop: '12px' }}>
+                                            <span className="users-page__filter-label">Disciplinary</span>
+                                            <button
+                                                className={`users-page__filter-opt-full ${showOnlyStrikes ? 'active active--strike' : ''}`}
+                                                onClick={() => setShowOnlyStrikes(v => !v)}
+                                            >
+                                                <AlertTriangle size={14} />
+                                                <span>Only Users with Strikes</span>
+                                                {showOnlyStrikes && <Check size={14} style={{ marginLeft: 'auto' }} />}
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
                     </div>
                     <div className="file-input-wrapper">
                         <input

@@ -50,29 +50,48 @@ export async function requestNotificationPermission(): Promise<boolean> {
 }
 
 /**
+ * Registers service worker for background push notifications if supported
+ */
+export function registerServiceWorker() {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch((err) => {
+            console.debug('ServiceWorker registration skipped/failed:', err);
+        });
+    }
+}
+
+/**
  * Triggers an immediate browser notification if permission is granted
  */
 export function showNotification(title: string, body: string, iconUrl?: string) {
-    if (!isNotificationSupported() || Notification.permission !== 'granted') {
+    if (!isNotificationSupported() || typeof Notification === 'undefined' || Notification.permission !== 'granted') {
         return;
     }
 
+    // Try registering service worker first
+    registerServiceWorker();
+
+    const options: NotificationOptions = {
+        body,
+        icon: iconUrl || '/favicon.ico',
+        badge: iconUrl || '/favicon.ico',
+        tag: 'check-in-reminder',
+        requireInteraction: true
+    };
+
     try {
-        // Use service worker notification if available, fallback to window.Notification
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.ready.then((registration) => {
-                registration.showNotification(title, {
-                    body,
-                    icon: iconUrl || '/favicon.ico',
-                    badge: iconUrl || '/favicon.ico',
-                    tag: 'check-in-reminder',
-                    requireInteraction: true
+        // Use service worker notification if active controller exists, otherwise fallback to window.Notification directly
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.ready
+                .then((registration) => {
+                    registration.showNotification(title, options);
+                })
+                .catch(() => {
+                    new Notification(title, options);
                 });
-            }).catch(() => {
-                new Notification(title, { body, icon: iconUrl });
-            });
         } else {
-            new Notification(title, { body, icon: iconUrl });
+            // Direct Notification constructor fallback for Chrome desktop & browsers without SW controller
+            new Notification(title, options);
         }
     } catch (err) {
         console.error('Failed to trigger notification:', err);

@@ -204,7 +204,7 @@ export function RosterAssignmentsPage() {
             try {
                 const targets = assignments.length > 0 ? assignments : await rosterAPI.getAssignments(id, token);
                 if (targets.length === 0) {
-                    toast.error('No assignments found to export', { id: toastId });
+                    toast.error('No assignments found to export', { id: toastId, duration: 4000 });
                     setExportLoading(false);
                     return;
                 }
@@ -303,10 +303,10 @@ export function RosterAssignmentsPage() {
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(a);
 
-                toast.success('Roster with history exported successfully', { id: toastId });
+                toast.success('Roster with history exported successfully', { id: toastId, duration: 4000 });
             } catch (error) {
                 console.error(error);
-                toast.error('Failed to export data with history', { id: toastId });
+                toast.error('Failed to export data with history', { id: toastId, duration: 4000 });
             } finally {
                 setExportLoading(false);
             }
