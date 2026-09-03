@@ -3,11 +3,12 @@ import { useAuthStore } from '../stores/authStore';
 import { analyticsAPI, eventsAPI, attendanceAPI, usersAPI } from '../services/api';
 import type { Event, UserDto, LeaderDto } from '../types';
 import toast from 'react-hot-toast';
-import { MapPin, Calendar, CheckCircle2, User, Info, Crown, AlertTriangle, ArrowRight, Music, DollarSign, BookOpen, Clock, Trophy, Play, RotateCcw, HelpCircle, X, Check } from 'lucide-react';
+import { MapPin, Calendar, CheckCircle2, User, Info, Crown, AlertTriangle, ArrowRight, Music, DollarSign, BookOpen, Clock, Trophy, Play, RotateCcw, HelpCircle, X, Check, Award } from 'lucide-react';
 import { getNearestVenue } from '../utils/geoCheck';
 import { SuggestionBox } from '../components/ui/SuggestionBox';
 import { LocationWarningModal } from '../components/ui/LocationWarningModal';
 import { DeviceIdWarningModal } from '../components/ui/DeviceIdWarningModal';
+import { getUserBadges } from '../utils/badges';
 import {
     getDeviceId,
     recordDeviceCheckIn,
@@ -1425,7 +1426,8 @@ function ThemeSelector() {
         { id: 'gold', name: 'Gold', color: '#D4AF37' },
         { id: 'blue', name: 'Blue', color: '#0A84FF' },
         { id: 'green', name: 'Green', color: '#34C759' },
-        { id: 'purple', name: 'Purple', color: '#AF52DE' }
+        { id: 'purple', name: 'Purple', color: '#AF52DE' },
+        { id: 'pink', name: 'Pink', color: '#FF2D55' }
     ];
 
     return (
@@ -1521,7 +1523,10 @@ export function UserDashboardPage() {
     };
     const [scriptureIndex, setScriptureIndex] = useState(0);
     const [showStrikeInfo, setShowStrikeInfo] = useState(false);
+    const [showBadgesModal, setShowBadgesModal] = useState(false);
     const navigate = useNavigate();
+
+    const userBadges = getUserBadges(user, attendanceData?.history || [], attendanceData?.summary?.rate || 0);
 
     // ── Security check state ──────────────────────────────────────────────────
     const [locationWarning, setLocationWarning] = useState<{
@@ -1942,7 +1947,8 @@ export function UserDashboardPage() {
         gold: { primary: '#D4AF37', secondary: 'rgba(212, 175, 55, 0.15)', glow: 'rgba(212, 175, 55, 0.3)' },
         blue: { primary: '#0A84FF', secondary: 'rgba(10, 132, 255, 0.15)', glow: 'rgba(10, 132, 255, 0.3)' },
         green: { primary: '#34C759', secondary: 'rgba(52, 199, 89, 0.15)', glow: 'rgba(52, 199, 89, 0.3)' },
-        purple: { primary: '#AF52DE', secondary: 'rgba(175, 82, 222, 0.15)', glow: 'rgba(175, 82, 222, 0.3)' }
+        purple: { primary: '#AF52DE', secondary: 'rgba(175, 82, 222, 0.15)', glow: 'rgba(175, 82, 222, 0.3)' },
+        pink: { primary: '#FF2D55', secondary: 'rgba(255, 45, 85, 0.15)', glow: 'rgba(255, 45, 85, 0.3)' }
     };
 
     const colors = accentPalettes[activeTheme as keyof typeof accentPalettes] || accentPalettes.gold;
@@ -2115,6 +2121,64 @@ export function UserDashboardPage() {
                                 </h1>
                                 <p className="user-dashboard-modern__tagline">Usher with a Difference</p>
                             </div>
+                        </div>
+
+                        {/* Achievements & Badges Showcase Bar */}
+                        <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-tertiary)' }}>
+                                    Badges:
+                                </span>
+                                {userBadges.filter(b => b.unlocked).slice(0, 4).map(b => (
+                                    <span
+                                        key={b.id}
+                                        title={`${b.name}: ${b.description}`}
+                                        style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '4px',
+                                            padding: '4px 10px',
+                                            borderRadius: '100px',
+                                            background: b.bgGradient,
+                                            border: `1px solid ${b.color}40`,
+                                            fontSize: '12px',
+                                            fontWeight: 650,
+                                            color: '#ffffff',
+                                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                                        }}
+                                    >
+                                        <span>{b.icon}</span>
+                                        <span>{b.name}</span>
+                                    </span>
+                                ))}
+                                {userBadges.filter(b => b.unlocked).length === 0 && (
+                                    <span style={{ fontSize: '12px', color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>
+                                        Complete check-ins to unlock badges!
+                                    </span>
+                                )}
+                            </div>
+
+                            <button
+                                onClick={() => setShowBadgesModal(true)}
+                                style={{
+                                    background: 'rgba(255, 255, 255, 0.08)',
+                                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                                    borderRadius: '100px',
+                                    padding: '5px 14px',
+                                    fontSize: '11px',
+                                    fontWeight: 700,
+                                    color: 'var(--color-primary)',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <Award size={14} />
+                                <span>Trophy Room ({userBadges.filter(b => b.unlocked).length}/{userBadges.length})</span>
+                                <ArrowRight size={12} />
+                            </button>
                         </div>
                     </motion.section>
 
@@ -2575,6 +2639,110 @@ export function UserDashboardPage() {
                     </div>
                 )}
             </motion.section>
+
+            {/* Badges & Achievements Showcase Modal */}
+            <AnimatePresence>
+                {showBadgesModal && (
+                    <div className="security-modal-overlay" style={{ zIndex: 10000 }}>
+                        <motion.div
+                            className="security-modal"
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            style={{ maxWidth: '520px', padding: '24px', position: 'relative' }}
+                        >
+                            {/* Top-Right Dismiss Button */}
+                            <button
+                                onClick={() => setShowBadgesModal(false)}
+                                style={{
+                                    position: 'absolute',
+                                    top: '16px',
+                                    right: '16px',
+                                    background: 'rgba(255, 255, 255, 0.08)',
+                                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                                    borderRadius: '50%',
+                                    width: '32px',
+                                    height: '32px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'var(--color-text-secondary)',
+                                    cursor: 'pointer',
+                                    zIndex: 10
+                                }}
+                            >
+                                <X size={16} />
+                            </button>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                                <div style={{ background: 'rgba(212, 175, 55, 0.15)', padding: '10px', borderRadius: '12px', color: 'var(--color-primary)' }}>
+                                    <Award size={28} />
+                                </div>
+                                <div>
+                                    <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#fff' }}>
+                                        Ministry Trophy Room
+                                    </h2>
+                                    <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--color-text-secondary)' }}>
+                                        Unlocked {userBadges.filter(b => b.unlocked).length} of {userBadges.length} achievement badges
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px', maxHeight: '55vh', overflowY: 'auto', paddingRight: '4px' }}>
+                                {userBadges.map((badge) => (
+                                    <div
+                                        key={badge.id}
+                                        style={{
+                                            padding: '14px',
+                                            borderRadius: '12px',
+                                            background: badge.unlocked ? badge.bgGradient : 'rgba(255, 255, 255, 0.02)',
+                                            border: `1px solid ${badge.unlocked ? badge.color + '50' : 'rgba(255, 255, 255, 0.06)'}`,
+                                            opacity: badge.unlocked ? 1 : 0.65,
+                                            display: 'flex',
+                                            alignItems: 'flex-start',
+                                            gap: '12px',
+                                            position: 'relative'
+                                        }}
+                                    >
+                                        <div style={{ fontSize: '24px', lineHeight: 1 }}>
+                                            {badge.icon}
+                                        </div>
+
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                                                <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 750, color: badge.unlocked ? '#ffffff' : 'var(--color-text-secondary)' }}>
+                                                    {badge.name}
+                                                </h4>
+                                                <span style={{
+                                                    fontSize: '10px',
+                                                    fontWeight: 700,
+                                                    padding: '2px 8px',
+                                                    borderRadius: '100px',
+                                                    background: badge.unlocked ? 'rgba(52, 199, 89, 0.2)' : 'rgba(255, 255, 255, 0.08)',
+                                                    color: badge.unlocked ? '#34C759' : 'var(--color-text-tertiary)'
+                                                }}>
+                                                    {badge.unlocked ? 'Unlocked' : `${badge.progress}%`}
+                                                </span>
+                                            </div>
+
+                                            <p style={{ margin: '0 0 8px 0', fontSize: '0.82rem', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
+                                                {badge.description}
+                                            </p>
+
+                                            {/* Progress bar */}
+                                            {!badge.unlocked && (
+                                                <div style={{ width: '100%', height: '4px', borderRadius: '4px', background: 'rgba(255, 255, 255, 0.1)', overflow: 'hidden' }}>
+                                                    <div style={{ width: `${badge.progress}%`, height: '100%', background: badge.color, borderRadius: '4px' }} />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
 
             <SuggestionBox />
         </div>

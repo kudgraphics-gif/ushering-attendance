@@ -13,6 +13,7 @@ import { UserDetailsModal } from '../components/ui/UserDetailsModal';
 import { usersAPI, attendanceAPI, usersExportAPI } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 import type { UserDto } from '../types';
+import { getUserBadges } from '../utils/badges';
 import './UsersPage.css';
 
 export function UsersPage() {
@@ -591,6 +592,32 @@ function UserCard({
                             {user.strike ?? 0}
                         </span>
                     </div>
+                    {/* Badge Pill */}
+                    {(() => {
+                        const badges = getUserBadges(user, [], 0).filter(b => b.unlocked);
+                        const topBadge = badges[0];
+                        if (!topBadge) return null;
+                        return (
+                            <div className="user-card__detail">
+                                <span className="user-card__detail-label">Badge:</span>
+                                <span style={{
+                                    fontSize: '11px',
+                                    fontWeight: 700,
+                                    padding: '2px 8px',
+                                    borderRadius: '100px',
+                                    background: topBadge.bgGradient,
+                                    color: '#ffffff',
+                                    border: `1px solid ${topBadge.color}40`,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px'
+                                }}>
+                                    <span>{topBadge.icon}</span>
+                                    <span>{topBadge.name}</span>
+                                </span>
+                            </div>
+                        );
+                    })()}
                 </div>
 
                 <div className="user-card__actions">

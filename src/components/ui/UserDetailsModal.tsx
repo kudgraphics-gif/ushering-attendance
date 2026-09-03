@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, User, Heart, History } from 'lucide-react';
+import { X, User, Heart, History, Award } from 'lucide-react';
 import type { UserDto } from '../../types';
 import { rosterAPI } from '../../services/api';
 import { useAuthStore } from '../../stores/authStore';
+import { getUserBadges } from '../../utils/badges';
 import './UserDetailsModal.css';
 
 interface UserDetailsModalProps {
@@ -16,6 +17,9 @@ export function UserDetailsModal({ isOpen, onClose, user }: UserDetailsModalProp
     const { token } = useAuthStore();
     const [rosterHistory, setRosterHistory] = useState<any[]>([]);
     const [historyLoading, setHistoryLoading] = useState(false);
+
+    const userBadges = getUserBadges(user, [], 0);
+    const unlockedBadges = userBadges.filter(b => b.unlocked);
 
     // Fetch user roster history
     useEffect(() => {
@@ -78,6 +82,41 @@ export function UserDetailsModal({ isOpen, onClose, user }: UserDetailsModalProp
                         </div>
 
                         <div className="user-details-modal__body">
+                            {/* Badges Section */}
+                            <section className="user-details-modal__section" style={{ background: 'rgba(255, 255, 255, 0.02)', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.05)', marginBottom: '16px' }}>
+                                <h3 className="user-details-modal__section-title" style={{ fontSize: '0.85rem', marginBottom: '8px' }}>
+                                    <Award size={16} /> Ministry Badges ({unlockedBadges.length}/{userBadges.length})
+                                </h3>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                                    {unlockedBadges.map(badge => (
+                                        <span
+                                            key={badge.id}
+                                            style={{
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '4px',
+                                                padding: '4px 10px',
+                                                borderRadius: '100px',
+                                                background: badge.bgGradient,
+                                                border: `1px solid ${badge.color}40`,
+                                                fontSize: '11px',
+                                                fontWeight: 600,
+                                                color: '#ffffff'
+                                            }}
+                                            title={badge.description}
+                                        >
+                                            <span>{badge.icon}</span>
+                                            <span>{badge.name}</span>
+                                        </span>
+                                    ))}
+                                    {unlockedBadges.length === 0 && (
+                                        <span style={{ fontSize: '12px', color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>
+                                            No badges unlocked yet
+                                        </span>
+                                    )}
+                                </div>
+                            </section>
+
                             <section className="user-details-modal__section">
                                 <h3 className="user-details-modal__section-title">
                                     <User size={18} /> Personal Details
