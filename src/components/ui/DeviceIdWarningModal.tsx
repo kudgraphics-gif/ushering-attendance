@@ -1,14 +1,12 @@
 import { motion } from 'framer-motion';
-import { Smartphone, X, ShieldAlert, RefreshCw } from 'lucide-react';
+import { Smartphone, X, ShieldAlert } from 'lucide-react';
 
 interface DeviceIdWarningModalProps {
     onDismiss: () => void;
-    dismissCount: number;
+    dismissCount?: number;
 }
 
-export function DeviceIdWarningModal({ onDismiss, dismissCount }: DeviceIdWarningModalProps) {
-    const canForceClose = dismissCount >= 2;
-
+export function DeviceIdWarningModal({ onDismiss }: DeviceIdWarningModalProps) {
     return (
         <div className="security-modal-overlay security-modal-overlay--top">
             <motion.div
@@ -26,6 +24,31 @@ export function DeviceIdWarningModal({ onDismiss, dismissCount }: DeviceIdWarnin
                     boxSizing: 'border-box',
                 }}
             >
+                {/* Top-Right Dismiss Button */}
+                <button
+                    onClick={onDismiss}
+                    style={{
+                        position: 'absolute',
+                        top: '16px',
+                        right: '16px',
+                        background: 'rgba(255, 255, 255, 0.08)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        borderRadius: '50%',
+                        width: '32px',
+                        height: '32px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--color-text-secondary)',
+                        cursor: 'pointer',
+                        zIndex: 10,
+                        transition: 'all 0.2s'
+                    }}
+                    title="Dismiss alert"
+                >
+                    <X size={16} />
+                </button>
+
                 {/* Header */}
                 <div className="security-modal__header security-modal__header--danger" style={{ padding: '24px 24px 16px' }}>
                     <div className="security-modal__icon-ring security-modal__icon-ring--danger" style={{ marginRight: '14px' }}>
@@ -59,19 +82,8 @@ export function DeviceIdWarningModal({ onDismiss, dismissCount }: DeviceIdWarnin
 
                 {/* Footer */}
                 <div className="security-modal__footer" style={{ padding: '16px 24px 24px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                    {!canForceClose && dismissCount > 0 && (
-                        <p className="security-modal__attempt-note" style={{ margin: '0 0 12px 0', textAlign: 'center', fontSize: '0.82rem', color: 'var(--color-primary)' }}>
-                            Still mismatched. One acknowledgement remaining.
-                        </p>
-                    )}
-                    {canForceClose && (
-                        <p className="security-modal__attempt-note security-modal__attempt-note--final" style={{ margin: '0 0 12px 0', textAlign: 'center', fontSize: '0.82rem', color: '#34C759' }}>
-                            Acknowledge warning to proceed. Please resolve this before your next shift.
-                        </p>
-                    )}
-
                     <button
-                        className={`security-modal__btn ${canForceClose ? 'security-modal__btn--dismiss' : 'security-modal__btn--recheck'}`}
+                        className="security-modal__btn security-modal__btn--dismiss"
                         onClick={onDismiss}
                         style={{
                             width: '100%',
@@ -86,15 +98,7 @@ export function DeviceIdWarningModal({ onDismiss, dismissCount }: DeviceIdWarnin
                             cursor: 'pointer',
                         }}
                     >
-                        {canForceClose ? (
-                            <>
-                                <X size={16} /> Acknowledge & Dismiss
-                            </>
-                        ) : (
-                            <>
-                                <RefreshCw size={16} /> I understand — Acknowledge
-                            </>
-                        )}
+                        <X size={16} /> Dismiss Alert
                     </button>
                 </div>
             </motion.div>

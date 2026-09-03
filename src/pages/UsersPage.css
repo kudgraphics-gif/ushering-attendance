@@ -426,8 +426,8 @@ html.light .users-page__filter-dropdown {
 }
 
 .users-page__filter-opt.active--inactive {
-  background: linear-gradient(135deg, #ff9f0a 0%, #ff6b00 100%);
-  color: white;
+  background: var(--gradient-primary);
+  color: #ffffff !important;
 }
 
 .users-page__filter-opt-full {

@@ -334,10 +334,9 @@ export function UsersPage() {
                                 className={`users-page__view-btn ${(statusFilter !== 'all' || showOnlyStrikes) ? 'users-page__view-btn--active' : ''}`}
                                 onClick={() => setShowFilterDropdown(v => !v)}
                                 title="Filter users"
-                                style={statusFilter === 'inactive' ? { borderColor: 'rgba(255, 159, 10, 0.5)', color: '#ff9f0a' } : {}}
                             >
                                 <Filter size={20} />
-                                <span style={{ fontSize: '11px', fontWeight: 600, marginLeft: 4 }}>
+                                <span style={{ fontSize: '11px', fontWeight: 600, marginLeft: 4, color: statusFilter === 'inactive' ? '#ffffff' : undefined }}>
                                     {statusFilter === 'inactive' ? 'Inactive' : statusFilter === 'active' ? 'Active' : showOnlyStrikes ? 'Strikes' : 'Filter'}
                                 </span>
                             </button>

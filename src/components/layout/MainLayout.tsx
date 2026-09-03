@@ -6,7 +6,7 @@ import { Header } from './Header';
 import { ProfileCompletionPopup } from '../ui/ProfileCompletionPopup';
 import { useAuthStore } from '../../stores/authStore';
 import { permissionsAPI } from '../../services/api';
-import { Bell } from 'lucide-react';
+import { Bell, X } from 'lucide-react';
 import { Button } from '../ui/Button';
 import toast from 'react-hot-toast';
 import { format, parseISO, isValid } from 'date-fns';
@@ -259,7 +259,34 @@ export function MainLayout() {
             {/* Browser notification permission request pop-up */}
             {showPermissionPrompt && (
                 <div className="security-modal-overlay security-modal-overlay--top" style={{ zIndex: 10000 }}>
-                    <div className="security-modal" style={{ maxWidth: '420px', padding: 'var(--space-xl)', textAlign: 'center' }}>
+                    <div className="security-modal" style={{ maxWidth: '420px', padding: 'var(--space-xl)', textAlign: 'center', position: 'relative' }}>
+                        {/* Top-Right Dismiss Button */}
+                        <button
+                            onClick={() => {
+                                localStorage.setItem('notification_prompt_dismissed', 'true');
+                                setShowPermissionPrompt(false);
+                            }}
+                            style={{
+                                position: 'absolute',
+                                top: '16px',
+                                right: '16px',
+                                background: 'rgba(255, 255, 255, 0.08)',
+                                border: '1px solid rgba(255, 255, 255, 0.15)',
+                                borderRadius: '50%',
+                                width: '32px',
+                                height: '32px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'var(--color-text-secondary)',
+                                cursor: 'pointer',
+                                zIndex: 10,
+                                transition: 'all 0.2s'
+                            }}
+                            title="Dismiss notification prompt"
+                        >
+                            <X size={16} />
+                        </button>
                         <div className="security-modal__header security-modal__header--warning" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '12px' }}>
                             <div className="security-modal__icon-ring security-modal__icon-ring--warning" style={{ margin: 0 }}>
                                 <Bell size={28} strokeWidth={1.8} />

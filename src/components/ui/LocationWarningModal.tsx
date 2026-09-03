@@ -18,20 +18,9 @@ export function LocationWarningModal({
     distanceMeters,
     venueName,
     onDismiss,
-    dismissCount,
     onRecheck,
     rechecking,
 }: LocationWarningModalProps) {
-    const canForceClose = dismissCount >= 2;
-
-    const handleDismiss = () => {
-        if (canForceClose) {
-            onDismiss();
-        } else {
-            onRecheck();
-        }
-    };
-
     const formattedDist =
         distanceMeters >= 1000
             ? `${(distanceMeters / 1000).toFixed(1)} km`
@@ -57,6 +46,31 @@ export function LocationWarningModal({
                     boxSizing: 'border-box',
                 }}
             >
+                {/* Top-Right Dismiss Button */}
+                <button
+                    onClick={onDismiss}
+                    style={{
+                        position: 'absolute',
+                        top: '16px',
+                        right: '16px',
+                        background: 'rgba(255, 255, 255, 0.08)',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        borderRadius: '50%',
+                        width: '32px',
+                        height: '32px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--color-text-secondary)',
+                        cursor: 'pointer',
+                        zIndex: 10,
+                        transition: 'all 0.2s'
+                    }}
+                    title="Dismiss alert"
+                >
+                    <X size={16} />
+                </button>
+
                 {/* Header */}
                 <div className="security-modal__header security-modal__header--warning" style={{ padding: '24px 24px 16px' }}>
                     <div className="security-modal__icon-ring security-modal__icon-ring--warning" style={{ marginRight: '14px' }}>
@@ -89,21 +103,10 @@ export function LocationWarningModal({
                 </div>
 
                 {/* Footer */}
-                <div className="security-modal__footer" style={{ padding: '16px 24px 24px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                    {dismissCount > 0 && !canForceClose && (
-                        <p className="security-modal__attempt-note" style={{ margin: '0 0 12px 0', textAlign: 'center', fontSize: '0.82rem', color: 'var(--color-primary)' }}>
-                            Still outside. One re-check attempt remaining.
-                        </p>
-                    )}
-                    {canForceClose && (
-                        <p className="security-modal__attempt-note security-modal__attempt-note--final" style={{ margin: '0 0 12px 0', textAlign: 'center', fontSize: '0.82rem', color: '#34C759' }}>
-                            Acknowledge warning to proceed. Please resolve this before your next shift.
-                        </p>
-                    )}
-
+                <div className="security-modal__footer" style={{ padding: '16px 24px 24px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <button
-                        className={`security-modal__btn ${canForceClose ? 'security-modal__btn--dismiss' : 'security-modal__btn--recheck'}`}
-                        onClick={handleDismiss}
+                        className="security-modal__btn security-modal__btn--recheck"
+                        onClick={onRecheck}
                         disabled={rechecking}
                         style={{
                             width: '100%',
@@ -122,15 +125,33 @@ export function LocationWarningModal({
                             <>
                                 <RefreshCw size={16} className="spin" /> Updating Location…
                             </>
-                        ) : canForceClose ? (
-                            <>
-                                <X size={16} /> Acknowledge & Dismiss
-                            </>
                         ) : (
                             <>
                                 <RefreshCw size={16} /> Refresh My Location
                             </>
                         )}
+                    </button>
+
+                    <button
+                        className="security-modal__btn security-modal__btn--dismiss"
+                        onClick={onDismiss}
+                        style={{
+                            width: '100%',
+                            padding: '10px',
+                            borderRadius: '12px',
+                            fontWeight: 600,
+                            fontSize: '0.85rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            background: 'rgba(255, 255, 255, 0.05)',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            color: 'var(--color-text-secondary)',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        <X size={14} /> Dismiss Alert
                     </button>
                 </div>
             </motion.div>

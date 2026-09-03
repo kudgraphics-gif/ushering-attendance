@@ -1,21 +1,29 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AlertCircle, ArrowRight, User } from 'lucide-react';
+import { AlertCircle, ArrowRight, User, X } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../stores/authStore';
 import type { UserDto } from '../../types';
 import './ProfileCompletionPopup.css';
 
-/**
- * Blocking profile completion popup for User and Leader roles.
- * The popup cannot be dismissed — it redirects to /profile and blocks
- * all interaction until the close-family contact fields are fully filled.
- * Admins are excluded.
- */
 export function ProfileCompletionPopup() {
     const user = useAuthStore((state) => state.user);
     const navigate = useNavigate();
     const location = useLocation();
+
+    const [isDismissed, setIsDismissed] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return sessionStorage.getItem('profile_popup_dismissed') === 'true';
+        }
+        return false;
+    });
+
+    const handleDismiss = () => {
+        setIsDismissed(true);
+        if (typeof window !== 'undefined') {
+            sessionStorage.setItem('profile_popup_dismissed', 'true');
+        }
+    };
 
     // Fields that MUST be filled for User/Leader roles
     const requiredFields: { key: keyof UserDto; label: string }[] = [
@@ -28,7 +36,7 @@ export function ProfileCompletionPopup() {
     ];
 
     // Only show for User / Leader roles
-    if (!user || user.role === 'Admin') return null;
+    if (!user || user.role === 'Admin' || isDismissed) return null;
 
     const missingFields = requiredFields.filter(f => !user[f.key as keyof typeof user]);
     const isIncomplete = missingFields.length > 0;
@@ -38,13 +46,13 @@ export function ProfileCompletionPopup() {
 
     // Auto-navigate to profile if incomplete and not already there
     useEffect(() => {
-        if (isIncomplete && !isOnProfilePage) {
+        if (isIncomplete && !isOnProfilePage && !isDismissed) {
             const timer = setTimeout(() => {
                 navigate('/profile');
-            }, 1200);
+            }, 2500);
             return () => clearTimeout(timer);
         }
-    }, [isIncomplete, isOnProfilePage, navigate]);
+    }, [isIncomplete, isOnProfilePage, isDismissed, navigate]);
 
     if (!isIncomplete || isOnProfilePage) return null;
 
@@ -61,7 +69,33 @@ export function ProfileCompletionPopup() {
                     initial={{ opacity: 0, scale: 0.9, y: 24 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     transition={{ duration: 0.4, type: 'spring', stiffness: 180 }}
+                    style={{ position: 'relative' }}
                 >
+                    {/* Top-Right Dismiss Button */}
+                    <button
+                        onClick={handleDismiss}
+                        style={{
+                            position: 'absolute',
+                            top: '16px',
+                            right: '16px',
+                            background: 'rgba(255, 255, 255, 0.08)',
+                            border: '1px solid rgba(255, 255, 255, 0.15)',
+                            borderRadius: '50%',
+                            width: '32px',
+                            height: '32px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'var(--color-text-secondary)',
+                            cursor: 'pointer',
+                            zIndex: 10,
+                            transition: 'all 0.2s'
+                        }}
+                        title="Dismiss alert"
+                    >
+                        <X size={16} />
+                    </button>
+
                     {/* Icon */}
                     <div className="profile-block-modal__icon">
                         <User size={32} />
@@ -98,9 +132,20 @@ export function ProfileCompletionPopup() {
                         <ArrowRight size={18} />
                     </button>
 
-                    <p className="profile-block-modal__note">
-                        You will be redirected automatically…
-                    </p>
+                    <button
+                        onClick={handleDismiss}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--color-text-secondary)',
+                            fontSize: '0.8rem',
+                            cursor: 'pointer',
+                            marginTop: '12px',
+                            textDecoration: 'underline'
+                        }}
+                    >
+                        Dismiss for now
+                    </button>
                 </motion.div>
             </motion.div>
         </AnimatePresence>
