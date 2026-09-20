@@ -3,12 +3,30 @@ import { useAuthStore } from '../stores/authStore';
 import { analyticsAPI, eventsAPI, attendanceAPI, usersAPI } from '../services/api';
 import type { Event, UserDto, LeaderDto } from '../types';
 import toast from 'react-hot-toast';
-import { MapPin, Calendar, CheckCircle2, User, Info, Crown, AlertTriangle, ArrowRight, Music, DollarSign, BookOpen, Clock, Trophy, Play, RotateCcw, HelpCircle, X, Check, Award } from 'lucide-react';
+import { MapPin, Calendar, CheckCircle2, User, Info, Crown, AlertTriangle, ArrowRight, Music, DollarSign, BookOpen, Clock, Trophy, Play, RotateCcw, HelpCircle, X, Check, Award, Zap, Star, Flame, ShieldCheck, Landmark } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { getNearestVenue } from '../utils/geoCheck';
 import { SuggestionBox } from '../components/ui/SuggestionBox';
 import { LocationWarningModal } from '../components/ui/LocationWarningModal';
 import { DeviceIdWarningModal } from '../components/ui/DeviceIdWarningModal';
 import { getUserBadges } from '../utils/badges';
+import type { BadgeDefinition } from '../utils/badges';
+
+/** Maps badge icon name strings from BadgeDefinition to actual Lucide components */
+const BADGE_ICON_MAP: Record<string, LucideIcon> = {
+    Zap,
+    Star,
+    Flame,
+    ShieldCheck,
+    Landmark,
+    Crown,
+};
+
+function BadgeIcon({ badge, size = 20 }: { badge: BadgeDefinition; size?: number }) {
+    const IconComponent = BADGE_ICON_MAP[badge.icon];
+    if (!IconComponent) return null;
+    return <IconComponent size={size} color={badge.unlocked ? badge.color : 'var(--color-text-tertiary)'} />;
+}
 import {
     getDeviceId,
     recordDeviceCheckIn,
@@ -1642,7 +1660,7 @@ export function UserDashboardPage() {
             // Wednesday Early Bird: 4:30 PM (16:30) to 4:45 PM (16:45)
             if (timeInMinutes >= 16 * 60 + 30 && timeInMinutes <= 16 * 60 + 45) {
                 badge = "Early Bird";
-                badgeIcon = "⚡";
+                badgeIcon = "Zap";
                 message = "Wednesday Early Bird! Punctuality is the soul of service. You have earned the Punctual Servant badge!";
             } else if (timeInMinutes >= 18 * 60) {
                 // Wednesday late sign-in warning: from 6:00 PM (18:00) onwards
@@ -1653,7 +1671,7 @@ export function UserDashboardPage() {
             // Sunday Early Bird: before 9:30 AM (09:30)
             if (timeInMinutes < 9 * 60 + 30) {
                 badge = "Sunday Vanguard";
-                badgeIcon = "🌟";
+                badgeIcon = "Star";
                 message = "Sunday Vanguard! Early to the sanctuary, early to the altar. You have earned the Sunday Punctuality badge!";
             } else if (timeInMinutes >= 17 * 60) {
                 // Sunday late sign-in warning: after 5:00 PM (17:00)
@@ -2042,7 +2060,12 @@ export function UserDashboardPage() {
                             <div className="security-modal__body success-modal__body">
                                 {checkInSuccessData.badge && (
                                     <div className="success-modal__badge-card">
-                                        <span className="badge-icon">{checkInSuccessData.badgeIcon}</span>
+                                        <span className="badge-icon" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(212, 175, 55, 0.15)' }}>
+                                            {checkInSuccessData.badgeIcon && BADGE_ICON_MAP[checkInSuccessData.badgeIcon]
+                                                ? (() => { const Icon = BADGE_ICON_MAP[checkInSuccessData.badgeIcon!]; return <Icon size={22} color="var(--accent-primary)" />; })()
+                                                : <Award size={22} color="var(--accent-primary)" />
+                                            }
+                                        </span>
                                         <div>
                                             <h4 className="badge-title">Milestone Unlocked!</h4>
                                             <p className="badge-name">{checkInSuccessData.badge}</p>
@@ -2123,39 +2146,35 @@ export function UserDashboardPage() {
                             </div>
                         </div>
 
-                        {/* Achievements & Badges Showcase Bar */}
+                        {/* Achievements — Compact Icon Circles */}
                         <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                                <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--color-text-tertiary)' }}>
-                                    Badges:
-                                </span>
-                                {userBadges.filter(b => b.unlocked).slice(0, 4).map(b => (
-                                    <span
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                                {userBadges.map(b => (
+                                    <button
                                         key={b.id}
-                                        title={`${b.name}: ${b.description}`}
+                                        title={b.unlocked ? `${b.name}: ${b.description}` : `${b.name} — Locked`}
+                                        onClick={() => setShowBadgesModal(true)}
                                         style={{
                                             display: 'inline-flex',
                                             alignItems: 'center',
-                                            gap: '4px',
-                                            padding: '4px 10px',
-                                            borderRadius: '100px',
-                                            background: b.bgGradient,
-                                            border: `1px solid ${b.color}40`,
-                                            fontSize: '12px',
-                                            fontWeight: 650,
-                                            color: '#ffffff',
-                                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                                            justifyContent: 'center',
+                                            width: '36px',
+                                            height: '36px',
+                                            borderRadius: '50%',
+                                            background: b.unlocked
+                                                ? b.bgGradient
+                                                : 'rgba(255, 255, 255, 0.04)',
+                                            border: `1.5px solid ${b.unlocked ? b.color + '60' : 'rgba(255, 255, 255, 0.08)'}`,
+                                            opacity: b.unlocked ? 1 : 0.45,
+                                            cursor: 'pointer',
+                                            transition: 'all 0.25s ease',
+                                            boxShadow: b.unlocked ? `0 2px 10px ${b.color}30` : 'none',
+                                            padding: 0,
                                         }}
                                     >
-                                        <span>{b.icon}</span>
-                                        <span>{b.name}</span>
-                                    </span>
+                                        <BadgeIcon badge={b} size={17} />
+                                    </button>
                                 ))}
-                                {userBadges.filter(b => b.unlocked).length === 0 && (
-                                    <span style={{ fontSize: '12px', color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>
-                                        Complete check-ins to unlock badges!
-                                    </span>
-                                )}
                             </div>
 
                             <button
@@ -2694,22 +2713,37 @@ export function UserDashboardPage() {
                                         key={badge.id}
                                         style={{
                                             padding: '14px',
-                                            borderRadius: '12px',
+                                            borderRadius: '14px',
                                             background: badge.unlocked ? badge.bgGradient : 'rgba(255, 255, 255, 0.02)',
                                             border: `1px solid ${badge.unlocked ? badge.color + '50' : 'rgba(255, 255, 255, 0.06)'}`,
-                                            opacity: badge.unlocked ? 1 : 0.65,
+                                            opacity: badge.unlocked ? 1 : 0.55,
                                             display: 'flex',
                                             alignItems: 'flex-start',
-                                            gap: '12px',
-                                            position: 'relative'
+                                            gap: '14px',
+                                            position: 'relative',
+                                            transition: 'all 0.3s ease'
                                         }}
                                     >
-                                        <div style={{ fontSize: '24px', lineHeight: 1 }}>
-                                            {badge.icon}
+                                        {/* Icon container */}
+                                        <div style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            width: '44px',
+                                            height: '44px',
+                                            minWidth: '44px',
+                                            borderRadius: '12px',
+                                            background: badge.unlocked
+                                                ? `${badge.color}18`
+                                                : 'rgba(255, 255, 255, 0.04)',
+                                            border: `1px solid ${badge.unlocked ? badge.color + '30' : 'rgba(255, 255, 255, 0.06)'}`,
+                                            boxShadow: badge.unlocked ? `0 2px 12px ${badge.color}20` : 'none'
+                                        }}>
+                                            <BadgeIcon badge={badge} size={22} />
                                         </div>
 
-                                        <div style={{ flex: 1 }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px', gap: '8px' }}>
                                                 <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 750, color: badge.unlocked ? '#ffffff' : 'var(--color-text-secondary)' }}>
                                                     {badge.name}
                                                 </h4>
@@ -2719,9 +2753,10 @@ export function UserDashboardPage() {
                                                     padding: '2px 8px',
                                                     borderRadius: '100px',
                                                     background: badge.unlocked ? 'rgba(52, 199, 89, 0.2)' : 'rgba(255, 255, 255, 0.08)',
-                                                    color: badge.unlocked ? '#34C759' : 'var(--color-text-tertiary)'
+                                                    color: badge.unlocked ? '#34C759' : 'var(--color-text-tertiary)',
+                                                    whiteSpace: 'nowrap'
                                                 }}>
-                                                    {badge.unlocked ? 'Unlocked' : `${badge.progress}%`}
+                                                    {badge.unlocked ? '✓ Unlocked' : `${badge.progress}%`}
                                                 </span>
                                             </div>
 
@@ -2732,7 +2767,13 @@ export function UserDashboardPage() {
                                             {/* Progress bar */}
                                             {!badge.unlocked && (
                                                 <div style={{ width: '100%', height: '4px', borderRadius: '4px', background: 'rgba(255, 255, 255, 0.1)', overflow: 'hidden' }}>
-                                                    <div style={{ width: `${badge.progress}%`, height: '100%', background: badge.color, borderRadius: '4px' }} />
+                                                    <div style={{
+                                                        width: `${badge.progress}%`,
+                                                        height: '100%',
+                                                        background: `linear-gradient(90deg, ${badge.color}80, ${badge.color})`,
+                                                        borderRadius: '4px',
+                                                        transition: 'width 0.5s ease'
+                                                    }} />
                                                 </div>
                                             )}
                                         </div>
