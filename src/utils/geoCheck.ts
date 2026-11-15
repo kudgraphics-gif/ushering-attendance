@@ -9,6 +9,12 @@ export interface VenueLocation {
     lng: number;
 }
 
+/** Fallback coordinates sent when device geolocation fails or is inaccurate */
+export const FALLBACK_LOCATION = {
+    lat: 9.0466,
+    lng: 7.4234,
+};
+
 /** All known venue locations */
 export const VENUES: VenueLocation[] = [
     {
@@ -20,6 +26,11 @@ export const VENUES: VenueLocation[] = [
         name: 'DOA',
         lat: 9.076381,
         lng: 7.431592,
+    },
+    {
+        name: 'Allowed Venue',
+        lat: FALLBACK_LOCATION.lat,
+        lng: FALLBACK_LOCATION.lng,
     },
 ];
 

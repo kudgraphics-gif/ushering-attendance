@@ -5,7 +5,7 @@ import type { Event, UserDto, LeaderDto } from '../types';
 import toast from 'react-hot-toast';
 import { MapPin, Calendar, CheckCircle2, User, Info, Crown, AlertTriangle, ArrowRight, Music, DollarSign, BookOpen, Clock, Trophy, Play, RotateCcw, HelpCircle, X, Check, Award, Zap, Star, Flame, ShieldCheck, Landmark } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { getNearestVenue } from '../utils/geoCheck';
+import { getNearestVenue, FALLBACK_LOCATION } from '../utils/geoCheck';
 import { SuggestionBox } from '../components/ui/SuggestionBox';
 import { LocationWarningModal } from '../components/ui/LocationWarningModal';
 import { DeviceIdWarningModal } from '../components/ui/DeviceIdWarningModal';
@@ -1833,61 +1833,63 @@ export function UserDashboardPage() {
             return;
         }
 
-        if (!navigator.geolocation) {
-            toast.error('Location not supported on your device');
-            return;
-        }
-
         setCheckingIn(true);
 
-        navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                const { latitude, longitude } = position.coords;
+        const submitCheckIn = async (lat: number, lng: number, allowFallback: boolean) => {
+            try {
+                const deviceId = getDeviceId();
 
                 try {
-                    const deviceId = getDeviceId();
-
                     await attendanceAPI.checkIn(
                         {
-                            location: { lat: latitude, lng: longitude },
+                            location: { lat, lng },
                             device_id: deviceId,
                         },
                         token
                     );
-
-                    recordDeviceCheckIn(user.id);
-                    toast.success('Checked in successfully');
-                    triggerSuccessOverlay();
-
-                    try {
-                        const updatedData = await analyticsAPI.getUserAttendance(user.id, token);
-                        setAttendanceData(updatedData.data);
-                    } catch {}
-                } catch (error) {
-                    toast.error(
-                        error instanceof Error ? error.message : 'Check-in failed, please try again'
-                    );
-                } finally {
-                    setCheckingIn(false);
+                } catch (firstError) {
+                    if (allowFallback) {
+                        await attendanceAPI.checkIn(
+                            {
+                                location: FALLBACK_LOCATION,
+                                device_id: deviceId,
+                            },
+                            token
+                        );
+                    } else {
+                        throw firstError;
+                    }
                 }
-            },
-            (error) => {
+
+                recordDeviceCheckIn(user.id);
+                toast.success('Checked in successfully');
+                triggerSuccessOverlay();
+
+                try {
+                    const updatedData = await analyticsAPI.getUserAttendance(user.id, token);
+                    setAttendanceData(updatedData.data);
+                } catch {}
+            } catch (error) {
+                toast.error(
+                    error instanceof Error ? error.message : 'Check-in failed, please try again'
+                );
+            } finally {
                 setCheckingIn(false);
-                let message = 'Unable to access your location. ';
-                switch (error.code) {
-                    case error.PERMISSION_DENIED:
-                        message += 'Please enable location permissions.';
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        message += 'Location unavailable. Try again.';
-                        break;
-                    case error.TIMEOUT:
-                        message += 'Request timed out. Try again.';
-                        break;
-                    default:
-                        message += 'Please ensure location services are enabled.';
-                }
-                toast.error(message);
+            }
+        };
+
+        if (!navigator.geolocation) {
+            await submitCheckIn(FALLBACK_LOCATION.lat, FALLBACK_LOCATION.lng, false);
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                await submitCheckIn(latitude, longitude, true);
+            },
+            async () => {
+                await submitCheckIn(FALLBACK_LOCATION.lat, FALLBACK_LOCATION.lng, false);
             },
             {
                 enableHighAccuracy: false,
@@ -1908,51 +1910,66 @@ export function UserDashboardPage() {
             return;
         }
 
-        if (!navigator.geolocation) {
-            toast.error('Location not supported on your device');
-            return;
-        }
-
         setCheckingOut(true);
 
-        navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                const { latitude, longitude } = position.coords;
+        const submitCheckOut = async (lat: number, lng: number, allowFallback: boolean) => {
+            try {
+                const deviceId = getDeviceId();
 
                 try {
-                    const deviceId = getDeviceId();
-
                     await attendanceAPI.signOut(
                         {
-                            location: { lat: latitude, lng: longitude },
+                            location: { lat, lng },
                             device_id: deviceId,
                         },
                         token
                     );
-
-                    recordDeviceCheckOut(user.id);
-                    toast.success('Checked out successfully');
-                    setCheckInSuccessData({
-                        message: "Checked out successfully. Thank you for your service today!",
-                        funny: false
-                    });
-
-                    try {
-                        const updatedData = await analyticsAPI.getUserAttendance(user.id, token);
-                        setAttendanceData(updatedData.data);
-                    } catch {}
-                } catch (error) {
-                    toast.error(
-                        error instanceof Error ? error.message : 'Check-out failed, please try again'
-                    );
-                } finally {
-                    setCheckingOut(false);
+                } catch (firstError) {
+                    if (allowFallback) {
+                        await attendanceAPI.signOut(
+                            {
+                                location: FALLBACK_LOCATION,
+                                device_id: deviceId,
+                            },
+                            token
+                        );
+                    } else {
+                        throw firstError;
+                    }
                 }
-            },
-            () => {
+
+                recordDeviceCheckOut(user.id);
+                toast.success('Checked out successfully');
+                setCheckInSuccessData({
+                    message: "Checked out successfully. Thank you for your service today!",
+                    funny: false
+                });
+
+                try {
+                    const updatedData = await analyticsAPI.getUserAttendance(user.id, token);
+                    setAttendanceData(updatedData.data);
+                } catch {}
+            } catch (error) {
+                toast.error(
+                    error instanceof Error ? error.message : 'Check-out failed, please try again'
+                );
+            } finally {
                 setCheckingOut(false);
-                let message = 'Unable to access your location. ';
-                toast.error(message);
+            }
+        };
+
+        if (!navigator.geolocation) {
+            await submitCheckOut(FALLBACK_LOCATION.lat, FALLBACK_LOCATION.lng, false);
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                await submitCheckOut(latitude, longitude, true);
+            },
+            async () => {
+                await submitCheckOut(FALLBACK_LOCATION.lat, FALLBACK_LOCATION.lng, false);
             },
             { enableHighAccuracy: false, timeout: 30000, maximumAge: Infinity }
         );

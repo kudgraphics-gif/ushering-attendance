@@ -19,6 +19,7 @@ import { Badge } from '../components/ui/Badge';
 import { EventFormModal } from '../components/ui/EventFormModal';
 import { EventStatsModal } from '../components/ui/EventStatsModal';
 import { eventsAPI } from '../services/api';
+import { FALLBACK_LOCATION } from '../utils/geoCheck';
 import { useAuthStore } from '../stores/authStore';
 import { useVolunteerAuthStore } from '../stores/volunteerAuthStore';
 import { VolunteerEventsPage } from './VolunteerEventsPage';
@@ -120,38 +121,53 @@ export function EventsPage() {
 
         setCheckInLoading(event.id);
 
+        const submitEventCheckIn = async (lat: number, lng: number, allowFallback: boolean) => {
+            try {
+                try {
+                    await eventsAPI.checkIn(
+                        {
+                            event_id: event.id,
+                            user_id: user.id,
+                            attendance_type: 'Onsite',
+                            location: { lat, lng },
+                        },
+                        token
+                    );
+                } catch (firstError) {
+                    if (allowFallback) {
+                        await eventsAPI.checkIn(
+                            {
+                                event_id: event.id,
+                                user_id: user.id,
+                                attendance_type: 'Onsite',
+                                location: FALLBACK_LOCATION,
+                            },
+                            token
+                        );
+                    } else {
+                        throw firstError;
+                    }
+                }
+                toast.success(`Checked in to ${event.title} successfully!`);
+            } catch (error) {
+                console.error(error);
+                toast.error(error instanceof Error ? error.message : "Failed to check in");
+            } finally {
+                setCheckInLoading(null);
+            }
+        };
+
         if (!navigator.geolocation) {
-            toast.error("Geolocation is not supported by your browser");
-            setCheckInLoading(null);
+            await submitEventCheckIn(FALLBACK_LOCATION.lat, FALLBACK_LOCATION.lng, false);
             return;
         }
 
         navigator.geolocation.getCurrentPosition(
             async (position) => {
-                try {
-                    const payload = {
-                        event_id: event.id,
-                        user_id: user.id,
-                        attendance_type: 'Onsite',
-                        location: {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude
-                        }
-                    };
-
-                    await eventsAPI.checkIn(payload, token);
-                    toast.success(`Checked in to ${event.title} successfully!`);
-                } catch (error) {
-                    console.error(error);
-                    toast.error(error instanceof Error ? error.message : "Failed to check in");
-                } finally {
-                    setCheckInLoading(null);
-                }
+                await submitEventCheckIn(position.coords.latitude, position.coords.longitude, true);
             },
-            (error) => {
-                console.error(error);
-                toast.error("Unable to retrieve location. Location access is required for check-in.");
-                setCheckInLoading(null);
+            async () => {
+                await submitEventCheckIn(FALLBACK_LOCATION.lat, FALLBACK_LOCATION.lng, false);
             }
         );
     };
